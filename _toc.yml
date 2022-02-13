@@ -1,0 +1,11 @@
+format: jb-book
+root: index
+
+parts:
+  - caption: NLP
+    chapters:
+    - file: _ner_chapter
+  
+  - caption: Computer vision
+    chapters:
+    - file: cv

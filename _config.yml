@@ -1,0 +1,20 @@
+title: ""
+author: Bipin Krishnan P
+logo: logo.png
+
+exclude_patterns: ["_build, **.ipynb_checkpoints", "README.md"]
+only_build_toc_files: false
+
+repository:
+  url: https://github.com/bipinkrishnan/ml-powered-apps
+  branch: master
+
+html:
+  use_edit_page_button: false
+  use_repository_button: true
+  use_issues_button: false
+  home_page_in_navbar: true
+  baseurl: https://github.com/
+  comments:
+    hypothesis: false
+    utterances: false
