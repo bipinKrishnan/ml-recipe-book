@@ -1,8 +1,14 @@
 ## Named entity recognition
 
-The plan for this chapter is to learn about a task called named entity recognition, train a transformer model for this task and build a web app demo(using Gradio) around this model to convert a sentence from western context to Indian context. 
+The plan for this chapter is to:
 
-For example, if we pass the sentence "I am going to Paris" as input, the model will modify the sentence and give the output as "I am going to Mumbai". As you can see, the model identified the word "Paris" and coverted it to "Mumbai" which is more familiar to Indians. The idea for this demo is inspired from this [blog post](https://towardsdatascience.com/practical-ai-using-nlp-word-vectors-in-a-novel-way-to-solve-the-problem-of-localization-9de3e4fbf56f).
+1. Learn about named entity recognition(NER)
+2. Train a transformer model for NER
+3. Build a web app demo(using Gradio) around the trained model to convert a sentence from western context to Indian context. 
+
+If you did not get the last point, here is an example to make it clear:
+
+If we pass the sentence "I am going to Paris" as input, the model will modify the sentence and give the output as "I am going to Mumbai". As you can see, the model identified the word "Paris" and coverted it to "Mumbai" which is more familiar to Indians. The idea for this demo is inspired from this [blog post](https://towardsdatascience.com/practical-ai-using-nlp-word-vectors-in-a-novel-way-to-solve-the-problem-of-localization-9de3e4fbf56f).
 
 Below you can see the final demo that we will be building in this chapter:
 
