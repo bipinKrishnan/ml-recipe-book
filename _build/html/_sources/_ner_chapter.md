@@ -8,7 +8,7 @@ The plan for this chapter is to:
 
 If you did not get the last point, here is an example to make it clear:
 
-If we pass the sentence "I am going to Paris" as input, the model will modify the sentence and give the output as "I am going to Mumbai". As you can see, the model identified the word "Paris" and coverted it to "Mumbai" which is more familiar to Indians. The idea for this demo is inspired from this [blog post](https://towardsdatascience.com/practical-ai-using-nlp-word-vectors-in-a-novel-way-to-solve-the-problem-of-localization-9de3e4fbf56f).
+If we pass the sentence 'I am going to Paris' as input, the model will modify the sentence and give the output as 'I am going to Mumbai'. As you can see, the model identified the word 'Paris' and coverted it to 'Mumbai' which is more familiar to Indians. The idea for this demo is inspired from this [blog post](https://towardsdatascience.com/practical-ai-using-nlp-word-vectors-in-a-novel-way-to-solve-the-problem-of-localization-9de3e4fbf56f).
 
 Below you can see the final demo that we will be building in this chapter:
 
@@ -26,7 +26,7 @@ Here is a figure showing what the model is expected to do for NER:
 :align: center
 ```
 
-In the above figure, the model recognizes "Sarah" as a person(PER) and "London" as a location(LOC) entity. Since the other words do not belong to any category of entities, no labels are present in the output for those words.
+In the above figure, the model recognizes 'Sarah' as a person(PER) and 'London' as a location(LOC) entity. Since the other words do not belong to any category of entities, no labels are present in the output for those words.
 
 Named entity recognition does not limit to identitfying a person, location or organization, it can also be used for identifying parts of speech of each word in a sentence. The term used to generalize these kinds of tasks is called token classification.
 
@@ -41,3 +41,326 @@ Output tokens: ```['This', 'is', 'looking', 'good']```
 And here is a figure to illustrate the same:
 
 ![Named entity recignition tokenizer](./assets/ner_tokenizer.png)
+
+We now have a basic understanding of the task and the related terms that we will encounter in this chapter, now let's talk about the dataset that we will be using for this task.
+
+### Preparing the dataset
+
+#### Downloading the dataset
+
+We will be using the [conllpp](https://huggingface.co/datasets/conllpp) which can be directly downloaded using the huggingface datasets library using the code shown below:
+
+```python
+from datasets import load_dataset
+
+raw_datasets = load_dataset("conllpp")
+```
+
+If we print ```raw_datasets```, we can see the structure of the dataset:
+
+![ner_data_dict](./assets/ner_data_dict.png)
+
+The dataset is already split into train, validation and test sets where each set has an id, tokens, pos tags, chunk tags and ner tags as features. 
+
+Can you guess the features that we will be using for this chapter?
+
+If you guessed it correctly, ```tokens``` and ```ner_tags``` are the only features we require for the present use case.
+
+This is how the first 5 rows of the training dataset will look like if it were a pandas dataframe:
+
+![ner_data_frame](./assets/ner_data_frame.png)
+
+Now lets talk about the columns that we will be using for our task. The ```tokens``` column will be our inputs to the model and ```ner_tags``` is what the model should predict. 
+
+#### Understanding model inputs
+
+As you can see, the column ```tokens``` are not sentences, instead it is a list of words(which is a kind of tokenization as we discussed earlier), so from now on we can call this as pre-tokenized inputs. Even though it's already split into words, we cannot directly feed it to our model. Our model uses something called **sub-word tokenizer**, which is nothing but splitting a word into multiple subwords.
+
+Let's take an example and make it clear:
+
+Input sentence: ```"This is the pytorch code"```
+
+For the above sentence, a simple tokenizer that splits a sentence into words will give the following output: ```['This', 'is', 'the', 'pytorch', 'code']```
+
+But a sub-word tokenizer may split some words into even simpler sub-words, just like this:
+
+```['This', 'is', 'the', 'p', '##yt', '##or', '##ch', 'code']```
+
+As you can see, some words like pytorch which is not commonly seen in sentences are split into multiple sub-words. Also note that except for the starting token 'p', all the sub-words for the word 'pytorch' starts with a '##'.
+
+The model that we will be using for this task is ```bert-base-cased``` which is bert model that treats cased and uncased words differently. This specific model will be helpful for our task because when writing the name of a person or a location, we always start with an upper-case letter which will make the job of our model way more easier while identifying named entities.
+
+Now let's write some code to tokenize each row in the ```tokens``` column using the ```AutoTokenizer``` module in ```transformers``` library.
+
+```python
+from transformers import AutoTokenizer  # to tokenize the inputs
+
+checkpoint = 'bert-base-cased'
+
+# load tokenizer for our checkpoint
+tokenizer = AutoTokenizer.from_pretrained(checkpoint)
+
+# first row of the training set
+train_row_1 = raw_datasets['train'][0]
+```
+
+Now let's pass in the ```tokens``` column of the first row into our tokenizer. Since our ```tokens``` column contain pre-tokenized inputs, we need to set the argument ```is_split_into_words``` to ```True``` while calling the tokenizer.
+
+```python
+inputs = tokenizer(train_row_1['tokens'], is_split_into_words=True)
+```
+
+If you print the ```inputs```, you can see that our tokenizer has tokenized the words(as shown below) in such a way that it contain all the information to directly feed into our transformer model.
+
+```python
+{
+    'input_ids': [101, 7270, 22961, 1528, 1840, 1106, 21423, 1418, 2495, 12913, 119, 102], 'token_type_ids': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 
+    'attention_mask': [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+}
+```
+
+#### Understanding model outputs
+
+As we've said earlier, ```ner_tags``` is the column that we will use as labels/outputs for our model. Here is the first 5 rows of this column:
+
+```{image} ./assets/ner_tags.png
+:alt: ner_tags
+:class: bg-primary mb-1
+:align: center
+```
+
+As you can see, it's a list of numbers. Let's see what does these numbers actually mean.
+
+You will get all the information about each feature in the dataset using ```.features``` method. Once you filter out only the ```ner_tags``` feature from that, you will get complete information about it, just like shown below:
+
+```python
+raw_datasets['train'].features['ner_tags']
+```
+
+And you will get an output like this:
+
+```python
+Sequence(feature=ClassLabel(num_classes=9, names=['O', 'B-PER', 'I-PER', 'B-ORG', 'I-ORG', 'B-LOC', 'I-LOC', 'B-MISC', 'I-MISC'], names_file=None, id=None), length=-1, id=None)
+```
+
+Now, it's clear that there are 9 different classes/entities inside the ```ner_tags``` and the name of each label is present inside ```names```.
+
+1. ```PER```, ```ORG```, ```LOC``` and ```MISC``` represents a person, organisation, location and miscellaneous entities respectively. The only one remaining is ```O``` which we can use to represent words that doesn't belong to any entity.
+
+2. You might have noticed the ```B-``` and ```I-``` prefixes for these entities, those represent whether a word is at the begining or inside an entity. Let me give you an example and make it clear.
+
+If the input is like this: ```'My name is Roy Lee and I am from New York'```
+
+The corresponding labels should be: ```['O', 'O', 'O', 'B-PER', 'I-PER', 'O', 'O', 'O', 'O', 'B-LOC', 'I-LOC']``` where each label in the list corresponds to each word in the input sentence.
+
+As you can see, the words 'Roy' and 'New' are the words at the begining of a person and a location, so they are given the labels as ```B-PER``` and ```B-LOC``` respectively. Whereas, the words 'Lee' and 'York' are not at the begining but inside a person and a location entity, so they are given the label ```I-PER``` and ```I-LOC``` respectively.
+
+Lastly, all the words that does not belong to any entity is mapped to ```O``` tag.
+
+Finally to wrap up this part, we will create a dictionary containing the id to label mapping.
+
+```python
+# store all the ner labels
+labels = raw_datasets['train'].features['ner_tags'].feature.names
+
+# number of classes/ner tags -> [0, 1, 2, 3, 4, 5, 6, 7, 8]
+ids = range(len(labels))
+
+# id to label mapping 
+id2label = dict(zip(ids, labels))
+```
+
+Now we have an id to label mapping as shown below:
+
+```
+ { 
+   0: 'O',
+   1: 'B-PER',
+   2: 'I-PER',
+   3: 'B-ORG',
+   4: 'I-ORG',
+   5: 'B-LOC',
+   6: 'I-LOC',
+   7: 'B-MISC',
+   8: 'I-MISC' 
+ }
+```
+
+As we have an understanding of the inputs as well outputs/labels of the dataset that we are going to use, it's time to do some preprocessing and create a train, validation and test dataloader.
+
+### Preparing the dataloader
+
+We need to complete the following tasks before wrapping everything inside a dataloader:
+
+1. Tokenize the inputs(```tokens``` column)
+2. Align the tokens and labels
+
+The first point is strainght forward and you must have got it. It's just tokenizing our inputs as we did earlier in this chapter. Let's talk about the second part.
+
+Let's take the first example from our ```tokens``` column in our training set and explain this concept.
+
+This is inputs and outputs for the first row:
+
+Inputs: ```['EU', 'rejects', 'German', 'call', 'to', 'boycott', 'British', 'lamb', '.']```
+
+Outputs: ```[3, 0, 7, 0, 0, 0, 7, 0, 0]```
+
+Each word in the input list corresponds to each label in the outputs list, so, both of their lengths are the same. We cannot pass the inputs as it is because those are strings and we need to use our tokenizer and convert them to integers as we've shown earlier in the chapter. For the outputs, since they are already available as integers, we don't need to bother about them for now.
+
+Let's tokenize the inputs and see how the tokens look.
+
+```python
+inputs = tokenizer(train_row_1['tokens'], is_split_into_words=True)
+
+print(inputs.tokens())
+```
+
+These are the output tokens:
+```
+['[CLS]', 'EU', 'rejects', 'German', 'call', 'to', 'boycott', 'British', 'la', '##mb', '.', '[SEP]']
+```
+
+As you can see there are two special tokens ```[CLS]``` and ```[SEP]``` at the begining and end of the sentence, those are specific to the model that we are using. ```[CLS]``` is special token put at the start of an input sentence whereas ```[SEP]``` is used to seperate sentences.
+Since we have only a single sentence ```[SEP]``` is present after the sentence ends.
+
+Another problem is that the word 'lamb' is plit into 'la' and '##mb' by the tokenizer. Now the length of our input tokens is 12 whereas the length of the labels is 9 because our tokenizer added a ```[CLS]```, ```[SEP]``` and ```##mb``` to our inputs.
+
+For training the model, each word should have a label assigned to it, so we need to align the tokens and labels in such a way that both their lengths are the same.
+
+Fortunately, even after tokenization and splitting words into multiple sub-words, we could get the word ids of each token using ```.word_ids()``` method. Here is an example showing the same.
+
+For the inputs ```['EU', 'rejects', 'German', 'call', 'to', 'boycott', 'British', 'lamb', '.']```, the word ids will be the index of the word in the list.
+
+So, if we tokenize the above inputs using the tokenizer and take the word ids, this is what we get: ```[None, 0, 1, 2, 3, 4, 5, 6, 7, 7, 8, None]```
+
+The two ```None``` values at the start and end represents ```[CLS]``` and ```[SEP]``` tokens. The rest of the integers represent the word ids for each token. You can clearly see that the only word id that is repeating twice is 7 which is the word id for 'lamb'. Since it's split into 'la' and '##mb', both of them have the same word ids.
+
+Here is an illustrated diagram to make the above process clear:
+
+```{image} ./assets/ner_word_ids.png
+:alt: ner_word_ids
+:class: bg-primary mb-1
+:align: center
+```
+
+Now let's write a simple function to align labels with tokens. 
+
+The function will take a list word ids and its corresponding ner labels as arguments and then the following things happen. We loop through each word id in the provided list and checks the below conditions:
+
+1. The first condition is to check whether the current word id is not equal to the previous word id(which means that these two tokens does not belong to the same word).
+2. The second condition checks whether the token is a special token which will have a word id as ```None```.
+3. If the above two conditions are not satisfied(which means that the token is part of a word as well as not a special token), the last part of the rule is executed.
+
+```python
+def align_tokens_and_labels(word_ids, labels):
+    previous_word_id = None
+    new_labels = []
+    
+    for word_id in word_ids:
+        
+        if word_id!=previous_word_id:
+            label = -100 if word_id==None else labels[word_id]
+        elif word_id==None:
+            label = -100
+        else:
+            label = labels[word_id]
+
+            # checks if the ner label is of the form B-XXX
+            if label%2==1:
+                # converts the label from B-XXX to I-XXX
+                label += 1
+                
+        previous_word_id = word_id
+        new_labels.append(label)
+                
+    return new_labels
+```
+
+Let's test the function:
+
+```python
+ner_labels = train_row_1['ner_tags']
+
+# tokenized inputs
+inputs = tokenizer(train_row_1['tokens'], is_split_into_words=True)
+word_ids = inputs.word_ids()
+
+align_tokens_and_labels(word_ids, ner_labels)
+```
+
+Here is the output labels:
+```[-100, 3, 0, 7, 0, 0, 0, 7, 0, 0, 0, -100]```
+
+Now we can write a single function to apply this to every example in our dataset. We will pass a batch of examples from our dataset to this function and the function will loop through example in the batch and apply ```align_tokens_and_labels``` and returns the tokenized inputs and corresponding outputs/labels in the required format. 
+
+We also truncate our tokens to a length of 512, any input example that has a length higher than this are shortened/truncated to 512. The default maximum length set inside the tokenizer is 512, so we just need to set ```truncation=True``` while tokenizing the inputs.
+
+```{note}
+We can tokenize a group of input examples together and get the word ids using indexing. 
+
+For example, if you've tokenized 3 sentences together, you can get the word ids of the first sentence using ```inputs.word_ids(0)```.
+```
+
+```python
+def prepare_inputs_and_labels(ds):
+    inputs = tokenizer(ds['tokens'], truncation=True, is_split_into_words=True)
+    labels_batch = ds['ner_tags']
+    
+    new_labels = []
+    # loop through each example in the batch
+    for idx, labels in enumerate(labels_batch):
+        # extract the word ids using the index
+        word_ids = inputs.word_ids(idx)
+        new_label = align_tokens_and_labels(word_ids, labels)
+        new_labels.append(new_label)
+        
+    inputs['labels'] = new_labels
+    return inputs
+```
+
+Now let's apply this function to our dataset as below:
+
+```python
+prepared_datasets = raw_datasets.map(
+    prepare_inputs_and_labels, 
+    batched=True, 
+    remove_columns=raw_datasets['train'].column_names
+)
+```
+
+We used the ```.map``` method and set ```batched=True``` to map our function to each batch in our dataset. Our final prepared dataset will only contain the following features: ```['input_ids', 'token_type_ids', 'attention_mask', 'labels']```, all other features are removed.
+
+Now let's wrap our datasets inside a pytorch dataloader as shown below:
+
+```python
+# to pad the inputs and labels in a batch to same size
+from transformers import DataCollatorForTokenClassification
+from torch.utils.data import DataLoader
+
+batch_size = 16
+collate_fn = DataCollatorForTokenClassification(tokenizer=tokenizer)
+
+# training dataloader
+train_dl = DataLoader(
+    prepared_datasets['train'], 
+    batch_size=batch_size, 
+    shuffle=True, 
+    collate_fn=collate_fn
+    )
+
+# validation dataloader
+val_dl = DataLoader(
+    prepared_datasets['validation'], 
+    batch_size=batch_size, 
+    shuffle=True, 
+    collate_fn=collate_fn
+    )
+
+# test dataloader
+test_dl = DataLoader(
+    prepared_datasets['test'], 
+    batch_size=batch_size, 
+    shuffle=True, 
+    collate_fn=collate_fn
+    )
+```

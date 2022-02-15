@@ -208,6 +208,33 @@
    What is named entity recognition(NER)?
   </a>
  </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#preparing-the-dataset">
+   Preparing the dataset
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#downloading-the-dataset">
+     Downloading the dataset
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#understanding-model-inputs">
+     Understanding model inputs
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#understanding-model-outputs">
+     Understanding model outputs
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#preparing-the-dataloader">
+   Preparing the dataloader
+  </a>
+ </li>
 </ul>
 
             </nav>
@@ -228,7 +255,7 @@
 <li><p>Build a web app demo(using Gradio) around the trained model to convert a sentence from western context to Indian context.</p></li>
 </ol>
 <p>If you did not get the last point, here is an example to make it clear:</p>
-<p>If we pass the sentence “I am going to Paris” as input, the model will modify the sentence and give the output as “I am going to Mumbai”. As you can see, the model identified the word “Paris” and coverted it to “Mumbai” which is more familiar to Indians. The idea for this demo is inspired from this <a class="reference external" href="https://towardsdatascience.com/practical-ai-using-nlp-word-vectors-in-a-novel-way-to-solve-the-problem-of-localization-9de3e4fbf56f">blog post</a>.</p>
+<p>If we pass the sentence ‘I am going to Paris’ as input, the model will modify the sentence and give the output as ‘I am going to Mumbai’. As you can see, the model identified the word ‘Paris’ and coverted it to ‘Mumbai’ which is more familiar to Indians. The idea for this demo is inspired from this <a class="reference external" href="https://towardsdatascience.com/practical-ai-using-nlp-word-vectors-in-a-novel-way-to-solve-the-problem-of-localization-9de3e4fbf56f">blog post</a>.</p>
 <p>Below you can see the final demo that we will be building in this chapter:</p>
 <p><img alt="NER Gradio demo" src="_images/ner_gr_demo.png" /></p>
 <section id="what-is-named-entity-recognition-ner">
@@ -236,7 +263,7 @@
 <p>At present, there are a wide variety of tasks that machine learning models are capable of doing, named entity recognition or NER is one them. In short the job of a model trained for this task is to identify all the named entities in a given sentence.</p>
 <p>Here is a figure showing what the model is expected to do for NER:</p>
 <img alt="Named entity recignition" class="bg-primary mb-1 align-center" src="_images/ner_process.png" />
-<p>In the above figure, the model recognizes “Sarah” as a person(PER) and “London” as a location(LOC) entity. Since the other words do not belong to any category of entities, no labels are present in the output for those words.</p>
+<p>In the above figure, the model recognizes ‘Sarah’ as a person(PER) and ‘London’ as a location(LOC) entity. Since the other words do not belong to any category of entities, no labels are present in the output for those words.</p>
 <p>Named entity recognition does not limit to identitfying a person, location or organization, it can also be used for identifying parts of speech of each word in a sentence. The term used to generalize these kinds of tasks is called token classification.</p>
 <p>As humans, when we are reading a book, we understand a sentence by reading each word in that, right? Similarly, before passing a sentence into our models, we split them into simpler tokens using something called a tokenizer.</p>
 <p>The simplest tokenizer you can think of is splitting a sentence into words as shown below:</p>
@@ -244,6 +271,252 @@
 <p>Output tokens: <code class="docutils literal notranslate"><span class="pre">['This',</span> <span class="pre">'is',</span> <span class="pre">'looking',</span> <span class="pre">'good']</span></code></p>
 <p>And here is a figure to illustrate the same:</p>
 <p><img alt="Named entity recignition tokenizer" src="_images/ner_tokenizer.png" /></p>
+<p>We now have a basic understanding of the task and the related terms that we will encounter in this chapter, now let’s talk about the dataset that we will be using for this task.</p>
+</section>
+<section id="preparing-the-dataset">
+<h2>Preparing the dataset<a class="headerlink" href="#preparing-the-dataset" title="Permalink to this headline">¶</a></h2>
+<section id="downloading-the-dataset">
+<h3>Downloading the dataset<a class="headerlink" href="#downloading-the-dataset" title="Permalink to this headline">¶</a></h3>
+<p>We will be using the <a class="reference external" href="https://huggingface.co/datasets/conllpp">conllpp</a> which can be directly downloaded using the huggingface datasets library using the code shown below:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">datasets</span> <span class="kn">import</span> <span class="n">load_dataset</span>
+
+<span class="n">raw_datasets</span> <span class="o">=</span> <span class="n">load_dataset</span><span class="p">(</span><span class="s2">&quot;conllpp&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>If we print <code class="docutils literal notranslate"><span class="pre">raw_datasets</span></code>, we can see the structure of the dataset:</p>
+<p><img alt="ner_data_dict" src="_images/ner_data_dict.png" /></p>
+<p>The dataset is already split into train, validation and test sets where each set has an id, tokens, pos tags, chunk tags and ner tags as features.</p>
+<p>Can you guess the features that we will be using for this chapter?</p>
+<p>If you guessed it correctly, <code class="docutils literal notranslate"><span class="pre">tokens</span></code> and <code class="docutils literal notranslate"><span class="pre">ner_tags</span></code> are the only features we require for the present use case.</p>
+<p>This is how the first 5 rows of the training dataset will look like if it were a pandas dataframe:</p>
+<p><img alt="ner_data_frame" src="_images/ner_data_frame.png" /></p>
+<p>Now lets talk about the columns that we will be using for our task. The <code class="docutils literal notranslate"><span class="pre">tokens</span></code> column will be our inputs to the model and <code class="docutils literal notranslate"><span class="pre">ner_tags</span></code> is what the model should predict.</p>
+</section>
+<section id="understanding-model-inputs">
+<h3>Understanding model inputs<a class="headerlink" href="#understanding-model-inputs" title="Permalink to this headline">¶</a></h3>
+<p>As you can see, the column <code class="docutils literal notranslate"><span class="pre">tokens</span></code> are not sentences, instead it is a list of words(which is a kind of tokenization as we discussed earlier), so from now on we can call this as pre-tokenized inputs. Even though it’s already split into words, we cannot directly feed it to our model. Our model uses something called <strong>sub-word tokenizer</strong>, which is nothing but splitting a word into multiple subwords.</p>
+<p>Let’s take an example and make it clear:</p>
+<p>Input sentence: <code class="docutils literal notranslate"><span class="pre">&quot;This</span> <span class="pre">is</span> <span class="pre">the</span> <span class="pre">pytorch</span> <span class="pre">code&quot;</span></code></p>
+<p>For the above sentence, a simple tokenizer that splits a sentence into words will give the following output: <code class="docutils literal notranslate"><span class="pre">['This',</span> <span class="pre">'is',</span> <span class="pre">'the',</span> <span class="pre">'pytorch',</span> <span class="pre">'code']</span></code></p>
+<p>But a sub-word tokenizer may split some words into even simpler sub-words, just like this:</p>
+<p><code class="docutils literal notranslate"><span class="pre">['This',</span> <span class="pre">'is',</span> <span class="pre">'the',</span> <span class="pre">'p',</span> <span class="pre">'##yt',</span> <span class="pre">'##or',</span> <span class="pre">'##ch',</span> <span class="pre">'code']</span></code></p>
+<p>As you can see, some words like pytorch which is not commonly seen in sentences are split into multiple sub-words. Also note that except for the starting token ‘p’, all the sub-words for the word ‘pytorch’ starts with a ‘##’.</p>
+<p>The model that we will be using for this task is <code class="docutils literal notranslate"><span class="pre">bert-base-cased</span></code> which is bert model that treats cased and uncased words differently. This specific model will be helpful for our task because when writing the name of a person or a location, we always start with an upper-case letter which will make the job of our model way more easier while identifying named entities.</p>
+<p>Now let’s write some code to tokenize each row in the <code class="docutils literal notranslate"><span class="pre">tokens</span></code> column using the <code class="docutils literal notranslate"><span class="pre">AutoTokenizer</span></code> module in <code class="docutils literal notranslate"><span class="pre">transformers</span></code> library.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">transformers</span> <span class="kn">import</span> <span class="n">AutoTokenizer</span>  <span class="c1"># to tokenize the inputs</span>
+
+<span class="n">checkpoint</span> <span class="o">=</span> <span class="s1">&#39;bert-base-cased&#39;</span>
+
+<span class="c1"># load tokenizer for our checkpoint</span>
+<span class="n">tokenizer</span> <span class="o">=</span> <span class="n">AutoTokenizer</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="n">checkpoint</span><span class="p">)</span>
+
+<span class="c1"># first row of the training set</span>
+<span class="n">train_row_1</span> <span class="o">=</span> <span class="n">raw_datasets</span><span class="p">[</span><span class="s1">&#39;train&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>Now let’s pass in the <code class="docutils literal notranslate"><span class="pre">tokens</span></code> column of the first row into our tokenizer. Since our <code class="docutils literal notranslate"><span class="pre">tokens</span></code> column contain pre-tokenized inputs, we need to set the argument <code class="docutils literal notranslate"><span class="pre">is_split_into_words</span></code> to <code class="docutils literal notranslate"><span class="pre">True</span></code> while calling the tokenizer.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">inputs</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="p">(</span><span class="n">train_row_1</span><span class="p">[</span><span class="s1">&#39;tokens&#39;</span><span class="p">],</span> <span class="n">is_split_into_words</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>If you print the <code class="docutils literal notranslate"><span class="pre">inputs</span></code>, you can see that our tokenizer has tokenized the words(as shown below) in such a way that it contain all the information to directly feed into our transformer model.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s1">&#39;input_ids&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">101</span><span class="p">,</span> <span class="mi">7270</span><span class="p">,</span> <span class="mi">22961</span><span class="p">,</span> <span class="mi">1528</span><span class="p">,</span> <span class="mi">1840</span><span class="p">,</span> <span class="mi">1106</span><span class="p">,</span> <span class="mi">21423</span><span class="p">,</span> <span class="mi">1418</span><span class="p">,</span> <span class="mi">2495</span><span class="p">,</span> <span class="mi">12913</span><span class="p">,</span> <span class="mi">119</span><span class="p">,</span> <span class="mi">102</span><span class="p">],</span> <span class="s1">&#39;token_type_ids&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> 
+    <span class="s1">&#39;attention_mask&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="understanding-model-outputs">
+<h3>Understanding model outputs<a class="headerlink" href="#understanding-model-outputs" title="Permalink to this headline">¶</a></h3>
+<p>As we’ve said earlier, <code class="docutils literal notranslate"><span class="pre">ner_tags</span></code> is the column that we will use as labels/outputs for our model. Here is the first 5 rows of this column:</p>
+<img alt="ner_tags" class="bg-primary mb-1 align-center" src="_images/ner_tags.png" />
+<p>As you can see, it’s a list of numbers. Let’s see what does these numbers actually mean.</p>
+<p>You will get all the information about each feature in the dataset using <code class="docutils literal notranslate"><span class="pre">.features</span></code> method. Once you filter out only the <code class="docutils literal notranslate"><span class="pre">ner_tags</span></code> feature from that, you will get complete information about it, just like shown below:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">raw_datasets</span><span class="p">[</span><span class="s1">&#39;train&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">features</span><span class="p">[</span><span class="s1">&#39;ner_tags&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>And you will get an output like this:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">Sequence</span><span class="p">(</span><span class="n">feature</span><span class="o">=</span><span class="n">ClassLabel</span><span class="p">(</span><span class="n">num_classes</span><span class="o">=</span><span class="mi">9</span><span class="p">,</span> <span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;O&#39;</span><span class="p">,</span> <span class="s1">&#39;B-PER&#39;</span><span class="p">,</span> <span class="s1">&#39;I-PER&#39;</span><span class="p">,</span> <span class="s1">&#39;B-ORG&#39;</span><span class="p">,</span> <span class="s1">&#39;I-ORG&#39;</span><span class="p">,</span> <span class="s1">&#39;B-LOC&#39;</span><span class="p">,</span> <span class="s1">&#39;I-LOC&#39;</span><span class="p">,</span> <span class="s1">&#39;B-MISC&#39;</span><span class="p">,</span> <span class="s1">&#39;I-MISC&#39;</span><span class="p">],</span> <span class="n">names_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="kc">None</span><span class="p">),</span> <span class="n">length</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Now, it’s clear that there are 9 different classes/entities inside the <code class="docutils literal notranslate"><span class="pre">ner_tags</span></code> and the name of each label is present inside <code class="docutils literal notranslate"><span class="pre">names</span></code>.</p>
+<ol class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">PER</span></code>, <code class="docutils literal notranslate"><span class="pre">ORG</span></code>, <code class="docutils literal notranslate"><span class="pre">LOC</span></code> and <code class="docutils literal notranslate"><span class="pre">MISC</span></code> represents a person, organisation, location and miscellaneous entities respectively. The only one remaining is <code class="docutils literal notranslate"><span class="pre">O</span></code> which we can use to represent words that doesn’t belong to any entity.</p></li>
+<li><p>You might have noticed the <code class="docutils literal notranslate"><span class="pre">B-</span></code> and <code class="docutils literal notranslate"><span class="pre">I-</span></code> prefixes for these entities, those represent whether a word is at the begining or inside an entity. Let me give you an example and make it clear.</p></li>
+</ol>
+<p>If the input is like this: <code class="docutils literal notranslate"><span class="pre">'My</span> <span class="pre">name</span> <span class="pre">is</span> <span class="pre">Roy</span> <span class="pre">Lee</span> <span class="pre">and</span> <span class="pre">I</span> <span class="pre">am</span> <span class="pre">from</span> <span class="pre">New</span> <span class="pre">York'</span></code></p>
+<p>The corresponding labels should be: <code class="docutils literal notranslate"><span class="pre">['O',</span> <span class="pre">'O',</span> <span class="pre">'O',</span> <span class="pre">'B-PER',</span> <span class="pre">'I-PER',</span> <span class="pre">'O',</span> <span class="pre">'O',</span> <span class="pre">'O',</span> <span class="pre">'O',</span> <span class="pre">'B-LOC',</span> <span class="pre">'I-LOC']</span></code> where each label in the list corresponds to each word in the input sentence.</p>
+<p>As you can see, the words ‘Roy’ and ‘New’ are the words at the begining of a person and a location, so they are given the labels as <code class="docutils literal notranslate"><span class="pre">B-PER</span></code> and <code class="docutils literal notranslate"><span class="pre">B-LOC</span></code> respectively. Whereas, the words ‘Lee’ and ‘York’ are not at the begining but inside a person and a location entity, so they are given the label <code class="docutils literal notranslate"><span class="pre">I-PER</span></code> and <code class="docutils literal notranslate"><span class="pre">I-LOC</span></code> respectively.</p>
+<p>Lastly, all the words that does not belong to any entity is mapped to <code class="docutils literal notranslate"><span class="pre">O</span></code> tag.</p>
+<p>Finally to wrap up this part, we will create a dictionary containing the id to label mapping.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># store all the ner labels</span>
+<span class="n">labels</span> <span class="o">=</span> <span class="n">raw_datasets</span><span class="p">[</span><span class="s1">&#39;train&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">features</span><span class="p">[</span><span class="s1">&#39;ner_tags&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">feature</span><span class="o">.</span><span class="n">names</span>
+
+<span class="c1"># number of classes/ner tags -&gt; [0, 1, 2, 3, 4, 5, 6, 7, 8]</span>
+<span class="n">ids</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">labels</span><span class="p">))</span>
+
+<span class="c1"># id to label mapping </span>
+<span class="n">id2label</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">ids</span><span class="p">,</span> <span class="n">labels</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>Now we have an id to label mapping as shown below:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span> <span class="p">{</span> 
+   <span class="mi">0</span><span class="p">:</span> <span class="s1">&#39;O&#39;</span><span class="p">,</span>
+   <span class="mi">1</span><span class="p">:</span> <span class="s1">&#39;B-PER&#39;</span><span class="p">,</span>
+   <span class="mi">2</span><span class="p">:</span> <span class="s1">&#39;I-PER&#39;</span><span class="p">,</span>
+   <span class="mi">3</span><span class="p">:</span> <span class="s1">&#39;B-ORG&#39;</span><span class="p">,</span>
+   <span class="mi">4</span><span class="p">:</span> <span class="s1">&#39;I-ORG&#39;</span><span class="p">,</span>
+   <span class="mi">5</span><span class="p">:</span> <span class="s1">&#39;B-LOC&#39;</span><span class="p">,</span>
+   <span class="mi">6</span><span class="p">:</span> <span class="s1">&#39;I-LOC&#39;</span><span class="p">,</span>
+   <span class="mi">7</span><span class="p">:</span> <span class="s1">&#39;B-MISC&#39;</span><span class="p">,</span>
+   <span class="mi">8</span><span class="p">:</span> <span class="s1">&#39;I-MISC&#39;</span> 
+ <span class="p">}</span>
+</pre></div>
+</div>
+<p>As we have an understanding of the inputs as well outputs/labels of the dataset that we are going to use, it’s time to do some preprocessing and create a train, validation and test dataloader.</p>
+</section>
+</section>
+<section id="preparing-the-dataloader">
+<h2>Preparing the dataloader<a class="headerlink" href="#preparing-the-dataloader" title="Permalink to this headline">¶</a></h2>
+<p>We need to complete the following tasks before wrapping everything inside a dataloader:</p>
+<ol class="simple">
+<li><p>Tokenize the inputs(<code class="docutils literal notranslate"><span class="pre">tokens</span></code> column)</p></li>
+<li><p>Align the tokens and labels</p></li>
+</ol>
+<p>The first point is strainght forward and you must have got it. It’s just tokenizing our inputs as we did earlier in this chapter. Let’s talk about the second part.</p>
+<p>Let’s take the first example from our <code class="docutils literal notranslate"><span class="pre">tokens</span></code> column in our training set and explain this concept.</p>
+<p>This is inputs and outputs for the first row:</p>
+<p>Inputs: <code class="docutils literal notranslate"><span class="pre">['EU',</span> <span class="pre">'rejects',</span> <span class="pre">'German',</span> <span class="pre">'call',</span> <span class="pre">'to',</span> <span class="pre">'boycott',</span> <span class="pre">'British',</span> <span class="pre">'lamb',</span> <span class="pre">'.']</span></code></p>
+<p>Outputs: <code class="docutils literal notranslate"><span class="pre">[3,</span> <span class="pre">0,</span> <span class="pre">7,</span> <span class="pre">0,</span> <span class="pre">0,</span> <span class="pre">0,</span> <span class="pre">7,</span> <span class="pre">0,</span> <span class="pre">0]</span></code></p>
+<p>Each word in the input list corresponds to each label in the outputs list, so, both of their lengths are the same. We cannot pass the inputs as it is because those are strings and we need to use our tokenizer and convert them to integers as we’ve shown earlier in the chapter. For the outputs, since they are already available as integers, we don’t need to bother about them for now.</p>
+<p>Let’s tokenize the inputs and see how the tokens look.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">inputs</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="p">(</span><span class="n">train_row_1</span><span class="p">[</span><span class="s1">&#39;tokens&#39;</span><span class="p">],</span> <span class="n">is_split_into_words</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">inputs</span><span class="o">.</span><span class="n">tokens</span><span class="p">())</span>
+</pre></div>
+</div>
+<p>These are the output tokens:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="s1">&#39;[CLS]&#39;</span><span class="p">,</span> <span class="s1">&#39;EU&#39;</span><span class="p">,</span> <span class="s1">&#39;rejects&#39;</span><span class="p">,</span> <span class="s1">&#39;German&#39;</span><span class="p">,</span> <span class="s1">&#39;call&#39;</span><span class="p">,</span> <span class="s1">&#39;to&#39;</span><span class="p">,</span> <span class="s1">&#39;boycott&#39;</span><span class="p">,</span> <span class="s1">&#39;British&#39;</span><span class="p">,</span> <span class="s1">&#39;la&#39;</span><span class="p">,</span> <span class="s1">&#39;##mb&#39;</span><span class="p">,</span> <span class="s1">&#39;.&#39;</span><span class="p">,</span> <span class="s1">&#39;[SEP]&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>As you can see there are two special tokens <code class="docutils literal notranslate"><span class="pre">[CLS]</span></code> and <code class="docutils literal notranslate"><span class="pre">[SEP]</span></code> at the begining and end of the sentence, those are specific to the model that we are using. <code class="docutils literal notranslate"><span class="pre">[CLS]</span></code> is special token put at the start of an input sentence whereas <code class="docutils literal notranslate"><span class="pre">[SEP]</span></code> is used to seperate sentences.
+Since we have only a single sentence <code class="docutils literal notranslate"><span class="pre">[SEP]</span></code> is present after the sentence ends.</p>
+<p>Another problem is that the word ‘lamb’ is plit into ‘la’ and ‘##mb’ by the tokenizer. Now the length of our input tokens is 12 whereas the length of the labels is 9 because our tokenizer added a <code class="docutils literal notranslate"><span class="pre">[CLS]</span></code>, <code class="docutils literal notranslate"><span class="pre">[SEP]</span></code> and <code class="docutils literal notranslate"><span class="pre">##mb</span></code> to our inputs.</p>
+<p>For training the model, each word should have a label assigned to it, so we need to align the tokens and labels in such a way that both their lengths are the same.</p>
+<p>Fortunately, even after tokenization and splitting words into multiple sub-words, we could get the word ids of each token using <code class="docutils literal notranslate"><span class="pre">.word_ids()</span></code> method. Here is an example showing the same.</p>
+<p>For the inputs <code class="docutils literal notranslate"><span class="pre">['EU',</span> <span class="pre">'rejects',</span> <span class="pre">'German',</span> <span class="pre">'call',</span> <span class="pre">'to',</span> <span class="pre">'boycott',</span> <span class="pre">'British',</span> <span class="pre">'lamb',</span> <span class="pre">'.']</span></code>, the word ids will be the index of the word in the list.</p>
+<p>So, if we tokenize the above inputs using the tokenizer and take the word ids, this is what we get: <code class="docutils literal notranslate"><span class="pre">[None,</span> <span class="pre">0,</span> <span class="pre">1,</span> <span class="pre">2,</span> <span class="pre">3,</span> <span class="pre">4,</span> <span class="pre">5,</span> <span class="pre">6,</span> <span class="pre">7,</span> <span class="pre">7,</span> <span class="pre">8,</span> <span class="pre">None]</span></code></p>
+<p>The two <code class="docutils literal notranslate"><span class="pre">None</span></code> values at the start and end represents <code class="docutils literal notranslate"><span class="pre">[CLS]</span></code> and <code class="docutils literal notranslate"><span class="pre">[SEP]</span></code> tokens. The rest of the integers represent the word ids for each token. You can clearly see that the only word id that is repeating twice is 7 which is the word id for ‘lamb’. Since it’s split into ‘la’ and ‘##mb’, both of them have the same word ids.</p>
+<p>Here is an illustrated diagram to make the above process clear:</p>
+<img alt="ner_word_ids" class="bg-primary mb-1 align-center" src="_images/ner_word_ids.png" />
+<p>Now let’s write a simple function to align labels with tokens.</p>
+<p>The function will take a list word ids and its corresponding ner labels as arguments and then the following things happen. We loop through each word id in the provided list and checks the below conditions:</p>
+<ol class="simple">
+<li><p>The first condition is to check whether the current word id is not equal to the previous word id(which means that these two tokens does not belong to the same word).</p></li>
+<li><p>The second condition checks whether the token is a special token which will have a word id as <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></li>
+<li><p>If the above two conditions are not satisfied(which means that the token is part of a word as well as not a special token), the last part of the rule is executed.</p></li>
+</ol>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">align_tokens_and_labels</span><span class="p">(</span><span class="n">word_ids</span><span class="p">,</span> <span class="n">labels</span><span class="p">):</span>
+    <span class="n">previous_word_id</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">new_labels</span> <span class="o">=</span> <span class="p">[]</span>
+    
+    <span class="k">for</span> <span class="n">word_id</span> <span class="ow">in</span> <span class="n">word_ids</span><span class="p">:</span>
+        
+        <span class="k">if</span> <span class="n">word_id</span><span class="o">!=</span><span class="n">previous_word_id</span><span class="p">:</span>
+            <span class="n">label</span> <span class="o">=</span> <span class="o">-</span><span class="mi">100</span> <span class="k">if</span> <span class="n">word_id</span><span class="o">==</span><span class="kc">None</span> <span class="k">else</span> <span class="n">labels</span><span class="p">[</span><span class="n">word_id</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="n">word_id</span><span class="o">==</span><span class="kc">None</span><span class="p">:</span>
+            <span class="n">label</span> <span class="o">=</span> <span class="o">-</span><span class="mi">100</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">label</span> <span class="o">=</span> <span class="n">labels</span><span class="p">[</span><span class="n">word_id</span><span class="p">]</span>
+
+            <span class="c1"># checks if the ner label is of the form B-XXX</span>
+            <span class="k">if</span> <span class="n">label</span><span class="o">%</span><span class="mi">2</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+                <span class="c1"># converts the label from B-XXX to I-XXX</span>
+                <span class="n">label</span> <span class="o">+=</span> <span class="mi">1</span>
+                
+        <span class="n">previous_word_id</span> <span class="o">=</span> <span class="n">word_id</span>
+        <span class="n">new_labels</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">label</span><span class="p">)</span>
+                
+    <span class="k">return</span> <span class="n">new_labels</span>
+</pre></div>
+</div>
+<p>Let’s test the function:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">ner_labels</span> <span class="o">=</span> <span class="n">train_row_1</span><span class="p">[</span><span class="s1">&#39;ner_tags&#39;</span><span class="p">]</span>
+
+<span class="c1"># tokenized inputs</span>
+<span class="n">inputs</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="p">(</span><span class="n">train_row_1</span><span class="p">[</span><span class="s1">&#39;tokens&#39;</span><span class="p">],</span> <span class="n">is_split_into_words</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">word_ids</span> <span class="o">=</span> <span class="n">inputs</span><span class="o">.</span><span class="n">word_ids</span><span class="p">()</span>
+
+<span class="n">align_tokens_and_labels</span><span class="p">(</span><span class="n">word_ids</span><span class="p">,</span> <span class="n">ner_labels</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Here is the output labels:
+<code class="docutils literal notranslate"><span class="pre">[-100,</span> <span class="pre">3,</span> <span class="pre">0,</span> <span class="pre">7,</span> <span class="pre">0,</span> <span class="pre">0,</span> <span class="pre">0,</span> <span class="pre">7,</span> <span class="pre">0,</span> <span class="pre">0,</span> <span class="pre">0,</span> <span class="pre">-100]</span></code></p>
+<p>Now we can write a single function to apply this to every example in our dataset. We will pass a batch of examples from our dataset to this function and the function will loop through example in the batch and apply <code class="docutils literal notranslate"><span class="pre">align_tokens_and_labels</span></code> and returns the tokenized inputs and corresponding outputs/labels in the required format.</p>
+<p>We also truncate our tokens to a length of 512, any input example that has a length higher than this are shortened/truncated to 512. The default maximum length set inside the tokenizer is 512, so we just need to set <code class="docutils literal notranslate"><span class="pre">truncation=True</span></code> while tokenizing the inputs.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>We can tokenize a group of input examples together and get the word ids using indexing.</p>
+<p>For example, if you’ve tokenized 3 sentences together, you can get the word ids of the first sentence using <code class="docutils literal notranslate"><span class="pre">inputs.word_ids(0)</span></code>.</p>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">prepare_inputs_and_labels</span><span class="p">(</span><span class="n">ds</span><span class="p">):</span>
+    <span class="n">inputs</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="p">(</span><span class="n">ds</span><span class="p">[</span><span class="s1">&#39;tokens&#39;</span><span class="p">],</span> <span class="n">truncation</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">is_split_into_words</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">labels_batch</span> <span class="o">=</span> <span class="n">ds</span><span class="p">[</span><span class="s1">&#39;ner_tags&#39;</span><span class="p">]</span>
+    
+    <span class="n">new_labels</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="c1"># loop through each example in the batch</span>
+    <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">labels</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">labels_batch</span><span class="p">):</span>
+        <span class="c1"># extract the word ids using the index</span>
+        <span class="n">word_ids</span> <span class="o">=</span> <span class="n">inputs</span><span class="o">.</span><span class="n">word_ids</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span>
+        <span class="n">new_label</span> <span class="o">=</span> <span class="n">align_tokens_and_labels</span><span class="p">(</span><span class="n">word_ids</span><span class="p">,</span> <span class="n">labels</span><span class="p">)</span>
+        <span class="n">new_labels</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">new_label</span><span class="p">)</span>
+        
+    <span class="n">inputs</span><span class="p">[</span><span class="s1">&#39;labels&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_labels</span>
+    <span class="k">return</span> <span class="n">inputs</span>
+</pre></div>
+</div>
+<p>Now let’s apply this function to our dataset as below:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">prepared_datasets</span> <span class="o">=</span> <span class="n">raw_datasets</span><span class="o">.</span><span class="n">map</span><span class="p">(</span>
+    <span class="n">prepare_inputs_and_labels</span><span class="p">,</span> 
+    <span class="n">batched</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> 
+    <span class="n">remove_columns</span><span class="o">=</span><span class="n">raw_datasets</span><span class="p">[</span><span class="s1">&#39;train&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">column_names</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>We used the <code class="docutils literal notranslate"><span class="pre">.map</span></code> method and set <code class="docutils literal notranslate"><span class="pre">batched=True</span></code> to map our function to each batch in our dataset. Our final prepared dataset will only contain the following features: <code class="docutils literal notranslate"><span class="pre">['input_ids',</span> <span class="pre">'token_type_ids',</span> <span class="pre">'attention_mask',</span> <span class="pre">'labels']</span></code>, all other features are removed.</p>
+<p>Now let’s wrap our datasets inside a pytorch dataloader as shown below:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># to pad the inputs and labels in a batch to same size</span>
+<span class="kn">from</span> <span class="nn">transformers</span> <span class="kn">import</span> <span class="n">DataCollatorForTokenClassification</span>
+<span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="kn">import</span> <span class="n">DataLoader</span>
+
+<span class="n">batch_size</span> <span class="o">=</span> <span class="mi">16</span>
+<span class="n">collate_fn</span> <span class="o">=</span> <span class="n">DataCollatorForTokenClassification</span><span class="p">(</span><span class="n">tokenizer</span><span class="o">=</span><span class="n">tokenizer</span><span class="p">)</span>
+
+<span class="c1"># training dataloader</span>
+<span class="n">train_dl</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span>
+    <span class="n">prepared_datasets</span><span class="p">[</span><span class="s1">&#39;train&#39;</span><span class="p">],</span> 
+    <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span> 
+    <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> 
+    <span class="n">collate_fn</span><span class="o">=</span><span class="n">collate_fn</span>
+    <span class="p">)</span>
+
+<span class="c1"># validation dataloader</span>
+<span class="n">val_dl</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span>
+    <span class="n">prepared_datasets</span><span class="p">[</span><span class="s1">&#39;validation&#39;</span><span class="p">],</span> 
+    <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span> 
+    <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> 
+    <span class="n">collate_fn</span><span class="o">=</span><span class="n">collate_fn</span>
+    <span class="p">)</span>
+
+<span class="c1"># test dataloader</span>
+<span class="n">test_dl</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span>
+    <span class="n">prepared_datasets</span><span class="p">[</span><span class="s1">&#39;test&#39;</span><span class="p">],</span> 
+    <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span> 
+    <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> 
+    <span class="n">collate_fn</span><span class="o">=</span><span class="n">collate_fn</span>
+    <span class="p">)</span>
+</pre></div>
+</div>
 </section>
 </section>
 
