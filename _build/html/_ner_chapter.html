@@ -235,6 +235,11 @@
    Preparing the dataloader
   </a>
  </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#training-the-model">
+   Training the model
+  </a>
+ </li>
 </ul>
 
             </nav>
@@ -515,6 +520,133 @@ Since we have only a single sentence <code class="docutils literal notranslate">
     <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> 
     <span class="n">collate_fn</span><span class="o">=</span><span class="n">collate_fn</span>
     <span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="training-the-model">
+<h2>Training the model<a class="headerlink" href="#training-the-model" title="Permalink to this headline">¶</a></h2>
+<p>As our dataloaders are in place, let’s discuss the steps to train our model. The steps are almost similar to the normal training loop that we use for training other models with pytorch.</p>
+<p>First we will write the code to create the model and optimizer for our training:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">optim</span>
+<span class="c1"># token classification model</span>
+<span class="kn">from</span> <span class="nn">transformers</span> <span class="kn">import</span> <span class="n">AutoModelForTokenClassification</span>
+
+<span class="c1"># load the pretrained model</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">AutoModelForTokenClassification</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span>
+    <span class="n">checkpoint</span><span class="p">,</span> 
+    <span class="n">num_labels</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">labels</span><span class="p">)</span>
+    <span class="p">)</span>
+<span class="n">opt</span> <span class="o">=</span> <span class="n">optim</span><span class="o">.</span><span class="n">AdamW</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="mf">1.23e-4</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The model will be loaded and the number of units in the classification part of the model will be replaced by the value provided to <code class="docutils literal notranslate"><span class="pre">num_labels</span></code>, which in our case will be 9. The learning rate is obtained using the this <a class="reference external" href="https://github.com/davidtvs/pytorch-lr-finder">learning rate finder</a>. I made some hacky tweaks to make it work for this specific application.</p>
+<p>We will obviously use a GPU for training the model, so we need to move our dataloaders, model and the optimizer to it as well. We will use huggingface’s <code class="docutils literal notranslate"><span class="pre">accelerate</span></code> library for this. If not already installed you can do it by running the command <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">accelerate</span></code> from your terminal.</p>
+<p>With <code class="docutils literal notranslate"><span class="pre">accelerate</span></code>, moving everything to GPU is as simple as this:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">accelerate</span> <span class="kn">import</span> <span class="n">Accelerator</span>
+
+<span class="n">accelerator</span> <span class="o">=</span> <span class="n">Accelerator</span><span class="p">()</span>
+<span class="n">train_dl</span><span class="p">,</span> <span class="n">val_dl</span><span class="p">,</span> <span class="n">test_dl</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">opt</span> <span class="o">=</span> <span class="n">accelerator</span><span class="o">.</span><span class="n">prepare</span><span class="p">(</span>
+    <span class="n">train_dl</span><span class="p">,</span> 
+    <span class="n">val_dl</span><span class="p">,</span> 
+    <span class="n">test_dl</span><span class="p">,</span> 
+    <span class="n">model</span><span class="p">,</span> 
+    <span class="n">opt</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>We now need a metric to measure the performance of our model after each epoch. We will use the <code class="docutils literal notranslate"><span class="pre">seqeval</span></code> framework for this, using which we can get the f1-score, precision, recall and overall accuracy. You can install it by running <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">seqeval</span></code> on your terminal.</p>
+<p>For calculating the metrics, we need to pass in the predictions and corresponding labels in string format to <code class="docutils literal notranslate"><span class="pre">seqeval</span></code>, just like shown below:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">datasets</span> <span class="kn">import</span> <span class="n">load_metric</span>
+
+<span class="n">metric</span> <span class="o">=</span> <span class="n">load_metric</span><span class="p">(</span><span class="s1">&#39;seqeval&#39;</span><span class="p">)</span>
+
+<span class="n">targets</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;O&#39;</span><span class="p">,</span> <span class="s1">&#39;B-PER&#39;</span><span class="p">,</span> <span class="s1">&#39;I-PER&#39;</span><span class="p">,</span> <span class="s1">&#39;O&#39;</span><span class="p">,</span> <span class="s1">&#39;O&#39;</span><span class="p">,</span> <span class="s1">&#39;O&#39;</span><span class="p">]</span>
+<span class="n">predictions</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;O&#39;</span><span class="p">,</span> <span class="s1">&#39;B-PER&#39;</span><span class="p">,</span> <span class="s1">&#39;O&#39;</span><span class="p">,</span> <span class="s1">&#39;O&#39;</span><span class="p">,</span> <span class="s1">&#39;O&#39;</span><span class="p">,</span> <span class="s1">&#39;O&#39;</span><span class="p">]</span>
+
+<span class="n">metric</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">predictions</span><span class="o">=</span><span class="p">[</span><span class="n">predictions</span><span class="p">],</span> <span class="n">references</span><span class="o">=</span><span class="p">[</span><span class="n">targets</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>Running the above code will return this:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s1">&#39;PER&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;precision&#39;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> <span class="s1">&#39;recall&#39;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> <span class="s1">&#39;f1&#39;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> <span class="s1">&#39;number&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">},</span>
+ <span class="s1">&#39;overall_precision&#39;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+ <span class="s1">&#39;overall_recall&#39;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+ <span class="s1">&#39;overall_f1&#39;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+ <span class="s1">&#39;overall_accuracy&#39;</span><span class="p">:</span> <span class="mf">0.8333333333333334</span><span class="p">}</span>
+</pre></div>
+</div>
+<p>Of the above outputs, we will only take into account the <code class="docutils literal notranslate"><span class="pre">overall_accuracy</span></code> and print it after each epoch to measure the performance of our model on the validation set.</p>
+<p>We need to the predictions and labels in string format to calculate the overall accuracy, so lets write a function to convert them from numbers to string format.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">process_preds_and_labels</span><span class="p">(</span><span class="n">preds</span><span class="p">,</span> <span class="n">targets</span><span class="p">):</span>
+    <span class="n">preds</span> <span class="o">=</span> <span class="n">preds</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span>
+    <span class="n">preds</span> <span class="o">=</span> <span class="n">preds</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">targets</span> <span class="o">=</span> <span class="n">targets</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span>
+
+    <span class="n">true_targets</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="p">[</span><span class="n">labels</span><span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">item</span><span class="p">()]</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">target</span> <span class="k">if</span> <span class="n">t</span><span class="o">!=-</span><span class="mi">100</span><span class="p">]</span> 
+        <span class="k">for</span> <span class="n">target</span> <span class="ow">in</span> <span class="n">targets</span>
+        <span class="p">]</span>
+    <span class="n">true_preds</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="p">[</span><span class="n">labels</span><span class="p">[</span><span class="n">p</span><span class="o">.</span><span class="n">item</span><span class="p">()]</span> <span class="k">for</span> <span class="n">p</span><span class="p">,</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">pred</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span> <span class="k">if</span> <span class="n">t</span><span class="o">!=-</span><span class="mi">100</span><span class="p">]</span> 
+        <span class="k">for</span> <span class="n">pred</span><span class="p">,</span> <span class="n">target</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">preds</span><span class="p">,</span> <span class="n">targets</span><span class="p">)</span>
+        <span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">true_preds</span><span class="p">,</span> <span class="n">true_targets</span>
+</pre></div>
+</div>
+<p>Now let’s write a function for our training loop which takes a dataloader as input and gets the prediction from the model, calculates the loss and finally does a backward pass and steps the optimizer. For the backward pass we will use <code class="docutils literal notranslate"><span class="pre">accelerator.backward(model.loss)</span></code> instead of <code class="docutils literal notranslate"><span class="pre">model.loss.backward()</span></code> as we’ve used <code class="docutils literal notranslate"><span class="pre">accelerate</span></code> to move everything to GPU.</p>
+<p>The output of the model will contain the logits/predictions as well as the loss and can be accessed by <code class="docutils literal notranslate"><span class="pre">model.logits</span></code> and <code class="docutils literal notranslate"><span class="pre">model.loss</span></code> respectively.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">run_training_loop</span><span class="p">(</span><span class="n">train_dl</span><span class="p">):</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">batch</span> <span class="ow">in</span> <span class="n">train_dl</span><span class="p">:</span>
+        <span class="n">opt</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="o">**</span><span class="n">batch</span><span class="p">)</span>
+        <span class="n">accelerator</span><span class="o">.</span><span class="n">backward</span><span class="p">(</span><span class="n">out</span><span class="o">.</span><span class="n">loss</span><span class="p">)</span>
+        <span class="n">opt</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+        
+        <span class="c1"># convert target labels and predictions to string format for computing accuracy</span>
+        <span class="n">preds</span><span class="p">,</span> <span class="n">labels</span> <span class="o">=</span> <span class="n">process_preds_and_labels</span><span class="p">(</span><span class="n">out</span><span class="o">.</span><span class="n">logits</span><span class="p">,</span> <span class="n">batch</span><span class="p">[</span><span class="s1">&#39;labels&#39;</span><span class="p">])</span>
+        <span class="c1"># add the target labels and predictions of this batch to seqeval</span>
+        <span class="n">metric</span><span class="o">.</span><span class="n">add_batch</span><span class="p">(</span><span class="n">predictions</span><span class="o">=</span><span class="n">preds</span><span class="p">,</span> <span class="n">references</span><span class="o">=</span><span class="n">labels</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Similarly, let’s write an evaluation loop as well.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">run_evaluation_loop</span><span class="p">(</span><span class="n">test_dl</span><span class="p">):</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+    <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+        <span class="k">for</span> <span class="n">batch</span> <span class="ow">in</span> <span class="n">test_dl</span><span class="p">:</span>
+            <span class="n">out</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="o">**</span><span class="n">batch</span><span class="p">)</span>
+            
+            <span class="c1"># convert target labels and predictions to string format for computing accuracy</span>
+            <span class="n">preds</span><span class="p">,</span> <span class="n">labels</span> <span class="o">=</span> <span class="n">process_preds_and_labels</span><span class="p">(</span><span class="n">out</span><span class="o">.</span><span class="n">logits</span><span class="p">,</span> <span class="n">batch</span><span class="p">[</span><span class="s1">&#39;labels&#39;</span><span class="p">])</span>
+            <span class="c1"># add the target labels and predictions of this batch to seqeval</span>
+            <span class="n">metric</span><span class="o">.</span><span class="n">add_batch</span><span class="p">(</span><span class="n">predictions</span><span class="o">=</span><span class="n">preds</span><span class="p">,</span> <span class="n">references</span><span class="o">=</span><span class="n">labels</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Now let’s use these functions and train our model for 3 epochs and save the model after each epoch.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">epochs</span> <span class="o">=</span> <span class="mi">3</span>
+
+<span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">epochs</span><span class="p">):</span>
+    <span class="n">run_training_loop</span><span class="p">(</span><span class="n">train_dl</span><span class="p">)</span>
+    <span class="c1"># compute training accuracy</span>
+    <span class="n">train_acc</span> <span class="o">=</span> <span class="n">metric</span><span class="o">.</span><span class="n">compute</span><span class="p">()[</span><span class="s1">&#39;overall_accuracy&#39;</span><span class="p">]</span>
+    
+    <span class="n">run_evaluation_loop</span><span class="p">(</span><span class="n">val_dl</span><span class="p">)</span>
+    <span class="c1"># compute validation accuracy</span>
+    <span class="n">val_acc</span> <span class="o">=</span> <span class="n">metric</span><span class="o">.</span><span class="n">compute</span><span class="p">()[</span><span class="s1">&#39;overall_accuracy&#39;</span><span class="p">]</span>
+    
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;epoch: </span><span class="si">{</span><span class="n">epoch</span><span class="si">}</span><span class="s2"> train_acc: </span><span class="si">{</span><span class="n">train_acc</span><span class="si">}</span><span class="s2"> val_acc: </span><span class="si">{</span><span class="n">val_acc</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    
+    <span class="c1"># save the model at the end of epoch</span>
+    <span class="n">torch</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">state_dict</span><span class="p">(),</span> <span class="sa">f</span><span class="s2">&quot;model-v</span><span class="si">{</span><span class="n">epoch</span><span class="si">}</span><span class="s2">.pt&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>After training for 3 epochs, these are our final results:</p>
+<p><img alt="fastprogress_ner" src="_images/fastprogress_ner.png" /></p>
+<p>If you are wondering how I got that nice looking table of results, <a class="reference external" href="https://github.com/fastai/fastprogress">fastprogress</a> is the answer for that. It’s similar to the <a class="reference external" href="https://github.com/tqdm/tqdm">tqdm</a> progress bar but I love the nicely formatted output given by fastprogress which drags me to use it. Especially, the print messages becomes a mess while training for longer number of epochs on notebooks, but fastprogress solves that for me :)</p>
+<p>We get a similar overall accuracy on the test set as well. The below code returns all the metrics(including overall accuracy) on the test set:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">run_evaluation_loop</span><span class="p">(</span><span class="n">test_dl</span><span class="p">)</span>
+<span class="n">metric</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span>
 </pre></div>
 </div>
 </section>

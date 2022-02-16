@@ -364,3 +364,156 @@ test_dl = DataLoader(
     collate_fn=collate_fn
     )
 ```
+
+### Training the model
+
+As our dataloaders are in place, let's discuss the steps to train our model. The steps are almost similar to the normal training loop that we use for training other models with pytorch.
+
+First we will write the code to create the model and optimizer for our training:
+
+```python
+import torch
+from torch import optim
+# token classification model
+from transformers import AutoModelForTokenClassification
+
+# load the pretrained model
+model = AutoModelForTokenClassification.from_pretrained(
+    checkpoint, 
+    num_labels=len(labels)
+    )
+opt = optim.AdamW(model.parameters(), lr=1.23e-4)
+```
+
+The model will be loaded and the number of units in the classification part of the model will be replaced by the value provided to ```num_labels```, which in our case will be 9. The learning rate is obtained using the this [learning rate finder](https://github.com/davidtvs/pytorch-lr-finder). I made some hacky tweaks to make it work for this specific application.
+
+We will obviously use a GPU for training the model, so we need to move our dataloaders, model and the optimizer to it as well. We will use huggingface's ```accelerate``` library for this. If not already installed you can do it by running the command ```pip install accelerate``` from your terminal.
+
+With ```accelerate```, moving everything to GPU is as simple as this:
+
+```python
+from accelerate import Accelerator
+
+accelerator = Accelerator()
+train_dl, val_dl, test_dl, model, opt = accelerator.prepare(
+    train_dl, 
+    val_dl, 
+    test_dl, 
+    model, 
+    opt
+)
+```
+
+We now need a metric to measure the performance of our model after each epoch. We will use the ```seqeval``` framework for this, using which we can get the f1-score, precision, recall and overall accuracy. You can install it by running ```pip install seqeval``` on your terminal.
+
+For calculating the metrics, we need to pass in the predictions and corresponding labels in string format to ```seqeval```, just like shown below:
+
+```python
+from datasets import load_metric
+
+metric = load_metric('seqeval')
+
+targets = ['O', 'B-PER', 'I-PER', 'O', 'O', 'O']
+predictions = ['O', 'B-PER', 'O', 'O', 'O', 'O']
+
+metric.compute(predictions=[predictions], references=[targets])
+```
+
+Running the above code will return this:
+
+```python
+{'PER': {'precision': 0.0, 'recall': 0.0, 'f1': 0.0, 'number': 1},
+ 'overall_precision': 0.0,
+ 'overall_recall': 0.0,
+ 'overall_f1': 0.0,
+ 'overall_accuracy': 0.8333333333333334}
+```
+
+Of the above outputs, we will only take into account the ```overall_accuracy``` and print it after each epoch to measure the performance of our model on the validation set.
+
+We need to the predictions and labels in string format to calculate the overall accuracy, so lets write a function to convert them from numbers to string format.
+
+```python
+def process_preds_and_labels(preds, targets):
+    preds = preds.detach().cpu()
+    preds = preds.argmax(dim=-1)
+    targets = targets.detach().cpu()
+
+    true_targets = [
+        [labels[t.item()] for t in target if t!=-100] 
+        for target in targets
+        ]
+    true_preds = [
+        [labels[p.item()] for p, t in zip(pred, target) if t!=-100] 
+        for pred, target in zip(preds, targets)
+        ]
+
+    return true_preds, true_targets
+```
+
+Now let's write a function for our training loop which takes a dataloader as input and gets the prediction from the model, calculates the loss and finally does a backward pass and steps the optimizer. For the backward pass we will use ```accelerator.backward(model.loss)``` instead of ```model.loss.backward()``` as we've used ```accelerate``` to move everything to GPU.
+
+The output of the model will contain the logits/predictions as well as the loss and can be accessed by ```model.logits``` and ```model.loss``` respectively.
+
+```python
+def run_training_loop(train_dl):
+    model.train()
+    for batch in train_dl:
+        opt.zero_grad()
+        out = model(**batch)
+        accelerator.backward(out.loss)
+        opt.step()
+        
+        # convert target labels and predictions to string format for computing accuracy
+        preds, labels = process_preds_and_labels(out.logits, batch['labels'])
+        # add the target labels and predictions of this batch to seqeval
+        metric.add_batch(predictions=preds, references=labels)
+```
+
+Similarly, let's write an evaluation loop as well.
+
+```python
+def run_evaluation_loop(test_dl):
+    model.eval()
+    with torch.no_grad():
+        for batch in test_dl:
+            out = model(**batch)
+            
+            # convert target labels and predictions to string format for computing accuracy
+            preds, labels = process_preds_and_labels(out.logits, batch['labels'])
+            # add the target labels and predictions of this batch to seqeval
+            metric.add_batch(predictions=preds, references=labels)
+```
+
+Now let's use these functions and train our model for 3 epochs and save the model after each epoch.
+
+```python
+epochs = 3
+
+for epoch in range(epochs):
+    run_training_loop(train_dl)
+    # compute training accuracy
+    train_acc = metric.compute()['overall_accuracy']
+    
+    run_evaluation_loop(val_dl)
+    # compute validation accuracy
+    val_acc = metric.compute()['overall_accuracy']
+    
+    print(f"epoch: {epoch} train_acc: {train_acc} val_acc: {val_acc}")
+    
+    # save the model at the end of epoch
+    torch.save(model.state_dict(), f"model-v{epoch}.pt")
+```
+
+After training for 3 epochs, these are our final results:
+
+![fastprogress_ner](./assets/fastprogress_ner.png)
+
+If you are wondering how I got that nice looking table of results, [fastprogress](https://github.com/fastai/fastprogress) is the answer for that. It's similar to the [tqdm](https://github.com/tqdm/tqdm) progress bar but I love the nicely formatted output given by fastprogress which drags me to use it. Especially, the print messages becomes a mess while training for longer number of epochs on notebooks, but fastprogress solves that for me :)
+
+We get a similar overall accuracy on the test set as well. The below code returns all the metrics(including overall accuracy) on the test set:
+
+```python
+run_evaluation_loop(test_dl)
+metric.compute()
+```
