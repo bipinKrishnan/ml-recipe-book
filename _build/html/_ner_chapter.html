@@ -204,8 +204,8 @@
             <nav id="bd-toc-nav" aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#what-is-named-entity-recognition-ner">
-   What is named entity recognition(NER)?
+  <a class="reference internal nav-link" href="#what-is-named-entity-recognition">
+   What is named entity recognition?
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
@@ -240,6 +240,11 @@
    Training the model
   </a>
  </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#building-the-demo">
+   Building the demo
+  </a>
+ </li>
 </ul>
 
             </nav>
@@ -263,8 +268,8 @@
 <p>If we pass the sentence ‘I am going to Paris’ as input, the model will modify the sentence and give the output as ‘I am going to Mumbai’. As you can see, the model identified the word ‘Paris’ and coverted it to ‘Mumbai’ which is more familiar to Indians. The idea for this demo is inspired from this <a class="reference external" href="https://towardsdatascience.com/practical-ai-using-nlp-word-vectors-in-a-novel-way-to-solve-the-problem-of-localization-9de3e4fbf56f">blog post</a>.</p>
 <p>Below you can see the final demo that we will be building in this chapter:</p>
 <p><img alt="NER Gradio demo" src="_images/ner_gr_demo.png" /></p>
-<section id="what-is-named-entity-recognition-ner">
-<h2>What is named entity recognition(NER)?<a class="headerlink" href="#what-is-named-entity-recognition-ner" title="Permalink to this headline">¶</a></h2>
+<section id="what-is-named-entity-recognition">
+<h2>What is named entity recognition?<a class="headerlink" href="#what-is-named-entity-recognition" title="Permalink to this headline">¶</a></h2>
 <p>At present, there are a wide variety of tasks that machine learning models are capable of doing, named entity recognition or NER is one them. In short the job of a model trained for this task is to identify all the named entities in a given sentence.</p>
 <p>Here is a figure showing what the model is expected to do for NER:</p>
 <img alt="Named entity recignition" class="bg-primary mb-1 align-center" src="_images/ner_process.png" />
@@ -649,6 +654,133 @@ Since we have only a single sentence <code class="docutils literal notranslate">
 <span class="n">metric</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span>
 </pre></div>
 </div>
+</section>
+<section id="building-the-demo">
+<h2>Building the demo<a class="headerlink" href="#building-the-demo" title="Permalink to this headline">¶</a></h2>
+<p>And finally, we’ve completed the training and validation of the model. Now it’s time to build the gradio demo, so that everyone can use it without pressing <code class="docutils literal notranslate"><span class="pre">Shift+Enter</span></code> :)</p>
+<p>As we have said in the begining of this chapter, we will build an application to covert a sentence from western context to Indian context.</p>
+<p>For building our final application we need two more libraries - gradio and gensim(version <code class="docutils literal notranslate"><span class="pre">4.1.2</span></code>).</p>
+<p>So let’s start building our demo. First let’s import gradio(to build our app) and gensim downloader to download the <code class="docutils literal notranslate"><span class="pre">word2vec</span></code> embeddings. Once the embeddings are downloaded, we could use the <code class="docutils literal notranslate"><span class="pre">.most_similar()</span></code> method of the api to find the most similar words for the named entities recognized by our model.</p>
+<p>As an example, for an input sentence like this: <code class="docutils literal notranslate"><span class="pre">'My</span> <span class="pre">name</span> <span class="pre">is</span> <span class="pre">Sarah</span> <span class="pre">and</span> <span class="pre">I</span> <span class="pre">live</span> <span class="pre">in</span> <span class="pre">Columbia'</span></code>, we will get a modified sentence like this <code class="docutils literal notranslate"><span class="pre">'My</span> <span class="pre">name</span> <span class="pre">is</span> <span class="pre">Amanda</span> <span class="pre">and</span> <span class="pre">I</span> <span class="pre">live</span> <span class="pre">in</span> <span class="pre">Delhi</span> <span class="pre">'</span></code> where ‘Sarah’ and ‘Columbia’ are replaced with words that fits more into the Indian context.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">gradio</span> <span class="k">as</span> <span class="nn">gr</span>
+<span class="kn">import</span> <span class="nn">gensim.downloader</span> <span class="k">as</span> <span class="nn">api</span>
+</pre></div>
+</div>
+<p>Let’s download the word2vec embeddings.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">word2vec</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">&#39;word2vec-google-news-300&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Now let’s write the function that takes in a sentence containing named entities familiar to western people and return the sentence modified to Indian context.</p>
+<ol class="simple">
+<li><p>The function will split the the input sentence into words, tokenize it and pass it to the model for making the predictions.</p></li>
+<li><p>After that, we find the named entity corresponding to each word in the input sentence.</p></li>
+<li><p>Then we find the word that is more related/closer to the word ‘India’ and farther away from the word ‘USA’ for all person, location and organisation entities in the sentence.</p></li>
+<li><p>Then we replace these words with the one we got from <code class="docutils literal notranslate"><span class="pre">.most_similar()</span></code> method of word2vec and return the final text.</p></li>
+</ol>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">prepare_output</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+    <span class="c1"># split the sentence into lis of words</span>
+    <span class="n">text_split</span> <span class="o">=</span> <span class="n">text</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+    <span class="c1"># tokenize the words and return as pytorch tensors</span>
+    <span class="n">tokens</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="p">(</span>
+        <span class="n">text_split</span><span class="p">,</span> 
+        <span class="n">is_split_into_words</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> 
+        <span class="n">truncation</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> 
+        <span class="n">return_tensors</span><span class="o">=</span><span class="s1">&#39;pt&#39;</span>
+        <span class="p">)</span>
+
+    <span class="c1"># make predictions for each token</span>
+    <span class="n">preds</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="o">**</span><span class="n">tokens</span><span class="p">)[</span><span class="s1">&#39;logits&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="c1"># find the named entity corresponding to each word</span>
+    <span class="n">word_label</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">pred</span><span class="p">,</span> <span class="n">word_id</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">preds</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">tokens</span><span class="o">.</span><span class="n">word_ids</span><span class="p">()):</span>
+        <span class="k">if</span> <span class="n">word_id</span><span class="o">!=</span><span class="kc">None</span><span class="p">:</span>
+            <span class="n">label</span> <span class="o">=</span> <span class="n">labels</span><span class="p">[</span><span class="n">pred</span><span class="p">]</span>
+            <span class="n">word</span> <span class="o">=</span> <span class="n">text_split</span><span class="p">[</span><span class="n">word_id</span><span class="p">]</span>
+            <span class="n">word_label</span><span class="p">[</span><span class="n">word</span><span class="p">]</span> <span class="o">=</span> <span class="n">label</span>
+
+    <span class="n">out_text</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">word</span><span class="p">,</span> <span class="n">label</span> <span class="ow">in</span> <span class="n">word_label</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+
+        <span class="c1"># replace PER, LOC and ORG entities with words closer to &#39;India&#39;</span>
+        <span class="k">if</span> <span class="n">label</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;PER&#39;</span><span class="p">,</span> <span class="s1">&#39;LOC&#39;</span><span class="p">,</span> <span class="s1">&#39;ORG&#39;</span><span class="p">]:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">word</span> <span class="o">=</span> <span class="n">word2vec</span><span class="o">.</span><span class="n">most_similar</span><span class="p">(</span>
+                <span class="n">positive</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;India&#39;</span><span class="p">,</span> <span class="n">word</span><span class="p">],</span> 
+                <span class="n">negative</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;USA&#39;</span><span class="p">],</span> <span class="n">topn</span><span class="o">=</span><span class="mi">1</span>
+                <span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="n">out_text</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">word</span><span class="si">}</span><span class="s2"> &quot;</span>
+    <span class="k">return</span> <span class="n">out_text</span>
+</pre></div>
+</div>
+<p>Let’s test this with an example,</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">prepare_output</span><span class="p">(</span><span class="s2">&quot;My name is Mitchell and I live in Paris&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>And here’s the output:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="s1">&#39;My name is Mukherjee and I live in Delhi&#39;</span>
+</pre></div>
+</div>
+<p>‘Mitchell’ got replaced by ‘Mukherjee’ and ‘Paris’ got replaced by ‘Delhi’.</p>
+<p>This function may not work as expected in some cases where the name of a location has two word like in ‘New York’. Our function will consider ‘New York’ as two unrelated words and replace both of seperately instead of considering them as a single entity like below:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">prepare_output</span><span class="p">(</span><span class="s2">&quot;My name is Mitchell and I live in New York&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>which returns,</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="s1">&#39;My name is Mukherjee and I live in Delhi Delhi&#39;</span>
+</pre></div>
+</div>
+<p>We don’t want this to happen, so here is a slightly modified function to consider location or organisation names as a single word(join them by a ‘_’), which will convert ‘New York’ to ‘New_York’ and ‘San Francisco’ to ‘San_Francisco’.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">prepare_output</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+  <span class="n">text_split</span> <span class="o">=</span> <span class="n">text</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+  <span class="n">tokens</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="p">(</span><span class="n">text_split</span><span class="p">,</span> <span class="n">is_split_into_words</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">truncation</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">return_tensors</span><span class="o">=</span><span class="s1">&#39;pt&#39;</span><span class="p">)</span>
+  <span class="n">preds</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="o">**</span><span class="n">tokens</span><span class="p">)[</span><span class="s1">&#39;logits&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+
+  <span class="n">out</span> <span class="o">=</span> <span class="p">{}</span>
+  <span class="n">last_b_tag</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+  <span class="k">for</span> <span class="n">p</span><span class="p">,</span> <span class="n">w_id</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">preds</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">tokens</span><span class="o">.</span><span class="n">word_ids</span><span class="p">()):</span>
+    <span class="k">if</span> <span class="n">w_id</span><span class="o">!=</span><span class="kc">None</span><span class="p">:</span>
+      <span class="n">label</span> <span class="o">=</span> <span class="n">labels</span><span class="p">[</span><span class="n">p</span><span class="p">]</span>
+      <span class="n">label_split</span> <span class="o">=</span> <span class="n">label</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">)</span>
+      <span class="n">word</span> <span class="o">=</span> <span class="n">text_split</span><span class="p">[</span><span class="n">w_id</span><span class="p">]</span>
+
+      <span class="k">if</span> <span class="n">label_split</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">==</span><span class="s1">&#39;I&#39;</span> <span class="ow">and</span> <span class="n">label_split</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">==</span><span class="n">last_b_tag</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+        <span class="n">old_key</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">out</span><span class="o">.</span><span class="n">keys</span><span class="p">())[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">new_key</span> <span class="o">=</span> <span class="n">old_key</span><span class="o">+</span><span class="sa">f</span><span class="s2">&quot; </span><span class="si">{</span><span class="n">word</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="n">out</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">old_key</span><span class="p">)</span>
+        <span class="n">out</span><span class="p">[</span><span class="n">new_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">last_b_tag</span>
+      <span class="k">else</span><span class="p">:</span>
+        <span class="n">out</span><span class="p">[</span><span class="n">word</span><span class="p">]</span> <span class="o">=</span> <span class="n">label</span>
+        
+      <span class="k">if</span> <span class="p">(</span><span class="n">label_split</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">==</span><span class="s1">&#39;B&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">label_split</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;ORG&#39;</span><span class="p">,</span> <span class="s1">&#39;LOC&#39;</span><span class="p">]):</span>
+        <span class="n">last_b_tag</span> <span class="o">=</span> <span class="n">label</span>
+
+  <span class="n">out_text</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+  <span class="k">for</span> <span class="n">word</span><span class="p">,</span> <span class="n">tag</span> <span class="ow">in</span> <span class="n">out</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="k">if</span> <span class="n">tag</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;PER&#39;</span><span class="p">,</span> <span class="s1">&#39;LOC&#39;</span><span class="p">,</span> <span class="s1">&#39;ORG&#39;</span><span class="p">]:</span>
+      <span class="k">try</span><span class="p">:</span>
+        <span class="n">word</span> <span class="o">=</span> <span class="n">word2vec</span><span class="o">.</span><span class="n">most_similar</span><span class="p">(</span><span class="n">positive</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;India&#39;</span><span class="p">,</span> <span class="n">word</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="s1">&#39;_&#39;</span><span class="p">)],</span> <span class="n">negative</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;USA&#39;</span><span class="p">],</span> <span class="n">topn</span><span class="o">=</span><span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+      <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+        <span class="k">pass</span>
+    <span class="n">out_text</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">word</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">,</span> <span class="s1">&#39; &#39;</span><span class="p">)</span><span class="si">}</span><span class="s2"> &quot;</span>
+  <span class="k">return</span> <span class="n">out_text</span>
+</pre></div>
+</div>
+<p>Now it’s time to launch our gradion demo, it’s as simple as passing the function to be executed(here it is <code class="docutils literal notranslate"><span class="pre">prepare_output</span></code>), the type of input(text box) and the type of output to be shown(text box) to <code class="docutils literal notranslate"><span class="pre">gr.Interface()</span></code> just like this:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">interface</span> <span class="o">=</span> <span class="n">gr</span><span class="o">.</span><span class="n">Interface</span><span class="p">(</span>
+    <span class="n">prepare_output</span><span class="p">,</span>
+    <span class="n">inputs</span><span class="o">=</span><span class="n">gr</span><span class="o">.</span><span class="n">inputs</span><span class="o">.</span><span class="n">Textbox</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="s2">&quot;Input text&quot;</span><span class="p">,</span> <span class="n">lines</span><span class="o">=</span><span class="mi">3</span><span class="p">),</span>
+    <span class="n">outputs</span><span class="o">=</span><span class="n">gr</span><span class="o">.</span><span class="n">outputs</span><span class="o">.</span><span class="n">Textbox</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="s2">&quot;Output text&quot;</span><span class="p">),</span>
+<span class="p">)</span>
+
+<span class="c1"># launch the demo</span>
+<span class="n">interface</span><span class="o">.</span><span class="n">launch</span><span class="p">()</span>
+</pre></div>
+</div>
+<p><img alt="ner_colab_demo" src="_images/ner_colab_demo.png" /></p>
+<p>And voila, we have our demo up and running!!</p>
 </section>
 </section>
 

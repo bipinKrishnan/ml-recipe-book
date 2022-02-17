@@ -14,7 +14,7 @@ Below you can see the final demo that we will be building in this chapter:
 
 ![NER Gradio demo](./assets/ner_gr_demo.png)
 
-### What is named entity recognition(NER)?
+### What is named entity recognition?
 
 At present, there are a wide variety of tasks that machine learning models are capable of doing, named entity recognition or NER is one them. In short the job of a model trained for this task is to identify all the named entities in a given sentence.
 
@@ -517,3 +517,153 @@ We get a similar overall accuracy on the test set as well. The below code return
 run_evaluation_loop(test_dl)
 metric.compute()
 ```
+
+### Building the demo
+
+And finally, we've completed the training and validation of the model. Now it's time to build the gradio demo, so that everyone can use it without pressing ```Shift+Enter``` :)
+
+As we have said in the begining of this chapter, we will build an application to covert a sentence from western context to Indian context.
+
+For building our final application we need two more libraries - gradio and gensim(version ```4.1.2```).
+
+So let's start building our demo. First let's import gradio(to build our app) and gensim downloader to download the ```word2vec``` embeddings. Once the embeddings are downloaded, we could use the ```.most_similar()``` method of the api to find the most similar words for the named entities recognized by our model.
+
+As an example, for an input sentence like this: ```'My name is Sarah and I live in Columbia'```, we will get a modified sentence like this ```'My name is Amanda and I live in Delhi '``` where 'Sarah' and 'Columbia' are replaced with words that fits more into the Indian context.
+
+```python
+import gradio as gr
+import gensim.downloader as api
+```
+
+Let's download the word2vec embeddings.
+
+```python
+word2vec = api.load('word2vec-google-news-300')
+```
+
+Now let's write the function that takes in a sentence containing named entities familiar to western people and return the sentence modified to Indian context. 
+
+1. The function will split the the input sentence into words, tokenize it and pass it to the model for making the predictions. 
+2. After that, we find the named entity corresponding to each word in the input sentence.
+3. Then we find the word that is more related/closer to the word 'India' and farther away from the word 'USA' for all person, location and organisation entities in the sentence.
+5. Then we replace these words with the one we got from ```.most_similar()``` method of word2vec and return the final text.
+
+```python
+def prepare_output(text):
+    # split the sentence into lis of words
+    text_split = text.split()
+    # tokenize the words and return as pytorch tensors
+    tokens = tokenizer(
+        text_split, 
+        is_split_into_words=True, 
+        truncation=True, 
+        return_tensors='pt'
+        )
+
+    # make predictions for each token
+    preds = model(**tokens)['logits'].argmax(dim=-1)
+
+    # find the named entity corresponding to each word
+    word_label = {}
+    for pred, word_id in zip(preds[0], tokens.word_ids()):
+        if word_id!=None:
+            label = labels[pred]
+            word = text_split[word_id]
+            word_label[word] = label
+
+    out_text = ""
+    for word, label in word_label.items():
+
+        # replace PER, LOC and ORG entities with words closer to 'India'
+        if label.split('-')[-1] in ['PER', 'LOC', 'ORG']:
+        try:
+            word = word2vec.most_similar(
+                positive=['India', word], 
+                negative=['USA'], topn=1
+                )[0][0]
+        except KeyError:
+            pass
+        out_text += f"{word} "
+    return out_text
+```
+
+Let's test this with an example,
+
+```python
+prepare_output("My name is Mitchell and I live in Paris")
+```
+
+And here's the output:
+
+```python
+'My name is Mukherjee and I live in Delhi'
+```
+
+'Mitchell' got replaced by 'Mukherjee' and 'Paris' got replaced by 'Delhi'.
+
+This function may not work as expected in some cases where the name of a location has two word like in 'New York'. Our function will consider 'New York' as two unrelated words and replace both of seperately instead of considering them as a single entity like below:
+
+```python
+prepare_output("My name is Mitchell and I live in New York")
+```
+
+which returns,
+
+```python
+'My name is Mukherjee and I live in Delhi Delhi'
+```
+
+We don't want this to happen, so here is a slightly modified function to consider location or organisation names as a single word(join them by a '_'), which will convert 'New York' to 'New_York' and 'San Francisco' to 'San_Francisco'.
+
+```python
+def prepare_output(text):
+  text_split = text.split()
+  tokens = tokenizer(text_split, is_split_into_words=True, truncation=True, return_tensors='pt')
+  preds = model(**tokens)['logits'].argmax(dim=-1)
+
+  out = {}
+  last_b_tag = ""
+  for p, w_id in zip(preds[0], tokens.word_ids()):
+    if w_id!=None:
+      label = labels[p]
+      label_split = label.split('-')
+      word = text_split[w_id]
+
+      if label_split[0]=='I' and label_split[-1]==last_b_tag.split('-')[-1]:
+        old_key = list(out.keys())[-1]
+        new_key = old_key+f" {word}"
+        out.pop(old_key)
+        out[new_key] = last_b_tag
+      else:
+        out[word] = label
+        
+      if (label_split[0]=='B') and (label_split[-1] in ['ORG', 'LOC']):
+        last_b_tag = label
+
+  out_text = ""
+  for word, tag in out.items():
+    if tag.split('-')[-1] in ['PER', 'LOC', 'ORG']:
+      try:
+        word = word2vec.most_similar(positive=['India', word.replace(' ', '_')], negative=['USA'], topn=1)[0][0]
+      except KeyError:
+        pass
+    out_text += f"{word.replace('_', ' ')} "
+  return out_text
+```
+
+Now it's time to launch our gradion demo, it's as simple as passing the function to be executed(here it is ```prepare_output```), the type of input(text box) and the type of output to be shown(text box) to ```gr.Interface()``` just like this:
+
+```python
+interface = gr.Interface(
+    prepare_output,
+    inputs=gr.inputs.Textbox(label="Input text", lines=3),
+    outputs=gr.outputs.Textbox(label="Output text"),
+)
+
+# launch the demo
+interface.launch()
+```
+
+![ner_colab_demo](./assets/ner_colab_demo.png)
+
+And voila, we have our demo up and running!!
