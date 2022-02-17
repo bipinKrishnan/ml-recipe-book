@@ -628,17 +628,17 @@ def prepare_output(text):
       label = labels[p]
       label_split = label.split('-')
       word = text_split[w_id]
-
-      if label_split[0]=='I' and label_split[-1]==last_b_tag.split('-')[-1]:
-        old_key = list(out.keys())[-1]
-        new_key = old_key+f" {word}"
-        out.pop(old_key)
-        out[new_key] = last_b_tag
-      else:
-        out[word] = label
-        
-      if (label_split[0]=='B') and (label_split[-1] in ['ORG', 'LOC']):
-        last_b_tag = label
+      if word not in out.keys():
+        if label_split[0]=='I' and label_split[-1]==last_b_tag.split('-')[-1]:
+          old_key = list(out.keys())[-1]
+          new_key = old_key+f" {word}"
+          out.pop(old_key)
+          out[new_key] = last_b_tag
+        else:
+          out[word] = label
+          
+        if (label_split[0]=='B') and (label_split[-1] in ['ORG', 'LOC']):
+          last_b_tag = label
 
   out_text = ""
   for word, tag in out.items():
