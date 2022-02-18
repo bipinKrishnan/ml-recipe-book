@@ -28,9 +28,9 @@ Here is a figure showing what the model is expected to do for NER:
 
 In the above figure, the model recognizes 'Sarah' as a person(PER) and 'London' as a location(LOC) entity. Since the other words do not belong to any category of entities, no labels are present in the output for those words.
 
-Named entity recognition does not limit to identitfying a person, location or organization, it can also be used for identifying parts of speech of each word in a sentence. The term used to generalize these kinds of tasks is called token classification.
+Named entity recognition does not limit to identitfying a person, location or organization, it can also be used for identifying parts of speech of each word in a sentence. The general term used to represent these kind of tasks are called token classification.
 
-As humans, when we are reading a book, we understand a sentence by reading each word in that, right? Similarly, before passing a sentence into our models, we split them into simpler tokens using something called a tokenizer.
+As humans, we try to understand the contents in a book by reading it word by word. Similarly, before passing a sentence into our models, we split them into simpler tokens using something called a tokenizer.
 
 The simplest tokenizer you can think of is splitting a sentence into words as shown below:
 
@@ -42,27 +42,26 @@ And here is a figure to illustrate the same:
 
 ![Named entity recignition tokenizer](./assets/ner_tokenizer.png)
 
-We now have a basic understanding of the task and the related terms that we will encounter in this chapter, now let's talk about the dataset that we will be using for this task.
+We now have a basic understanding of the task and the related terms that we will encounter in this chapter. Now let's talk about the dataset we will be using.
 
 ### Preparing the dataset
 
 #### Downloading the dataset
 
-We will be using the [conllpp](https://huggingface.co/datasets/conllpp) which can be directly downloaded using the huggingface datasets library using the code shown below:
+We will be using the [conllpp](https://huggingface.co/datasets/conllpp) dataset which can be directly downloaded using the huggingface datasets library using the code shown below:
 
 ```python
 from datasets import load_dataset
 
 raw_datasets = load_dataset("conllpp")
 ```
-
-If we print ```raw_datasets```, we can see the structure of the dataset:
+On printing ```raw_datasets```, we get the structure of our dataset as shown below:
 
 ![ner_data_dict](./assets/ner_data_dict.png)
 
-The dataset is already split into train, validation and test sets where each set has an id, tokens, pos tags, chunk tags and ner tags as features. 
+The dataset is already split into train, validation and test sets where each set has these features/columns: id, tokens, pos_tags, chunk_tags and ner_tags
 
-Can you guess the features that we will be using for this chapter?
+Can you guess the features that we will be using here?
 
 If you guessed it correctly, ```tokens``` and ```ner_tags``` are the only features we require for the present use case.
 
@@ -88,7 +87,7 @@ But a sub-word tokenizer may split some words into even simpler sub-words, just 
 
 As you can see, some words like pytorch which is not commonly seen in sentences are split into multiple sub-words. Also note that except for the starting token 'p', all the sub-words for the word 'pytorch' starts with a '##'.
 
-The model that we will be using for this task is ```bert-base-cased``` which is bert model that treats cased and uncased words differently. This specific model will be helpful for our task because when writing the name of a person or a location, we always start with an upper-case letter which will make the job of our model way more easier while identifying named entities.
+The model that we will be using for this task is ```bert-base-cased``` which is a bert model that treats cased and uncased words differently. This specific model will be helpful for our task because when writing the name of a person or a location, we always start with an upper-case letter which will make the job of our model way more easier while identifying named entities.
 
 Now let's write some code to tokenize each row in the ```tokens``` column using the ```AutoTokenizer``` module in ```transformers``` library.
 
@@ -97,7 +96,7 @@ from transformers import AutoTokenizer  # to tokenize the inputs
 
 checkpoint = 'bert-base-cased'
 
-# load tokenizer for our checkpoint
+# load the pretrained tokenizer from our checkpoint
 tokenizer = AutoTokenizer.from_pretrained(checkpoint)
 
 # first row of the training set
@@ -110,7 +109,7 @@ Now let's pass in the ```tokens``` column of the first row into our tokenizer. S
 inputs = tokenizer(train_row_1['tokens'], is_split_into_words=True)
 ```
 
-If you print the ```inputs```, you can see that our tokenizer has tokenized the words(as shown below) in such a way that it contain all the information to directly feed into our transformer model.
+If you print the ```inputs```, you can see that our tokenizer has tokenized the words(as shown below) in such a way that it contains all the information to feed into our transformer model.
 
 ```python
 {
@@ -131,7 +130,7 @@ As we've said earlier, ```ner_tags``` is the column that we will use as labels/o
 
 As you can see, it's a list of numbers. Let's see what does these numbers actually mean.
 
-You will get all the information about each feature in the dataset using ```.features``` method. Once you filter out only the ```ner_tags``` feature from that, you will get complete information about it, just like shown below:
+You will get all the information about each feature in the dataset using ```.features``` method. Once you filter out only the ```ner_tags``` feature from that, you will get complete information about it, as shown below:
 
 ```python
 raw_datasets['train'].features['ner_tags']
@@ -145,17 +144,15 @@ Sequence(feature=ClassLabel(num_classes=9, names=['O', 'B-PER', 'I-PER', 'B-ORG'
 
 Now, it's clear that there are 9 different classes/entities inside the ```ner_tags``` and the name of each label is present inside ```names```.
 
-1. ```PER```, ```ORG```, ```LOC``` and ```MISC``` represents a person, organisation, location and miscellaneous entities respectively. The only one remaining is ```O``` which we can use to represent words that doesn't belong to any entity.
+1. ```PER```, ```ORG```, ```LOC``` and ```MISC``` represent person, organisation, location and miscellaneous entities respectively. The only one remaining is ```'O'``` which can be used to represent words that doesn't belong to any entity.
 
-2. You might have noticed the ```B-``` and ```I-``` prefixes for these entities, those represent whether a word is at the begining or inside an entity. Let me give you an example and make it clear.
+2. You might have noticed the ```B-``` and ```I-``` prefixes for all entities except ```'O'```. Those prefixes represent whether a word is at the begining or inside an entity. Let me give you an example and make it clear.
 
 If the input is like this: ```'My name is Roy Lee and I am from New York'```
 
-The corresponding labels should be: ```['O', 'O', 'O', 'B-PER', 'I-PER', 'O', 'O', 'O', 'O', 'B-LOC', 'I-LOC']``` where each label in the list corresponds to each word in the input sentence.
+The corresponding labels should be: ```['O', 'O', 'O', 'B-PER', 'I-PER', 'O', 'O', 'O', 'O', 'B-LOC', 'I-LOC']``` where each label corresponds to each word in the input sentence.
 
-As you can see, the words 'Roy' and 'New' are the words at the begining of a person and a location, so they are given the labels as ```B-PER``` and ```B-LOC``` respectively. Whereas, the words 'Lee' and 'York' are not at the begining but inside a person and a location entity, so they are given the label ```I-PER``` and ```I-LOC``` respectively.
-
-Lastly, all the words that does not belong to any entity is mapped to ```O``` tag.
+As you can see, the words 'Roy' and 'New' are the words at the begining of a person and a location, so they are given the labels ```B-PER``` and ```B-LOC``` respectively. Whereas, the words 'Lee' and 'York' are not at the begining but inside a person and a location entity, so they are given the label ```I-PER``` and ```I-LOC``` respectively. All the words that does not belong to any entity is mapped to ```O``` tag.
 
 Finally to wrap up this part, we will create a dictionary containing the id to label mapping.
 
@@ -197,15 +194,15 @@ We need to complete the following tasks before wrapping everything inside a data
 
 The first point is strainght forward and you must have got it. It's just tokenizing our inputs as we did earlier in this chapter. Let's talk about the second part.
 
-Let's take the first example from our ```tokens``` column in our training set and explain this concept.
+Here is an example to discuss what aligning tokens and labels mean.
 
-This is inputs and outputs for the first row:
+These are the inputs and outputs from the first row of our dataset:
 
 Inputs: ```['EU', 'rejects', 'German', 'call', 'to', 'boycott', 'British', 'lamb', '.']```
 
 Outputs: ```[3, 0, 7, 0, 0, 0, 7, 0, 0]```
 
-Each word in the input list corresponds to each label in the outputs list, so, both of their lengths are the same. We cannot pass the inputs as it is because those are strings and we need to use our tokenizer and convert them to integers as we've shown earlier in the chapter. For the outputs, since they are already available as integers, we don't need to bother about them for now.
+Each word in the input list corresponds to each label in the outputs list, so, their lengths are the same. We need to tokenize and convert the input strings to integers as we've shown earlier in the chapter. Since the outputs are already available as integers, we need not have to bother about them for now.
 
 Let's tokenize the inputs and see how the tokens look.
 
@@ -220,12 +217,11 @@ These are the output tokens:
 ['[CLS]', 'EU', 'rejects', 'German', 'call', 'to', 'boycott', 'British', 'la', '##mb', '.', '[SEP]']
 ```
 
-As you can see there are two special tokens ```[CLS]``` and ```[SEP]``` at the begining and end of the sentence, those are specific to the model that we are using. ```[CLS]``` is special token put at the start of an input sentence whereas ```[SEP]``` is used to seperate sentences.
-Since we have only a single sentence ```[SEP]``` is present after the sentence ends.
+As you can see there are two special tokens ```[CLS]``` and ```[SEP]``` at the begining and end of the sentence, those are specific to the model that we are using. ```[CLS]``` is special token added to the start of an input sentence whereas ```[SEP]``` is used as a separator between sentences. Since we have only a single sentence ```[SEP]``` is present at the end of the sentence.
 
-Another problem is that the word 'lamb' is plit into 'la' and '##mb' by the tokenizer. Now the length of our input tokens is 12 whereas the length of the labels is 9 because our tokenizer added a ```[CLS]```, ```[SEP]``` and ```##mb``` to our inputs.
+Another problem is that the word 'lamb' is split into 'la' and '##mb' by the tokenizer. Now the length of our input tokens is 12 whereas the length of the labels is 9 because our tokenizer added a ```[CLS]```, ```[SEP]``` and ```##mb``` to our inputs.
 
-For training the model, each word should have a label assigned to it, so we need to align the tokens and labels in such a way that both their lengths are the same.
+For training, each token should have a label assigned to it, so we need to align the tokens and labels in such a way that both their lengths are same.
 
 Fortunately, even after tokenization and splitting words into multiple sub-words, we could get the word ids of each token using ```.word_ids()``` method. Here is an example showing the same.
 
@@ -245,11 +241,7 @@ Here is an illustrated diagram to make the above process clear:
 
 Now let's write a simple function to align labels with tokens. 
 
-The function will take a list word ids and its corresponding ner labels as arguments and then the following things happen. We loop through each word id in the provided list and checks the below conditions:
-
-1. The first condition is to check whether the current word id is not equal to the previous word id(which means that these two tokens does not belong to the same word).
-2. The second condition checks whether the token is a special token which will have a word id as ```None```.
-3. If the above two conditions are not satisfied(which means that the token is part of a word as well as not a special token), the last part of the rule is executed.
+The function will take a list of word ids and its corresponding ner labels as arguments and then the following things happen. We loop through each word id in the provided list and checks whether the word id is equal to ```None```(special tokens), if so we assign it a label of -100, otherwise we assign the label corresponding to it's word id.
 
 ```python
 def align_tokens_and_labels(word_ids, labels):
@@ -288,12 +280,12 @@ word_ids = inputs.word_ids()
 align_tokens_and_labels(word_ids, ner_labels)
 ```
 
-Here is the output labels:
+Here are the output labels:
 ```[-100, 3, 0, 7, 0, 0, 0, 7, 0, 0, 0, -100]```
 
-Now we can write a single function to apply this to every example in our dataset. We will pass a batch of examples from our dataset to this function and the function will loop through example in the batch and apply ```align_tokens_and_labels``` and returns the tokenized inputs and corresponding outputs/labels in the required format. 
+Now we can write a single function to apply this to every example in our dataset. Our final function should take in a batch of examples from our dataset and loop through each example in the batch, align the tokens and labels and finally return the tokenized inputs and corresponding labels. 
 
-We also truncate our tokens to a length of 512, any input example that has a length higher than this are shortened/truncated to 512. The default maximum length set inside the tokenizer is 512, so we just need to set ```truncation=True``` while tokenizing the inputs.
+We also truncate our tokens to a length of 512. Any input example that has a length higher than this are shortened/truncated to 512. The default maximum length of our tokenizer is 512, so we just need to set ```truncation=True``` while tokenizing the inputs.
 
 ```{note}
 We can tokenize a group of input examples together and get the word ids using indexing. 
@@ -367,9 +359,7 @@ test_dl = DataLoader(
 
 ### Training the model
 
-As our dataloaders are in place, let's discuss the steps to train our model. The steps are almost similar to the normal training loop that we use for training other models with pytorch.
-
-First we will write the code to create the model and optimizer for our training:
+As our dataloaders are in place, let's discuss the steps to train our model. First we will create the model and optimizer for our training:
 
 ```python
 import torch
@@ -385,11 +375,11 @@ model = AutoModelForTokenClassification.from_pretrained(
 opt = optim.AdamW(model.parameters(), lr=1.23e-4)
 ```
 
-The model will be loaded and the number of units in the classification part of the model will be replaced by the value provided to ```num_labels```, which in our case will be 9. The learning rate is obtained using the this [learning rate finder](https://github.com/davidtvs/pytorch-lr-finder). I made some hacky tweaks to make it work for this specific application.
+The learning rate is obtained using the this [learning rate finder](https://github.com/davidtvs/pytorch-lr-finder). I made some hacky tweaks to make it work for this specific application.
 
-We will obviously use a GPU for training the model, so we need to move our dataloaders, model and the optimizer to it as well. We will use huggingface's ```accelerate``` library for this. If not already installed you can do it by running the command ```pip install accelerate``` from your terminal.
+We will obviously use a GPU for training the model, so we need to move our dataloaders, model and the optimizer to it. We will use huggingface's accelerate library for this. If not already installed you can do it by running the command ```pip install accelerate``` from your terminal.
 
-With ```accelerate```, moving everything to GPU is as simple as this:
+With accelerate, moving everything to GPU is as simple as this:
 
 ```python
 from accelerate import Accelerator
@@ -404,9 +394,9 @@ train_dl, val_dl, test_dl, model, opt = accelerator.prepare(
 )
 ```
 
-We now need a metric to measure the performance of our model after each epoch. We will use the ```seqeval``` framework for this, using which we can get the f1-score, precision, recall and overall accuracy. You can install it by running ```pip install seqeval``` on your terminal.
+We now need a metric to measure the performance of our model after each epoch. We will use the 'seqeval' framework for this, which gives the f1-score, precision, recall and overall accuracy. You can install it by running ```pip install seqeval``` on your terminal.
 
-For calculating the metrics, we need to pass in the predictions and corresponding labels in string format to ```seqeval```, just like shown below:
+For calculating the metrics, we need to pass in the predictions and corresponding labels in string format to seqeval, just like shown below:
 
 ```python
 from datasets import load_metric
@@ -429,9 +419,9 @@ Running the above code will return this:
  'overall_accuracy': 0.8333333333333334}
 ```
 
-Of the above outputs, we will only take into account the ```overall_accuracy``` and print it after each epoch to measure the performance of our model on the validation set.
+From the above outputs, we will take the ```overall_accuracy``` and print it after each epoch to measure the performance of our model on validation set.
 
-We need to the predictions and labels in string format to calculate the overall accuracy, so lets write a function to convert them from numbers to string format.
+Since seqeval require the predictions and labels to be in string format, lets write a function to convert them from numbers to string format.
 
 ```python
 def process_preds_and_labels(preds, targets):
@@ -451,9 +441,9 @@ def process_preds_and_labels(preds, targets):
     return true_preds, true_targets
 ```
 
-Now let's write a function for our training loop which takes a dataloader as input and gets the prediction from the model, calculates the loss and finally does a backward pass and steps the optimizer. For the backward pass we will use ```accelerator.backward(model.loss)``` instead of ```model.loss.backward()``` as we've used ```accelerate``` to move everything to GPU.
+Now let's write a function for our training loop which takes a dataloader as input to get the prediction from the model, calculate the loss and finally do a backward pass and step the optimizer. For the backward pass we will use ```accelerator.backward(model.loss)``` instead of ```model.loss.backward()``` as we've used accelerate to move everything to GPU.
 
-The output of the model will contain the logits/predictions as well as the loss and can be accessed by ```model.logits``` and ```model.loss``` respectively.
+The model will return the predictions as well as the loss which can be accessed by ```model.logits``` and ```model.loss``` respectively.
 
 ```python
 def run_training_loop(train_dl):
@@ -485,7 +475,7 @@ def run_evaluation_loop(test_dl):
             metric.add_batch(predictions=preds, references=labels)
 ```
 
-Now let's use these functions and train our model for 3 epochs and save the model after each epoch.
+Now let's use these functions to train our model for 3 epochs and save the model after each epoch.
 
 ```python
 epochs = 3
@@ -509,7 +499,7 @@ After training for 3 epochs, these are our final results:
 
 ![fastprogress_ner](./assets/fastprogress_ner.png)
 
-If you are wondering how I got that nice looking table of results, [fastprogress](https://github.com/fastai/fastprogress) is the answer for that. It's similar to the [tqdm](https://github.com/tqdm/tqdm) progress bar but I love the nicely formatted output given by fastprogress which drags me to use it. Especially, the print messages becomes a mess while training for longer number of epochs on notebooks, but fastprogress solves that for me :)
+Inorder to get the nice looking table of results shown above, I made some modifications in the training code to use [fastprogress](https://github.com/fastai/fastprogress). It's similar to the [tqdm](https://github.com/tqdm/tqdm) progress bar but I love the nicely formatted output given by fastprogress which drags me to use it. Especially, the print messages become a mess while training for longer number of epochs on notebooks, but fastprogress solves that for me :)
 
 We get a similar overall accuracy on the test set as well. The below code returns all the metrics(including overall accuracy) on the test set:
 
@@ -522,11 +512,11 @@ metric.compute()
 
 And finally, we've completed the training and validation of the model. Now it's time to build the gradio demo, so that everyone can use it without pressing ```Shift+Enter``` :)
 
-As we have said in the begining of this chapter, we will build an application to covert a sentence from western context to Indian context.
+As we have said in the begining of this chapter, we will build an application to convert a sentence from western context to Indian context.
 
 For building our final application we need two more libraries - gradio and gensim(version ```4.1.2```).
 
-So let's start building our demo. First let's import gradio(to build our app) and gensim downloader to download the ```word2vec``` embeddings. Once the embeddings are downloaded, we could use the ```.most_similar()``` method of the api to find the most similar words for the named entities recognized by our model.
+So let's start building our demo. First let's import gradio(to build our app) and gensim downloader to download the word2vec embeddings. Once the embeddings are downloaded, we could use the ```.most_similar()``` method of the api to find the most similar words for the named entities recognized by our model.
 
 As an example, for an input sentence like this: ```'My name is Sarah and I live in Columbia'```, we will get a modified sentence like this ```'My name is Amanda and I live in Delhi '``` where 'Sarah' and 'Columbia' are replaced with words that fits more into the Indian context.
 
@@ -544,9 +534,9 @@ word2vec = api.load('word2vec-google-news-300')
 Now let's write the function that takes in a sentence containing named entities familiar to western people and return the sentence modified to Indian context. 
 
 1. The function will split the the input sentence into words, tokenize it and pass it to the model for making the predictions. 
-2. After that, we find the named entity corresponding to each word in the input sentence.
+2. After that, we create a dictionary containing the words of the input sentence as keys and its corresponding string labels as values.
 3. Then we find the word that is more related/closer to the word 'India' and farther away from the word 'USA' for all person, location and organisation entities in the sentence.
-5. Then we replace these words with the one we got from ```.most_similar()``` method of word2vec and return the final text.
+4. Then we replace these words with the one we got from step 3 and return the final text.
 
 ```python
 def prepare_output(text):
@@ -601,7 +591,7 @@ And here's the output:
 
 'Mitchell' got replaced by 'Mukherjee' and 'Paris' got replaced by 'Delhi'.
 
-This function may not work as expected in some cases where the name of a location has two word like in 'New York'. Our function will consider 'New York' as two unrelated words and replace both of seperately instead of considering them as a single entity like below:
+This function may not work as expected in some cases where the name of a location has two words like in 'New York'. Our function will consider 'New York' as two unrelated words and replace both of them separately instead of considering them as a single entity like below:
 
 ```python
 prepare_output("My name is Mitchell and I live in New York")
@@ -628,6 +618,7 @@ def prepare_output(text):
       label = labels[p]
       label_split = label.split('-')
       word = text_split[w_id]
+      
       if word not in out.keys():
         if label_split[0]=='I' and label_split[-1]==last_b_tag.split('-')[-1]:
           old_key = list(out.keys())[-1]
@@ -651,7 +642,7 @@ def prepare_output(text):
   return out_text
 ```
 
-Now it's time to launch our gradion demo, it's as simple as passing the function to be executed(here it is ```prepare_output```), the type of input(text box) and the type of output to be shown(text box) to ```gr.Interface()``` just like this:
+Now it's time to launch our gradio demo, it's as simple as passing the function to be executed(here it is ```prepare_output```), the type of input(text box) and the type of output to be shown(text box) to ```gr.Interface()``` just like this:
 
 ```python
 interface = gr.Interface(
