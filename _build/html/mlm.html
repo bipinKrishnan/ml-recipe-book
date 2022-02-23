@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>Image segmentation</title>
+    <title>Masked language modelling</title>
     
   <link href="_static/css/theme.css" rel="stylesheet">
   <link href="_static/css/index.ff1ffe594081f20da1ef19478df9384b.css" rel="stylesheet">
@@ -50,10 +50,11 @@
         const thebe_selector_output = ".output"
     </script>
     <script async="async" src="_static/sphinx-thebe.js"></script>
-    <link rel="canonical" href="https://github.com/cv.html" />
+    <link rel="canonical" href="https://github.com/mlm.html" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="prev" title="Masked language modelling" href="mlm.html" />
+    <link rel="next" title="Image segmentation" href="cv.html" />
+    <link rel="prev" title="Named entity recognition" href="ner.html" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="docsearch:language" content="None">
     
@@ -100,14 +101,14 @@
   NLP
  </span>
 </p>
-<ul class="nav bd-sidenav">
+<ul class="current nav bd-sidenav">
  <li class="toctree-l1">
   <a class="reference internal" href="ner.html">
    Named entity recognition
   </a>
  </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="mlm.html">
+ <li class="toctree-l1 current active">
+  <a class="current reference internal" href="#">
    Masked language modelling
   </a>
  </li>
@@ -117,9 +118,9 @@
   Computer vision
  </span>
 </p>
-<ul class="current nav bd-sidenav">
- <li class="toctree-l1 current active">
-  <a class="current reference internal" href="#">
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="cv.html">
    Image segmentation
   </a>
  </li>
@@ -164,7 +165,7 @@
         <!-- ipynb file if we had a myst markdown file -->
         
         <!-- Download raw file -->
-        <a class="dropdown-buttons" href="_sources/cv.md"><button type="button"
+        <a class="dropdown-buttons" href="_sources/mlm.md"><button type="button"
                 class="btn btn-secondary topbarbtn" title="Download source file" data-toggle="tooltip"
                 data-placement="left">.md</button></a>
         <!-- Download PDF via print -->
@@ -202,6 +203,19 @@
         <!-- Table of contents -->
         <div class="d-none d-md-block col-md-2 bd-toc show">
             
+            <div class="tocsection onthispage pt-5 pb-3">
+                <i class="fas fa-list"></i> Contents
+            </div>
+            <nav id="bd-toc-nav" aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#what-is-masked-language-modelling">
+   What is masked language modelling?
+  </a>
+ </li>
+</ul>
+
+            </nav>
         </div>
     </div>
 </div>
@@ -210,8 +224,21 @@
         
               <div>
                 
-  <section class="tex2jax_ignore mathjax_ignore" id="image-segmentation">
-<h1>Image segmentation<a class="headerlink" href="#image-segmentation" title="Permalink to this headline">¶</a></h1>
+  <section id="masked-language-modelling">
+<h1>Masked language modelling<a class="headerlink" href="#masked-language-modelling" title="Permalink to this headline">¶</a></h1>
+<p>As the title suggests, this chapter is all about masked language modelling. The term may feel a bit alien to some of you, we will dig a bit deeper in this section to clear all your doubts about masked language modelling(MLM).</p>
+<section id="what-is-masked-language-modelling">
+<h2>What is masked language modelling?<a class="headerlink" href="#what-is-masked-language-modelling" title="Permalink to this headline">¶</a></h2>
+<p>As humans we adapt to a field like medicine by going through an extensive 5 year MBBS course and then we apply our skills, similarly we make our transformer model knowledgeable in a specific domain like medicine by pretraining it using <strong>Masked Langauage Modelling(MLM)</strong>, so that our model will perform better, say for example, on a classification task related to medical domain.</p>
+<p>As you have an understanding of why masked language modelling is used, I will show you how it’s done.</p>
+<p>This is how the final inference will look like:</p>
+<img alt="Maked language modelling" class="bg-primary mb-1 align-center" src="_images/mlm_inference.png" />
+<p>We input a sentence with some words replaced/masked with a special token <code class="docutils literal notranslate"><span class="pre">[MASK]</span></code>. The job of the model is to predict the correct word to fill in place of <code class="docutils literal notranslate"><span class="pre">[MASK]</span></code>. In the above figure the model predicts ‘happiness’ which makes input sentence <code class="docutils literal notranslate"><span class="pre">'The</span> <span class="pre">goal</span> <span class="pre">of</span> <span class="pre">life</span> <span class="pre">is</span> <span class="pre">[MASK].'</span></code> to <code class="docutils literal notranslate"><span class="pre">'The</span> <span class="pre">goal</span> <span class="pre">of</span> <span class="pre">life</span> <span class="pre">is</span> <span class="pre">happiness.'</span></code>.</p>
+<p>The training data will have a randomly masked sentence as inputs to the model and the complete sentence(without any masks) as the label, just like shown below:</p>
+<p>Input: <code class="docutils literal notranslate"><span class="pre">'The</span> <span class="pre">full</span> <span class="pre">cost</span> <span class="pre">of</span> <span class="pre">damage</span> <span class="pre">in</span> <span class="pre">[MASK]</span> <span class="pre">Stewart,</span> <span class="pre">one</span> <span class="pre">of</span> <span class="pre">the</span> <span class="pre">areas</span> <span class="pre">[MASK]</span> <span class="pre">affected,</span> <span class="pre">is</span> <span class="pre">still</span> <span class="pre">being</span> <span class="pre">[MASK].'</span></code></p>
+<p>Label: <code class="docutils literal notranslate"><span class="pre">'The</span> <span class="pre">full</span> <span class="pre">cost</span> <span class="pre">of</span> <span class="pre">damage</span> <span class="pre">in</span> <span class="pre">Newton</span> <span class="pre">Stewart,</span> <span class="pre">one</span> <span class="pre">of</span> <span class="pre">the</span> <span class="pre">areas</span> <span class="pre">worst</span> <span class="pre">affected,</span> <span class="pre">is</span> <span class="pre">still</span> <span class="pre">being</span> <span class="pre">assessed.'</span></code></p>
+<p>The model will have to predict the correct words corresponding to the masks. In this way the model will learn about relationship between different words in a sentence. The task is some what similar to ‘fill in the blanks’ type questions that you might have encountered in your high school.</p>
+</section>
 </section>
 
     <script type="text/x-thebe-config">
@@ -239,12 +266,19 @@
         
             <!-- Previous / next buttons -->
 <div class='prev-next-area'> 
-    <a class='left-prev' id="prev-link" href="mlm.html" title="previous page">
+    <a class='left-prev' id="prev-link" href="ner.html" title="previous page">
         <i class="fas fa-angle-left"></i>
         <div class="prev-next-info">
             <p class="prev-next-subtitle">previous</p>
-            <p class="prev-next-title">Masked language modelling</p>
+            <p class="prev-next-title">Named entity recognition</p>
         </div>
+    </a>
+    <a class='right-next' id="next-link" href="cv.html" title="next page">
+    <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Image segmentation</p>
+    </div>
+    <i class="fas fa-angle-right"></i>
     </a>
 </div>
         

@@ -4,7 +4,8 @@ root: index
 parts:
   - caption: NLP
     chapters:
-    - file: _ner_chapter
+    - file: ner
+    - file: mlm
   
   - caption: Computer vision
     chapters:
