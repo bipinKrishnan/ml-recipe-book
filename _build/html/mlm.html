@@ -92,7 +92,7 @@
         <ul class="nav bd-sidenav">
  <li class="toctree-l1">
   <a class="reference internal" href="index.html">
-   Introduction
+   About this book
   </a>
  </li>
 </ul>
@@ -213,6 +213,23 @@
    What is masked language modelling?
   </a>
  </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#preparing-the-dataset">
+   Preparing the dataset
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#downloading-the-dataset">
+     Downloading the dataset
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#preprocessing-the-dataset">
+     Preprocessing the dataset
+    </a>
+   </li>
+  </ul>
+ </li>
 </ul>
 
             </nav>
@@ -238,6 +255,130 @@
 <p>Input: <code class="docutils literal notranslate"><span class="pre">'The</span> <span class="pre">full</span> <span class="pre">cost</span> <span class="pre">of</span> <span class="pre">damage</span> <span class="pre">in</span> <span class="pre">[MASK]</span> <span class="pre">Stewart,</span> <span class="pre">one</span> <span class="pre">of</span> <span class="pre">the</span> <span class="pre">areas</span> <span class="pre">[MASK]</span> <span class="pre">affected,</span> <span class="pre">is</span> <span class="pre">still</span> <span class="pre">being</span> <span class="pre">[MASK].'</span></code></p>
 <p>Label: <code class="docutils literal notranslate"><span class="pre">'The</span> <span class="pre">full</span> <span class="pre">cost</span> <span class="pre">of</span> <span class="pre">damage</span> <span class="pre">in</span> <span class="pre">Newton</span> <span class="pre">Stewart,</span> <span class="pre">one</span> <span class="pre">of</span> <span class="pre">the</span> <span class="pre">areas</span> <span class="pre">worst</span> <span class="pre">affected,</span> <span class="pre">is</span> <span class="pre">still</span> <span class="pre">being</span> <span class="pre">assessed.'</span></code></p>
 <p>The model will have to predict the correct words corresponding to the masks. In this way the model will learn about relationship between different words in a sentence. The task is some what similar to ‘fill in the blanks’ type questions that you might have encountered in your high school.</p>
+<p>Now let’s look into the dataset that we will be using for this task.</p>
+</section>
+<section id="preparing-the-dataset">
+<h2>Preparing the dataset<a class="headerlink" href="#preparing-the-dataset" title="Permalink to this headline">¶</a></h2>
+<p>The dataset that we will be using is the <a class="reference external" href="https://huggingface.co/datasets/xsum">extreme summarization dataset</a> which is a collection of news articles and their corresponding summaries. We will drop the ‘summary’ feature and use only the new articles.</p>
+<p>Now let’s look into the structure of our dataset.</p>
+<section id="downloading-the-dataset">
+<h3>Downloading the dataset<a class="headerlink" href="#downloading-the-dataset" title="Permalink to this headline">¶</a></h3>
+<p>We will dounload the dataset from huggingface using their ‘datasets’ library.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">datasets</span> <span class="kn">import</span> <span class="n">load_dataset</span>
+
+<span class="c1"># xsum -&gt; eXtreme SuMmarization</span>
+<span class="n">raw_datasets</span> <span class="o">=</span> <span class="n">load_dataset</span><span class="p">(</span><span class="s1">&#39;xsum&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">raw_datasets</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Output:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">DatasetDict</span><span class="p">({</span>
+    <span class="n">train</span><span class="p">:</span> <span class="n">Dataset</span><span class="p">({</span>
+        <span class="n">features</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;document&#39;</span><span class="p">,</span> <span class="s1">&#39;summary&#39;</span><span class="p">,</span> <span class="s1">&#39;id&#39;</span><span class="p">],</span>
+        <span class="n">num_rows</span><span class="p">:</span> <span class="mi">204045</span>
+    <span class="p">})</span>
+    <span class="n">validation</span><span class="p">:</span> <span class="n">Dataset</span><span class="p">({</span>
+        <span class="n">features</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;document&#39;</span><span class="p">,</span> <span class="s1">&#39;summary&#39;</span><span class="p">,</span> <span class="s1">&#39;id&#39;</span><span class="p">],</span>
+        <span class="n">num_rows</span><span class="p">:</span> <span class="mi">11332</span>
+    <span class="p">})</span>
+    <span class="n">test</span><span class="p">:</span> <span class="n">Dataset</span><span class="p">({</span>
+        <span class="n">features</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;document&#39;</span><span class="p">,</span> <span class="s1">&#39;summary&#39;</span><span class="p">,</span> <span class="s1">&#39;id&#39;</span><span class="p">],</span>
+        <span class="n">num_rows</span><span class="p">:</span> <span class="mi">11334</span>
+    <span class="p">})</span>
+<span class="p">})</span>
+</pre></div>
+</div>
+<p>As you can see from the above figure, we’ve a train, validation and test set. Of which, the training set is a huge one. So, for the sake of simplicity and for faster training, we will take a subset of the train set.</p>
+<p>We will take 10,000 rows from the train set for training and 2000 rows for testing:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">train_size</span> <span class="o">=</span> <span class="mi">10000</span>
+<span class="n">test_size</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mf">0.2</span><span class="o">*</span><span class="n">train_size</span><span class="p">)</span>
+<span class="n">seed</span> <span class="o">=</span> <span class="mi">42</span>
+
+<span class="c1"># 10,000 rows for training and 2000 rows for testing</span>
+<span class="n">downsampled_datasets</span> <span class="o">=</span> <span class="n">raw_datasets</span><span class="p">[</span><span class="s1">&#39;train&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">train_test_split</span><span class="p">(</span>
+    <span class="n">train_size</span><span class="o">=</span><span class="n">train_size</span><span class="p">,</span>
+    <span class="n">test_size</span><span class="o">=</span><span class="n">test_size</span><span class="p">,</span>
+    <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">downsampled_datasets</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Output:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">DatasetDict</span><span class="p">({</span>
+    <span class="n">train</span><span class="p">:</span> <span class="n">Dataset</span><span class="p">({</span>
+        <span class="n">features</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;document&#39;</span><span class="p">,</span> <span class="s1">&#39;summary&#39;</span><span class="p">,</span> <span class="s1">&#39;id&#39;</span><span class="p">],</span>
+        <span class="n">num_rows</span><span class="p">:</span> <span class="mi">10000</span>
+    <span class="p">})</span>
+    <span class="n">test</span><span class="p">:</span> <span class="n">Dataset</span><span class="p">({</span>
+        <span class="n">features</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;document&#39;</span><span class="p">,</span> <span class="s1">&#39;summary&#39;</span><span class="p">,</span> <span class="s1">&#39;id&#39;</span><span class="p">],</span>
+        <span class="n">num_rows</span><span class="p">:</span> <span class="mi">2000</span>
+    <span class="p">})</span>
+<span class="p">})</span>
+</pre></div>
+</div>
+</section>
+<section id="preprocessing-the-dataset">
+<h3>Preprocessing the dataset<a class="headerlink" href="#preprocessing-the-dataset" title="Permalink to this headline">¶</a></h3>
+<p>Now let’s prepare our dataset in a way that is needed for our model. Since our task is masked language modelling which is done to give domain knowledge to our model, we cannot afford to lose too much information from our input sentences due to truncation.</p>
+<p>Since the maximum length of input sentence for the model we are using is 512, all the inputs that are longer than this will be truncated, which we don’t want to happen.</p>
+<p>So, we will concatenate all of the sentences in a batch and divide them into smaller chunks, and then each chunk will be the inputs to the model as shown in the figure below:</p>
+<img alt="_images/mlm_preprocess.png" class="align-center" src="_images/mlm_preprocess.png" />
+<p>The only difference is that, instead of strings it will be tokens. So we will write a function to tokenize the input sentences and then do the above mentioned steps on the tokenized outputs.</p>
+<p>Let’s load the tokenizer for our model:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">transformers</span> <span class="kn">import</span> <span class="n">AutoTokenizer</span>
+
+<span class="c1"># model name</span>
+<span class="n">checkpoint</span> <span class="o">=</span> <span class="s1">&#39;distilbert-base-uncased&#39;</span>
+<span class="n">tokenizer</span> <span class="o">=</span> <span class="n">AutoTokenizer</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="n">checkpoint</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>We will be splitting our inputs into chunks of size 128. When splitting the inputs, the last chunk will be smaller than 128, so we will drop that for now.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">chunk_size</span> <span class="o">=</span> <span class="mi">128</span>
+
+<span class="k">def</span> <span class="nf">create_chunks</span><span class="p">(</span><span class="n">examples</span><span class="p">):</span>
+    <span class="c1"># tokenize the inputs</span>
+    <span class="n">inputs</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="p">(</span><span class="n">examples</span><span class="p">[</span><span class="s1">&#39;document&#39;</span><span class="p">])</span>
+    <span class="c1"># cocatenate the inputs</span>
+    <span class="n">concatenated_examples</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="nb">sum</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="p">[])</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">inputs</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+    <span class="n">total_len</span> <span class="o">=</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">concatenated_examples</span><span class="p">[</span><span class="s1">&#39;input_ids&#39;</span><span class="p">])</span><span class="o">//</span><span class="n">chunk_size</span><span class="p">)</span><span class="o">*</span><span class="n">chunk_size</span>
+    
+    <span class="c1"># create chunks of size 128</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">k</span><span class="p">:</span> <span class="p">[</span><span class="n">v</span><span class="p">[</span><span class="n">i</span><span class="p">:</span> <span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="n">chunk_size</span><span class="p">)]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">total_len</span><span class="p">,</span> <span class="n">chunk_size</span><span class="p">)]</span> 
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">concatenated_examples</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+        <span class="p">}</span>
+    
+    <span class="n">results</span><span class="p">[</span><span class="s1">&#39;labels&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">results</span><span class="p">[</span><span class="s1">&#39;input_ids&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">results</span>
+</pre></div>
+</div>
+<p>Let’s try out our function on a the dataset:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">preprocessed_datasets</span> <span class="o">=</span> <span class="n">downsampled_datasets</span><span class="o">.</span><span class="n">map</span><span class="p">(</span>
+    <span class="n">create_chunks</span><span class="p">,</span> 
+    <span class="n">batched</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> 
+    <span class="n">remove_columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;document&#39;</span><span class="p">,</span> <span class="s1">&#39;summary&#39;</span><span class="p">,</span> <span class="s1">&#39;id&#39;</span><span class="p">]</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>Let’s check the size of our inputs now:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">sample</span> <span class="o">=</span> <span class="n">preprocessed_datasets</span><span class="p">[</span><span class="s1">&#39;train&#39;</span><span class="p">][:</span><span class="mi">5</span><span class="p">]</span>
+
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">sample</span><span class="p">[</span><span class="s1">&#39;input_ids&#39;</span><span class="p">]:</span>
+    <span class="n">input_length</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">input_length</span><span class="p">)</span> 
+</pre></div>
+</div>
+<p>Output:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="mi">128</span>
+<span class="mi">128</span>
+<span class="mi">128</span>
+<span class="mi">128</span>
+<span class="mi">128</span>
+</pre></div>
+</div>
+<p>As you can see, the size of every input is now 128.</p>
+</section>
 </section>
 </section>
 
