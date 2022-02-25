@@ -107,7 +107,7 @@ So, we will concatenate all of the sentences in a batch and divide them into sma
 :align: center
 ```
 
-The only difference is that, instead of strings it will be tokens. So we will write a function to tokenize the input sentences and then do the above mentioned steps on the tokenized outputs.
+The only difference is that, instead of words it will be tokens. So we will write a function to tokenize the input sentences and then do the above mentioned steps on the tokenized outputs.
 
 Let's load the tokenizer for our model:
 
@@ -169,3 +169,123 @@ Output:
 ```
 
 As you can see, the size of every input is now 128.
+
+Now let's see how our inputs and labels look like,
+
+```python
+sample_inputs = sample['input_ids'][0]
+sample_labels = sample['labels'][0]
+
+# decode the tokens
+print("INPUTS:\n", tokenizer.decode(sample_inputs))
+print("\nLABELS:\n", tokenizer.decode(sample_labels))
+```
+Output:
+```python
+INPUTS:
+ [CLS] media playback is not supported on this device varnish and james were third in the women's team sprint but the two men's squads failed to reach their respective medal ride - offs. the sprint team were fifth, while the pursuit quartet finished eighth. " we've had some problems, " said pursuit rider ed clancy. britain won the four - man pursuit event in 2012 and took silver in 2013. they also won gold at the 2008 and 2012 olympic games. but two - time olympic gold medallist clancy, sam harrison, owain doull and jon dibben finished eighth this time in four minutes 4. 419 seconds
+
+LABELS:
+ [CLS] media playback is not supported on this device varnish and james were third in the women's team sprint but the two men's squads failed to reach their respective medal ride - offs. the sprint team were fifth, while the pursuit quartet finished eighth. " we've had some problems, " said pursuit rider ed clancy. britain won the four - man pursuit event in 2012 and took silver in 2013. they also won gold at the 2008 and 2012 olympic games. but two - time olympic gold medallist clancy, sam harrison, owain doull and jon dibben finished eighth this time in four minutes 4. 419 seconds
+```
+
+Both of them looks the same, there are no masked words at all. But what we require is inputs with randomly masked words like this:
+
+```This [MASK] is going to the park [MASK].```
+
+and the corresponding labels with no masked words like below:
+
+```This man is going to the park tomorrow.```
+
+So, the only part that's remaining is randomly masking the inputs which can be done with 'DataCollatorForLanguageModeling' from transformers library just like this:
+
+```python
+from transformers import DataCollatorForLanguageModeling
+
+collate_fn = DataCollatorForLanguageModeling(
+    tokenizer, 
+    mlm_probability=0.15
+    )
+```
+
+We have set an additional parameter ```mlm_probability=0.15``` which means that each token has a 15% chance to be masked. We cannot pass all the inpputs directly to this ```collate_fn```, instead we need to put each example(containing ```input_ids```, ```attention_mask``` and ```labels```) into a list as shown below:
+
+```python
+# first 5 examples from train set
+first_5_rows = preprocessed_datasets['train'][:5]
+input_list = [dict(zip(first_5_rows, v)) for v in zip(*first_5_rows.values())]
+```
+
+```input_list``` is a list containing examples and will have a format like below:
+
+```python
+[
+    {'input_ids': [...], 'attention_mask': [...], 'labels': [...]},
+    {'input_ids': [...], 'attention_mask': [...], 'labels': [...]},
+    {'input_ids': [...], 'attention_mask': [...], 'labels': [...]},
+    {'input_ids': [...], 'attention_mask': [...], 'labels': [...]},
+    {'input_ids': [...], 'attention_mask': [...], 'labels': [...]},
+]
+```
+
+Now we can apply our collator on this list:
+
+```python
+collate_fn(input_list)
+```
+
+While applying the above function we will get a new set of masked ```input_ids``` and a new set of ```labels```. All the tokens in the labels except for the tokens corresponding to the mask will have a value of -100, which is a special number because it is ignored by our loss function :) So while calculating the loss, we will only consider the losses corresponding to the masked words and ignore others.
+
+Here is an example to illustrate the same:
+
+Suppose we have a set of tokens(converted to integers) like this: ```[23, 25, 100, 134, 78, 56]```
+
+Once we pass the above inputs to our collator, we will get a randomly masked output(where 103 is the id corresponding to the mask): ```[23, 103, 100, 134, 103, 56]``` and the labels corresponding to the new inputs will be these: ```[-100, 25, -100, -100, 78, -100]``` where the real token ids are shown only for the masked tokens, for other it's just -100.
+
+As we have our training dataset processed and our collator in place, we can create our training dataloader:
+
+```python
+from torch.utils.data import DataLoader
+
+batch_size = 64
+
+train_dl = DataLoader(
+    preprocessed_datasets['train'], 
+    batch_size=batch_size, 
+    shuffle=True,
+    collate_fn=collate_fn
+    )
+```
+
+As we've said that our collator applies random masking each time we call it. But we need a fixed set with no variability during evaluation so that we have a fair comparison after each epoch. 
+
+So, instead of directly using 'DataCollatorForLanguageModeling' directly in our test dataloader, we will wrap it in a function and apply to the test data using ```.map()``` method:
+
+```python
+def apply_random_mask(examples):
+    example_list = [dict(zip(examples, v)) for v in zip(*examples.values())]
+    output = collate_fn(example_list)
+    # we need to return a dictionary
+    return {k: v.numpy() for k, v in output.items()}
+
+test_dataset = preprocessed_datasets['test'].map(
+    apply_random_mask, 
+    batched=True
+    )
+```
+
+and then use the 'default_data_collator' from transformers library to collate our data for the test dataloader.
+
+```python
+from transformers import default_data_collator
+
+test_dl = DataLoader(
+    test_dataset, 
+    batch_size=batch_size, 
+    shuffle=False, 
+    collate_fn=default_data_collator
+    )
+```
+We've our training and testing dataloader in place, now it's time to train our model.
+
+### Training the model
