@@ -235,6 +235,11 @@
    Training the model
   </a>
  </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#testing-the-final-model">
+   Testing the final model
+  </a>
+ </li>
 </ul>
 
             </nav>
@@ -475,11 +480,106 @@
     <span class="p">)</span>
 </pre></div>
 </div>
-<p>We’ve our training and testing dataloader in place, now it’s time to train our model.</p>
+<p>We’ve our training and testing dataloader in place, now it’s time to train the model.</p>
 </section>
 </section>
 <section id="training-the-model">
 <h2>Training the model<a class="headerlink" href="#training-the-model" title="Permalink to this headline">¶</a></h2>
+<p>First we will create the model, optimizer and move everything to GPU using accelerate,</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">transformers</span> <span class="kn">import</span> <span class="n">AutoModelForMaskedLM</span>
+<span class="kn">from</span> <span class="nn">accelerate</span> <span class="kn">import</span> <span class="n">Accelerator</span>
+
+<span class="n">model</span> <span class="o">=</span> <span class="n">AutoModelForMaskedLM</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="n">checkpoint</span><span class="p">)</span>
+<span class="n">opt</span> <span class="o">=</span> <span class="n">optim</span><span class="o">.</span><span class="n">AdamW</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="mf">1.23e-5</span><span class="p">)</span>
+
+<span class="n">accelerator</span> <span class="o">=</span> <span class="n">Accelerator</span><span class="p">()</span>
+<span class="c1"># move everything to GPU</span>
+<span class="n">train_dl</span><span class="p">,</span> <span class="n">test_dl</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">opt</span> <span class="o">=</span> <span class="n">accelerator</span><span class="o">.</span><span class="n">prepare</span><span class="p">(</span><span class="n">train_dl</span><span class="p">,</span> <span class="n">test_dl</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">opt</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Now let’s define two functions, one for the training loop and the other for the evaluation loop, just like we did in the last chapter. One thing to note is that the metric that we will be using to evaluate our model performance is called <strong>perplexity</strong>, which here is the exponential of cross entropy loss.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+
+<span class="k">def</span> <span class="nf">run_training_loop</span><span class="p">(</span><span class="n">train_dl</span><span class="p">):</span>
+    <span class="n">losses</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">batch</span> <span class="ow">in</span> <span class="n">train_dl</span><span class="p">:</span>
+        <span class="n">opt</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="o">**</span><span class="n">batch</span><span class="p">)</span>
+        <span class="n">accelerator</span><span class="o">.</span><span class="n">backward</span><span class="p">(</span><span class="n">out</span><span class="o">.</span><span class="n">loss</span><span class="p">)</span>
+        <span class="n">opt</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+        
+        <span class="c1"># aggregate the losses over each batch</span>
+        <span class="n">losses</span> <span class="o">+=</span> <span class="n">out</span><span class="o">.</span><span class="n">loss</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+    <span class="n">losses</span> <span class="o">/=</span> <span class="nb">len</span><span class="p">(</span><span class="n">train_dl</span><span class="p">)</span>
+    <span class="c1"># exponential of cross entropy</span>
+    <span class="n">perplexity</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">losses</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">perplexity</span>
+</pre></div>
+</div>
+<p>Similarly, we will write our evaluation loop:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">run_evaluation_loop</span><span class="p">(</span><span class="n">test_dl</span><span class="p">):</span>
+    <span class="n">losses</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+    
+    <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+        <span class="k">for</span> <span class="n">batch</span> <span class="ow">in</span> <span class="n">test_dl</span><span class="p">:</span>
+            <span class="n">out</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="o">**</span><span class="n">batch</span><span class="p">)</span>
+            <span class="c1"># aggregate the losses over each batch</span>
+            <span class="n">losses</span> <span class="o">+=</span> <span class="n">out</span><span class="o">.</span><span class="n">loss</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+            
+    <span class="n">losses</span> <span class="o">/=</span> <span class="nb">len</span><span class="p">(</span><span class="n">test_dl</span><span class="p">)</span>
+    <span class="c1"># exponential of cross entropy</span>
+    <span class="n">perplexity</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">losses</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">perplexity</span>
+</pre></div>
+</div>
+<p>Now we will train the model for 3 pochs and save after each epoch:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">epochs</span> <span class="o">=</span> <span class="mi">3</span>
+
+<span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">epochs</span><span class="p">):</span>
+    <span class="n">train_perplexity</span> <span class="o">=</span> <span class="n">run_training_loop</span><span class="p">(</span><span class="n">train_dl</span><span class="p">)</span>
+    <span class="n">test_perplexity</span> <span class="o">=</span> <span class="n">run_evaluation_loop</span><span class="p">(</span><span class="n">test_dl</span><span class="p">)</span>
+    
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;epoch: </span><span class="si">{</span><span class="n">epoch</span><span class="si">}</span><span class="s2"> train_acc: </span><span class="si">{</span><span class="n">train_perplexity</span><span class="si">}</span><span class="s2"> val_acc: </span><span class="si">{</span><span class="n">test_perplexity</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    
+    <span class="c1"># save the model at the end of epoch</span>
+    <span class="n">torch</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">state_dict</span><span class="p">(),</span> <span class="sa">f</span><span class="s2">&quot;model-v</span><span class="si">{</span><span class="n">epoch</span><span class="si">}</span><span class="s2">.pt&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="testing-the-final-model">
+<h2>Testing the final model<a class="headerlink" href="#testing-the-final-model" title="Permalink to this headline">¶</a></h2>
+<p>Now let’s test the model with an example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">text</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">Rajesh Shah, one of the shop&#39;s co-owners, told the [MASK]</span>
+<span class="s2">there would be a new name.</span>
+<span class="s2">&quot;&quot;&quot;</span>
+
+<span class="c1"># tokenize the inputs and pass to model</span>
+<span class="n">inputs</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">return_tensors</span><span class="o">=</span><span class="s1">&#39;pt&#39;</span><span class="p">)</span>
+<span class="n">out</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="o">**</span><span class="n">inputs</span><span class="p">)</span>
+
+<span class="c1"># get the token id of [MASK]</span>
+<span class="n">mask_token_id</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="o">.</span><span class="n">mask_token_id</span>
+<span class="c1"># find the position of [MASK] in the input</span>
+<span class="n">mask_idx</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">inputs</span><span class="p">[</span><span class="s1">&#39;input_ids&#39;</span><span class="p">]</span><span class="o">==</span><span class="n">mask_token_id</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+
+<span class="c1"># decode the model prediction corresponding to [MASK]</span>
+<span class="n">preds</span> <span class="o">=</span> <span class="n">out</span><span class="o">.</span><span class="n">logits</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">mask_pred</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="n">preds</span><span class="p">[</span><span class="n">mask_idx</span><span class="p">])</span>
+
+<span class="c1"># replace [MASK] with predicted word</span>
+<span class="n">final_text</span> <span class="o">=</span> <span class="n">text</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;[MASK]&#39;</span><span class="p">,</span> <span class="n">mask_pred</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">final_text</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Output:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Rajesh</span> <span class="n">Shah</span><span class="p">,</span> <span class="n">one</span> <span class="n">of</span> <span class="n">the</span> <span class="n">shop</span><span class="s1">&#39;s co-owners, told the bbc there would be a new name.</span>
+</pre></div>
+</div>
+<p>Aaaand, we have a model that can do fill in the blanks for you ;)</p>
 </section>
 </section>
 

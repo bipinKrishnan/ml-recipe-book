@@ -286,6 +286,113 @@ test_dl = DataLoader(
     collate_fn=default_data_collator
     )
 ```
-We've our training and testing dataloader in place, now it's time to train our model.
+We've our training and testing dataloader in place, now it's time to train the model.
 
 ### Training the model
+First we will create the model, optimizer and move everything to GPU using accelerate,
+
+```python
+from transformers import AutoModelForMaskedLM
+from accelerate import Accelerator
+
+model = AutoModelForMaskedLM.from_pretrained(checkpoint)
+opt = optim.AdamW(model.parameters(), lr=1.23e-5)
+
+accelerator = Accelerator()
+# move everything to GPU
+train_dl, test_dl, model, opt = accelerator.prepare(train_dl, test_dl, model, opt)
+```
+
+Now let's define two functions, one for the training loop and the other for the evaluation loop, just like we did in the last chapter. One thing to note is that the metric that we will be using to evaluate our model performance is called **perplexity**, which here is the exponential of cross entropy loss.
+
+```python
+import math
+import torch
+
+def run_training_loop(train_dl):
+    losses = 0
+    model.train()
+    for batch in train_dl:
+        opt.zero_grad()
+        out = model(**batch)
+        accelerator.backward(out.loss)
+        opt.step()
+        
+        # aggregate the losses over each batch
+        losses += out.loss.item()
+    losses /= len(train_dl)
+    # exponential of cross entropy
+    perplexity = math.exp(losses)
+    return perplexity
+```
+
+Similarly, we will write our evaluation loop:
+
+```python
+def run_evaluation_loop(test_dl):
+    losses = 0
+    model.eval()
+    
+    with torch.no_grad():
+        for batch in test_dl:
+            out = model(**batch)
+            # aggregate the losses over each batch
+            losses += out.loss.item()
+            
+    losses /= len(test_dl)
+    # exponential of cross entropy
+    perplexity = math.exp(losses)
+    return perplexity
+```
+
+Now we will train the model for 3 pochs and save after each epoch:
+
+```python
+epochs = 3
+
+for epoch in range(epochs):
+    train_perplexity = run_training_loop(train_dl)
+    test_perplexity = run_evaluation_loop(test_dl)
+    
+    print(f"epoch: {epoch} train_acc: {train_perplexity} val_acc: {test_perplexity}")
+    
+    # save the model at the end of epoch
+    torch.save(model.state_dict(), f"model-v{epoch}.pt")
+```
+
+### Testing the final model
+
+Now let's test the model with an example:
+
+```python
+text = """
+Rajesh Shah, one of the shop's co-owners, told the [MASK]
+there would be a new name.
+"""
+
+# tokenize the inputs and pass to model
+inputs = tokenizer(text, return_tensors='pt')
+out = model(**inputs)
+
+# get the token id of [MASK]
+mask_token_id = tokenizer.mask_token_id
+# find the position of [MASK] in the input
+mask_idx = torch.where(inputs['input_ids']==mask_token_id)[1]
+
+# decode the model prediction corresponding to [MASK]
+preds = out.logits.argmax(dim=-1)[0]
+mask_pred = tokenizer.decode(preds[mask_idx])
+
+# replace [MASK] with predicted word
+final_text = text.replace('[MASK]', mask_pred)
+print(final_text)
+```
+Output:
+```
+Rajesh Shah, one of the shop's co-owners, told the bbc there would be a new name.
+```
+
+Aaaand, we have a model that can do fill in the blanks for you ;)
+
+
+
