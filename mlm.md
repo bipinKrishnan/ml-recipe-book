@@ -1,6 +1,6 @@
 ## Masked language modelling
 
-As the title suggests, this chapter is all about masked language modelling. The term may feel a bit alien to some of you, we will dig a bit deeper in this section to clear all your doubts about masked language modelling(MLM).
+Th term masked language modelling(MLM) may feel a bit alien to some of you. No worries, we will definitely dig deeper into it in this chapter.
 
 ### What is masked language modelling?
 
@@ -16,9 +16,9 @@ This is how the final inference will look like:
 :align: center
 ```
 
-We input a sentence with some words replaced/masked with a special token ```[MASK]```. The job of the model is to predict the correct word to fill in place of ```[MASK]```. In the above figure the model predicts 'happiness' which makes input sentence ```'The goal of life is [MASK].'``` to ```'The goal of life is happiness.'```.
+We input a sentence with some words replaced/masked with a special token ```[MASK]```. The job of the model is to predict the correct word to fill in place of ```[MASK]```. In the above figure the model predicts 'happiness' as the word to be filled in place of ```[MASK]```, which converts the input sentence from ```'The goal of life is [MASK].'``` to ```'The goal of life is happiness.'```.
 
-The training data will have a randomly masked sentence as inputs to the model and the complete sentence(without any masks) as the label, just like shown below:
+The training data will have randomly masked sentences as inputs to the model and the complete sentence(without any masks) as the label(as shown below):
 
 Input: ```'The full cost of damage in [MASK] Stewart, one of the areas [MASK] affected, is still being [MASK].'```
 
@@ -26,7 +26,7 @@ Label: ```'The full cost of damage in Newton Stewart, one of the areas worst aff
 
 The model will have to predict the correct words corresponding to the masks. In this way the model will learn about relationship between different words in a sentence. The task is some what similar to 'fill in the blanks' type questions that you might have encountered in your high school.
 
-Now let's look into the dataset that we will be using for this task.
+Now let's prepare the dataset that we will be using for this task.
 
 ### Preparing the dataset
 
@@ -41,7 +41,7 @@ We will dounload the dataset from huggingface using their 'datasets' library.
 ```python
 from datasets import load_dataset
 
-# xsum -> eXtreme SuMmarization
+# xsum -> eXtreme SUMmarization
 raw_datasets = load_dataset('xsum')
 print(raw_datasets)
 ```
@@ -63,9 +63,9 @@ DatasetDict({
 })
 ```
 
-As you can see from the above figure, we've a train, validation and test set. Of which, the training set is a huge one. So, for the sake of simplicity and for faster training, we will take a subset of the train set.
+As you can see from the above figure, we've a train, validation and test set. Of which, the training set is a huge one. So, for the sake of simplicity and for faster training, we will take a subset of the 'train' set.
 
-We will take 10,000 rows from the train set for training and 2000 rows for testing:
+We will take 10,000 rows from the 'train' set for training and 2000(20% of the training size) rows for testing:
 
 ```python
 train_size = 10000
@@ -97,11 +97,11 @@ DatasetDict({
 
 #### Preprocessing the dataset
 
-Now let's prepare our dataset in a way that is needed for our model. Since our task is masked language modelling which is done to give domain knowledge to our model, we cannot afford to lose too much information from our input sentences due to truncation.
+Now let's prepare our dataset in a way that is needed for our model. Since our task is masked language modelling which is done to give domain knowledge to our model, we cannot afford to lose much information from our input sentences due to truncation.
 
-Since the maximum length of input sentence for the model we are using is 512, all the inputs that are longer than this will be truncated, which we don't want to happen.
+The maximum length(of input sentence) of our model is 512, all the inputs that are longer than this will be truncated, but we don't want this to happen.
 
-So, we will concatenate all of the sentences in a batch and divide them into smaller chunks, and then each chunk will be the inputs to the model as shown in the figure below:
+So, we will concatenate all the input sentences and divide them into smaller chunks, and then each chunk will be the inputs to the model as shown in the figure below:
 
 ```{image} ./assets/mlm_preprocess.png
 :align: center
@@ -140,7 +140,7 @@ def create_chunks(examples):
     return results
 ```
 
-Let's try out our function on a the dataset:
+Let's try out the function on our dataset:
 
 ```python
 preprocessed_datasets = downsampled_datasets.map(
@@ -181,7 +181,7 @@ print("INPUTS:\n", tokenizer.decode(sample_inputs))
 print("\nLABELS:\n", tokenizer.decode(sample_labels))
 ```
 Output:
-```python
+```
 INPUTS:
  [CLS] media playback is not supported on this device varnish and james were third in the women's team sprint but the two men's squads failed to reach their respective medal ride - offs. the sprint team were fifth, while the pursuit quartet finished eighth. " we've had some problems, " said pursuit rider ed clancy. britain won the four - man pursuit event in 2012 and took silver in 2013. they also won gold at the 2008 and 2012 olympic games. but two - time olympic gold medallist clancy, sam harrison, owain doull and jon dibben finished eighth this time in four minutes 4. 419 seconds
 
@@ -197,7 +197,7 @@ and the corresponding labels with no masked words like below:
 
 ```This man is going to the park tomorrow.```
 
-So, the only part that's remaining is randomly masking the inputs which can be done with 'DataCollatorForLanguageModeling' from transformers library just like this:
+So, the only part that's remaining is randomly masking the inputs which can be done with ```DataCollatorForLanguageModeling``` from transformers library just like below:
 
 ```python
 from transformers import DataCollatorForLanguageModeling
@@ -240,7 +240,7 @@ Here is an example to illustrate the same:
 
 Suppose we have a set of tokens(converted to integers) like this: ```[23, 25, 100, 134, 78, 56]```
 
-Once we pass the above inputs to our collator, we will get a randomly masked output(where 103 is the id corresponding to the mask): ```[23, 103, 100, 134, 103, 56]``` and the labels corresponding to the new inputs will be these: ```[-100, 25, -100, -100, 78, -100]``` where the real token ids are shown only for the masked tokens, for other it's just -100.
+Once we pass the above inputs to our collator, we will get a randomly masked output(where 103 is the id corresponding to the mask): ```[23, 103, 100, 134, 103, 56]``` and the labels corresponding to the new inputs will be these: ```[-100, 25, -100, -100, 78, -100]``` where the real token ids are shown only for the masked tokens, for others it's replaced with -100.
 
 As we have our training dataset processed and our collator in place, we can create our training dataloader:
 
@@ -257,15 +257,15 @@ train_dl = DataLoader(
     )
 ```
 
-As we've said that our collator applies random masking each time we call it. But we need a fixed set with no variability during evaluation so that we have a fair comparison after each epoch. 
+Our collator applies random masking each time we call it. But we need a fixed set with no variability during evaluation so that we have a fair comparison after each epoch. 
 
-So, instead of directly using 'DataCollatorForLanguageModeling' directly in our test dataloader, we will wrap it in a function and apply to the test data using ```.map()``` method:
+So, instead of using ```DataCollatorForLanguageModeling``` directly in our test dataloader, we will wrap it in a function and apply to the test set before creating the dataloader:
 
 ```python
 def apply_random_mask(examples):
     example_list = [dict(zip(examples, v)) for v in zip(*examples.values())]
     output = collate_fn(example_list)
-    # we need to return a dictionary
+    # convert the values to numpy arrays
     return {k: v.numpy() for k, v in output.items()}
 
 test_dataset = preprocessed_datasets['test'].map(
@@ -274,7 +274,7 @@ test_dataset = preprocessed_datasets['test'].map(
     )
 ```
 
-and then use the 'default_data_collator' from transformers library to collate our data for the test dataloader.
+and then use the ```default_data_collator``` from transformers library to collate our data for the test dataloader.
 
 ```python
 from transformers import default_data_collator
