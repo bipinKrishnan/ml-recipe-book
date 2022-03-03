@@ -6,6 +6,7 @@ parts:
     chapters:
     - file: ner
     - file: mlm
+    - file: translation
   
   - caption: Computer vision
     chapters:
