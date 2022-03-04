@@ -1,6 +1,6 @@
 .PHONY: book
 book:
-		jupyter-book build .
+		rm -r _build && jupyter-book build .
 		
 .PHONY: site
 site:
