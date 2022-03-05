@@ -175,6 +175,193 @@ dict_keys(['input_ids', 'attention_mask', 'labels', 'decoder_input_ids'])
 
 As you can see that, apart from ```input_ids```, ```attention_mask``` and ```labels```, we've one more key called ```decoder_input_ids``` which is added by our collator.
 
+### Training the model
+
+Now let's get into training the model, we will set up the optimizer and move our previously loaded model and dataloaders to GPU using accelerate.
+
+```python
+from torch import optim
+from accelerate import Accelerator
+
+opt = optim.AdamW(model.parameters(), lr=5.34e-6)
+
+accelerator = Accelerator()
+train_dl, test_dl, model, opt = accelerator.prepare(
+    train_dl, test_dl, model, opt
+)
+```
+
+For this task we will be using the [BLEU score](https://en.wikipedia.org/wiki/BLEU) for monitoring the performance of our model. This is a commonly used metric for translation tasks, high scores imply that the translations made by the model are better compared to the target labels.
+
+BLEU scores can be calculated using [sacrebleu](https://huggingface.co/metrics/sacrebleu) which can be loaded as shown below,
+
+```{note}
+You may have to install the sacrebleu library before loading it. This can be done by running ```pip install sacrebleu``` from your terminal.
+```
+
+```python
+from datassets import load_metric
+
+metric = load_metric('sacrebleu')
+```
+
+The metric require the predicted and target translations to be in string format, let's calculate the bleu score using an english sentence:
+
+```python
+prediction = ['So it can happen anywhere.']
+label = ['So it can happen anywhere.']
+
+metric.compute(predictions=prediction, references=[label])
+```
+
+Output:
+```python
+{
+    'score': 100.00000000000004,
+    'counts': [6, 5, 4, 3],
+    'totals': [6, 5, 4, 3],
+    'precisions': [100.0, 100.0, 100.0, 100.0],
+    'bp': 1.0,
+    'sys_len': 6,
+    'ref_len': 6
+}
+```
+
+Of the above outputs, we will consider only the value of ```score``` for monitoring the performance of our model, perfect match of predictions and labels will yield a score of 100.
+
+#### Training loop
+
+Now let's write our training loop:
+
+```python
+def run_training(train_dl):
+    model.train()
+    for batch in train_dl:
+        opt.zero_grad()
+        out = model(**batch)
+        accelerator.backward(out.loss)
+        opt.step()
+```
+
+During the inference in the real world, we will only have an english sentence that needs to be translated, we won't have any target french sentence. Let me give you an example, 
+
+The input english sentence is: ```'This is happening'```
+
+Think that the target(translated french sentence) label is(obtained from google translate): ```'Cela se passe'```
+
+At a high level, this is how the whole process works:
+
+```{image} ./assets/translation_inference.png
+:alt: translation
+:class: bg-primary mb-1
+:align: center
+```
+
+As you can see from the figure, the encoder extracts the key informations and creates an intermediate representation of the input sentence. And then each time the decoder generates a word, that word along with the intermediate representations of the inputs are passed again to the decoder to generate the next word.
+
+As for our example, it would be something like this:
+
+Firstly, the decoder generates the word 'Cela', then this word along with inermediate representations are passed to the decoder to generate the word 'se' and this is repeated for the generation of each word in the translation.
+
+Fortunately, our model has a ```.generate()``` method which can be used to generate each word one by one as described above. During training, this is taken care by attention masks which makes sure that the model does not see any ```decoder_input_ids``` that comes after the token it's trying to predict.
+
+Okay, before building our evaluation loop, we need to create a function that converts the predictions and target labels to string format for calculating the BLEU score.
+
+The function will replace all -100 values with that of ```<pad>``` token, otherwise the decoding from token id to token will throw an error.
+
+```python
+def process_preds_and_labels(preds, labels):
+    preds = preds.detach().cpu()
+    labels = labels.detach().cpu()
+    # replace all -100 with the token id of <pad>
+    labels = torch.where(labels==-100, tokenizer.pad_token_id, labels)
+    
+    # decode all token ids to its string/text format
+    decoded_preds = tokenizer.batch_decode(preds, skip_special_tokens=True)
+    decoded_labels = tokenizer.batch_decode(labels, skip_special_tokens=True)
+    
+    # additional cleaning by removing begining and trailing spaces
+    decoded_preds = [pred.strip() for pred in decoded_preds]
+    decoded_labels = [[label.strip()] for label in decoded_labels]
+    
+    return decoded_preds, decoded_labels
+```
+
+Now it's time to write the evaluation loop:
+
+```python
+import torch
+
+def run_evaluation(test_dl):
+    model.eval()
+    with torch.no_grad():
+        for batch in test_dl:
+            # generate predictions one by one
+            preds = model.generate(
+                input_ids=batch['input_ids'],
+                attention_mask=batch['attention_mask'],
+                max_length=max_length,
+            )
+            
+            # convert target labels and predictions to string format for computing accuracy
+            preds, labels = process_preds_and_labels(preds, batch['labels'])
+            # add the target labels and predictions of this batch to seqeval
+            metric.add_batch(predictions=preds, references=labels)
+```
+
+As you can see we used the ```model.generate()``` method to mimic how the model will generate in the real world.
+
+Let's train the model for 3 epochs:
+
+```python
+epochs = 3
+
+for epoch in range(epochs):
+    run_training(train_dl)
+    run_evaluation(test_dl)
+
+    # calculate BLEU score on test set
+    test_acc = metric.compute()['score']
+    
+    # save the model at the end of epoch
+    torch.save(model.state_dict(), f"model-v{epoch}.pt")
+    print(f"epoch: {epoch} test_acc: {test_acc}")
+```
+
+### Testing the model
+
+Let's test the model with one example from our test set:
+
+```python
+# testing data
+sample = split_datasets['test'][0]['translation']
+inputs = sample['en']
+label = sample['fr']
+
+inputs = tokenizer(inputs, return_tensors='pt')
+out = model.generate(**inputs)
+
+# convert token ids to string
+with tokenizer.as_target_tokenizer():
+    decoded_out = tokenizer.decode(out[0], skip_special_tokens=True)
+
+print("Label: \n", label)
+print("Prediction: \n", decoded_out)
+```
+
+Output:
+```
+Label: 
+ Il est possible que la BNS reconnaisse ce que les autres banques centrales font sans le dire.
+
+Prediction: 
+ Il se peut que la BNS reconnaisse simplement ce que les autres banques centrales ne font pas.
+```
+
+I'm not good at french, but looking at the sentences, there are matching as well as non-matching words, but the google translate gives the english translation with the same meaning for our target and predicted french sentence ;)
+
+Wohoo!! We have a machine translator for us🔥.
+
 
 
 

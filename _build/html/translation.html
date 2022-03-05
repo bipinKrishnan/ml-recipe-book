@@ -235,6 +235,23 @@
    </li>
   </ul>
  </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#training-the-model">
+   Training the model
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#training-loop">
+     Training loop
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#testing-the-model">
+   Testing the model
+  </a>
+ </li>
 </ul>
 
             </nav>
@@ -393,6 +410,159 @@
 </div>
 <p>As you can see that, apart from <code class="docutils literal notranslate"><span class="pre">input_ids</span></code>, <code class="docutils literal notranslate"><span class="pre">attention_mask</span></code> and <code class="docutils literal notranslate"><span class="pre">labels</span></code>, we’ve one more key called <code class="docutils literal notranslate"><span class="pre">decoder_input_ids</span></code> which is added by our collator.</p>
 </section>
+</section>
+<section id="training-the-model">
+<h2>Training the model<a class="headerlink" href="#training-the-model" title="Permalink to this headline">¶</a></h2>
+<p>Now let’s get into training the model, we will set up the optimizer and move our previously loaded model and dataloaders to GPU using accelerate.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">optim</span>
+<span class="kn">from</span> <span class="nn">accelerate</span> <span class="kn">import</span> <span class="n">Accelerator</span>
+
+<span class="n">opt</span> <span class="o">=</span> <span class="n">optim</span><span class="o">.</span><span class="n">AdamW</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="mf">5.34e-6</span><span class="p">)</span>
+
+<span class="n">accelerator</span> <span class="o">=</span> <span class="n">Accelerator</span><span class="p">()</span>
+<span class="n">train_dl</span><span class="p">,</span> <span class="n">test_dl</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">opt</span> <span class="o">=</span> <span class="n">accelerator</span><span class="o">.</span><span class="n">prepare</span><span class="p">(</span>
+    <span class="n">train_dl</span><span class="p">,</span> <span class="n">test_dl</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">opt</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>For this task we will be using the <a class="reference external" href="https://en.wikipedia.org/wiki/BLEU">BLEU score</a> for monitoring the performance of our model. This is a commonly used metric for translation tasks, high scores imply that the translations made by the model are better compared to the target labels.</p>
+<p>BLEU scores can be calculated using <a class="reference external" href="https://huggingface.co/metrics/sacrebleu">sacrebleu</a> which can be loaded as shown below,</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>You may have to install the sacrebleu library before loading it. This can be done by running <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">sacrebleu</span></code> from your terminal.</p>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">datassets</span> <span class="kn">import</span> <span class="n">load_metric</span>
+
+<span class="n">metric</span> <span class="o">=</span> <span class="n">load_metric</span><span class="p">(</span><span class="s1">&#39;sacrebleu&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The metric require the predicted and target translations to be in string format, let’s calculate the bleu score using an english sentence:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">prediction</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;So it can happen anywhere.&#39;</span><span class="p">]</span>
+<span class="n">label</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;So it can happen anywhere.&#39;</span><span class="p">]</span>
+
+<span class="n">metric</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">predictions</span><span class="o">=</span><span class="n">prediction</span><span class="p">,</span> <span class="n">references</span><span class="o">=</span><span class="p">[</span><span class="n">label</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>Output:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s1">&#39;score&#39;</span><span class="p">:</span> <span class="mf">100.00000000000004</span><span class="p">,</span>
+    <span class="s1">&#39;counts&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">6</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>
+    <span class="s1">&#39;totals&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">6</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>
+    <span class="s1">&#39;precisions&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">100.0</span><span class="p">,</span> <span class="mf">100.0</span><span class="p">,</span> <span class="mf">100.0</span><span class="p">,</span> <span class="mf">100.0</span><span class="p">],</span>
+    <span class="s1">&#39;bp&#39;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span>
+    <span class="s1">&#39;sys_len&#39;</span><span class="p">:</span> <span class="mi">6</span><span class="p">,</span>
+    <span class="s1">&#39;ref_len&#39;</span><span class="p">:</span> <span class="mi">6</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Of the above outputs, we will consider only the value of <code class="docutils literal notranslate"><span class="pre">score</span></code> for monitoring the performance of our model, perfect match of predictions and labels will yield a score of 100.</p>
+<section id="training-loop">
+<h3>Training loop<a class="headerlink" href="#training-loop" title="Permalink to this headline">¶</a></h3>
+<p>Now let’s write our training loop:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">run_training</span><span class="p">(</span><span class="n">train_dl</span><span class="p">):</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">batch</span> <span class="ow">in</span> <span class="n">train_dl</span><span class="p">:</span>
+        <span class="n">opt</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="o">**</span><span class="n">batch</span><span class="p">)</span>
+        <span class="n">accelerator</span><span class="o">.</span><span class="n">backward</span><span class="p">(</span><span class="n">out</span><span class="o">.</span><span class="n">loss</span><span class="p">)</span>
+        <span class="n">opt</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>During the inference in the real world, we will only have an english sentence that needs to be translated, we won’t have any target french sentence. Let me give you an example,</p>
+<p>The input english sentence is: <code class="docutils literal notranslate"><span class="pre">'This</span> <span class="pre">is</span> <span class="pre">happening'</span></code></p>
+<p>Think that the target(translated french sentence) label is(obtained from google translate): <code class="docutils literal notranslate"><span class="pre">'Cela</span> <span class="pre">se</span> <span class="pre">passe'</span></code></p>
+<p>At a high level, this is how the whole process works:</p>
+<img alt="translation" class="bg-primary mb-1 align-center" src="_images/translation_inference.png" />
+<p>As you can see from the figure, the encoder extracts the key informations and creates an intermediate representation of the input sentence. And then each time the decoder generates a word, that word along with the intermediate representations of the inputs are passed again to the decoder to generate the next word.</p>
+<p>As for our example, it would be something like this:</p>
+<p>Firstly, the decoder generates the word ‘Cela’, then this word along with inermediate representations are passed to the decoder to generate the word ‘se’ and this is repeated for the generation of each word in the translation.</p>
+<p>Fortunately, our model has a <code class="docutils literal notranslate"><span class="pre">.generate()</span></code> method which can be used to generate each word one by one as described above. During training, this is taken care by attention masks which makes sure that the model does not see any <code class="docutils literal notranslate"><span class="pre">decoder_input_ids</span></code> that comes after the token it’s trying to predict.</p>
+<p>Okay, before building our evaluation loop, we need to create a function that converts the predictions and target labels to string format for calculating the BLEU score.</p>
+<p>The function will replace all -100 values with that of <code class="docutils literal notranslate"><span class="pre">&lt;pad&gt;</span></code> token, otherwise the decoding from token id to token will throw an error.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">process_preds_and_labels</span><span class="p">(</span><span class="n">preds</span><span class="p">,</span> <span class="n">labels</span><span class="p">):</span>
+    <span class="n">preds</span> <span class="o">=</span> <span class="n">preds</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span>
+    <span class="n">labels</span> <span class="o">=</span> <span class="n">labels</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span>
+    <span class="c1"># replace all -100 with the token id of &lt;pad&gt;</span>
+    <span class="n">labels</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">labels</span><span class="o">==-</span><span class="mi">100</span><span class="p">,</span> <span class="n">tokenizer</span><span class="o">.</span><span class="n">pad_token_id</span><span class="p">,</span> <span class="n">labels</span><span class="p">)</span>
+    
+    <span class="c1"># decode all token ids to its string/text format</span>
+    <span class="n">decoded_preds</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="o">.</span><span class="n">batch_decode</span><span class="p">(</span><span class="n">preds</span><span class="p">,</span> <span class="n">skip_special_tokens</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">decoded_labels</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="o">.</span><span class="n">batch_decode</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">skip_special_tokens</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    
+    <span class="c1"># additional cleaning by removing begining and trailing spaces</span>
+    <span class="n">decoded_preds</span> <span class="o">=</span> <span class="p">[</span><span class="n">pred</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">pred</span> <span class="ow">in</span> <span class="n">decoded_preds</span><span class="p">]</span>
+    <span class="n">decoded_labels</span> <span class="o">=</span> <span class="p">[[</span><span class="n">label</span><span class="o">.</span><span class="n">strip</span><span class="p">()]</span> <span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="n">decoded_labels</span><span class="p">]</span>
+    
+    <span class="k">return</span> <span class="n">decoded_preds</span><span class="p">,</span> <span class="n">decoded_labels</span>
+</pre></div>
+</div>
+<p>Now it’s time to write the evaluation loop:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
+
+<span class="k">def</span> <span class="nf">run_evaluation</span><span class="p">(</span><span class="n">test_dl</span><span class="p">):</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+    <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+        <span class="k">for</span> <span class="n">batch</span> <span class="ow">in</span> <span class="n">test_dl</span><span class="p">:</span>
+            <span class="c1"># generate predictions one by one</span>
+            <span class="n">preds</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span>
+                <span class="n">input_ids</span><span class="o">=</span><span class="n">batch</span><span class="p">[</span><span class="s1">&#39;input_ids&#39;</span><span class="p">],</span>
+                <span class="n">attention_mask</span><span class="o">=</span><span class="n">batch</span><span class="p">[</span><span class="s1">&#39;attention_mask&#39;</span><span class="p">],</span>
+                <span class="n">max_length</span><span class="o">=</span><span class="n">max_length</span><span class="p">,</span>
+            <span class="p">)</span>
+            
+            <span class="c1"># convert target labels and predictions to string format for computing accuracy</span>
+            <span class="n">preds</span><span class="p">,</span> <span class="n">labels</span> <span class="o">=</span> <span class="n">process_preds_and_labels</span><span class="p">(</span><span class="n">preds</span><span class="p">,</span> <span class="n">batch</span><span class="p">[</span><span class="s1">&#39;labels&#39;</span><span class="p">])</span>
+            <span class="c1"># add the target labels and predictions of this batch to seqeval</span>
+            <span class="n">metric</span><span class="o">.</span><span class="n">add_batch</span><span class="p">(</span><span class="n">predictions</span><span class="o">=</span><span class="n">preds</span><span class="p">,</span> <span class="n">references</span><span class="o">=</span><span class="n">labels</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>As you can see we used the <code class="docutils literal notranslate"><span class="pre">model.generate()</span></code> method to mimic how the model will generate in the real world.</p>
+<p>Let’s train the model for 3 epochs:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">epochs</span> <span class="o">=</span> <span class="mi">3</span>
+
+<span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">epochs</span><span class="p">):</span>
+    <span class="n">run_training</span><span class="p">(</span><span class="n">train_dl</span><span class="p">)</span>
+    <span class="n">run_evaluation</span><span class="p">(</span><span class="n">test_dl</span><span class="p">)</span>
+
+    <span class="c1"># calculate BLEU score on test set</span>
+    <span class="n">test_acc</span> <span class="o">=</span> <span class="n">metric</span><span class="o">.</span><span class="n">compute</span><span class="p">()[</span><span class="s1">&#39;score&#39;</span><span class="p">]</span>
+    
+    <span class="c1"># save the model at the end of epoch</span>
+    <span class="n">torch</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">state_dict</span><span class="p">(),</span> <span class="sa">f</span><span class="s2">&quot;model-v</span><span class="si">{</span><span class="n">epoch</span><span class="si">}</span><span class="s2">.pt&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;epoch: </span><span class="si">{</span><span class="n">epoch</span><span class="si">}</span><span class="s2"> test_acc: </span><span class="si">{</span><span class="n">test_acc</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="testing-the-model">
+<h2>Testing the model<a class="headerlink" href="#testing-the-model" title="Permalink to this headline">¶</a></h2>
+<p>Let’s test the model with one example from our test set:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># testing data</span>
+<span class="n">sample</span> <span class="o">=</span> <span class="n">split_datasets</span><span class="p">[</span><span class="s1">&#39;test&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;translation&#39;</span><span class="p">]</span>
+<span class="n">inputs</span> <span class="o">=</span> <span class="n">sample</span><span class="p">[</span><span class="s1">&#39;en&#39;</span><span class="p">]</span>
+<span class="n">label</span> <span class="o">=</span> <span class="n">sample</span><span class="p">[</span><span class="s1">&#39;fr&#39;</span><span class="p">]</span>
+
+<span class="n">inputs</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">return_tensors</span><span class="o">=</span><span class="s1">&#39;pt&#39;</span><span class="p">)</span>
+<span class="n">out</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="o">**</span><span class="n">inputs</span><span class="p">)</span>
+
+<span class="c1"># convert token ids to string</span>
+<span class="k">with</span> <span class="n">tokenizer</span><span class="o">.</span><span class="n">as_target_tokenizer</span><span class="p">():</span>
+    <span class="n">decoded_out</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="n">out</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">skip_special_tokens</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Label: </span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">label</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Prediction: </span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">decoded_out</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Output:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Label</span><span class="p">:</span> 
+ <span class="n">Il</span> <span class="n">est</span> <span class="n">possible</span> <span class="n">que</span> <span class="n">la</span> <span class="n">BNS</span> <span class="n">reconnaisse</span> <span class="n">ce</span> <span class="n">que</span> <span class="n">les</span> <span class="n">autres</span> <span class="n">banques</span> <span class="n">centrales</span> <span class="n">font</span> <span class="n">sans</span> <span class="n">le</span> <span class="n">dire</span><span class="o">.</span>
+
+<span class="n">Prediction</span><span class="p">:</span> 
+ <span class="n">Il</span> <span class="n">se</span> <span class="n">peut</span> <span class="n">que</span> <span class="n">la</span> <span class="n">BNS</span> <span class="n">reconnaisse</span> <span class="n">simplement</span> <span class="n">ce</span> <span class="n">que</span> <span class="n">les</span> <span class="n">autres</span> <span class="n">banques</span> <span class="n">centrales</span> <span class="n">ne</span> <span class="n">font</span> <span class="n">pas</span><span class="o">.</span>
+</pre></div>
+</div>
+<p>I’m not good at french, but looking at the sentences, there are matching as well as non-matching words, but the google translate gives the english translation with the same meaning for our target and predicted french sentence ;)</p>
+<p>Wohoo!! We have a machine translator for us🔥.</p>
 </section>
 </section>
 
