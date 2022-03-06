@@ -1,10 +1,10 @@
 ## Machine translation
 
-Unlike other chapters that we've completed so far, this will be a bit more familiar to all of you guys. We don't need a separate section to discuss "What is machine translation?". It's as simple as saying that given an english sentence, our machine learning model translates it to another language, say, Spanish.
+Unlike other chapters that we've completed so far, this will be a bit more familiar to all of you guys. We don't need a separate section to discuss "What is machine translation?". It's just simple as this - given an english sentence, our machine learning model translates it to another language, say, Spanish.
 
 In the above example, the inputs to our model will be an english sentence and the label will be it's corresponding Spanish sentence.
 
-Let's directly jump into the datasets that we are going to use.
+Let's directly jump into the dataset that we are going to use.
 
 ### Preparing the dataset
 
@@ -12,7 +12,7 @@ Let's directly jump into the datasets that we are going to use.
 
 We will be using the [news commentary dataset](https://huggingface.co/datasets/news_commentary) for our task, and specifically we will be using the english to french translation subset.
 
-We will retrieve the dataset by specifying the languages we require for our task(that is, english and french).
+We will retrieve the dataset by specifying the languages we require for our task(english and french).
 
 ```python
 from datasets import load_dataset
@@ -21,7 +21,7 @@ raw_datasets = load_dataset("news_commentary", lang1="en", lang2="fr")
 print(raw_datasets)
 ```
 
-From the dataset, we will use 50% for training and 10% for evaluation purpose.
+From the downloaded dataset, we will use 50% for training and 10% for evaluation purpose.
 
 ```python
 split_datasets = raw_datasets['train'].train_test_split(train_size=0.5, test_size=0.1, seed=42)
@@ -47,18 +47,18 @@ The model we are going to use is already trained for translating english to fren
 
 Since our inputs and labels are sentences, we need to tokenize both of them before using for training. 
 
-We will load the tokenizer of our model as we did in other chapters:
+We will load the tokenizer for our model as we did in other chapters:
 
 ```python
 from transformers import AutoTokenizer
 
-# model name
+# model checkpoint
 checkpoint = "Helsinki-NLP/opus-mt-en-fr"
-# load the tokenizer for the model
+# load the tokenizer for the model checkpoint
 tokenizer = AutoTokenizer.from_pretrained(checkpoint)
 ```
 
-Let's take a sample containing english and french sentences from the training set for quick experiments:
+Here is a sample english sentence and it's corresponding french translation from the training set:
 
 ```python
 sample = split_datasets['train']['translation'][0]
@@ -72,23 +72,23 @@ Output:
 }
 ```
 
-```'en'```(english) part will be the inputs and ```'fr'```(french) part will be the labels for our model.
+English('en') part will be the inputs and french('fr') part will be the labels for our model.
 
 Let's tokenize our inputs,
 
 ```python
 tokenizer(sample['en'])
 ```
-Since our model is already trained for english to french translation, tokenizing the input english sentence is simple as that. But for our french sentences, we need to let the tokenizer know that we are passing the labels inorder to get the correct tokenized output as shown below:
+Since our model is already trained for english to french translation, tokenizing the input english sentence is as simple as shown above. But for our french sentences, we need to let the tokenizer know that we are passing the labels, i.e, french sentences, otherwise, it will tokenize the sentence as if it were an english sentence.
+
+The code for tokenizing the labels(french sentences) is shown below:
 
 ```python
 with tokenizer.as_target_tokenizer():
     french_tokens = tokenizer(sample['fr'])
 ```
 
-If we use the tokenizer without specifying anything, it will tokenize the french sentence as if it were an english sentence.
-
-Now let's wrap this inside a function and apply it to all the english-french sentences in our dataset. Apart from that we will truncate our sentences to a maximum length of 128:
+Now let's wrap this inside a function and apply it to all the english-french sentences in our dataset. We will also truncate our sentences to a maximum length of 128:
 
 ```python
 max_length = 128
@@ -121,7 +121,7 @@ tokenized_datasets = split_datasets.map(
 
 #### Preparing the dataloader
 
-Since this is a sequence to sequence task, we will be using ```DataCollatorForSeq2Seq``` as our collator, which requires both the tokenizer and the model, so we will load our pretrained model:
+Since this is a sequence to sequence task, we will be using ```DataCollatorForSeq2Seq``` as our collator, which requires both the tokenizer and the model used, so we will load our pretrained model:
 
 ```python
 from transformers import AutoModelForSeq2SeqLM
@@ -136,8 +136,6 @@ from transformers import DataCollatorForSeq2Seq
 
 collate_fn = DataCollatorForSeq2Seq(tokenizer, model=model)
 ```
-
-We used this collator specifically because it adds some extra information inside the dataloader, specific to sequence to sequence tasks, like, ```decoder_input_ids``` which is used by the decoder part of the model during training.
 
 Let's create our training and testing dataloader:
 
@@ -162,7 +160,7 @@ test_dl = DataLoader(
 )
 ```
 
-Let's see what information present inside the dataloaders:
+Let's see what information is present inside the dataloaders:
 
 ```python
 batch = next(iter(train_dl))
@@ -173,11 +171,11 @@ Output:
 dict_keys(['input_ids', 'attention_mask', 'labels', 'decoder_input_ids'])
 ```
 
-As you can see that, apart from ```input_ids```, ```attention_mask``` and ```labels```, we've one more key called ```decoder_input_ids``` which is added by our collator.
+As you can see, apart from ```input_ids```, ```attention_mask``` and ```labels```, we've one more key called ```decoder_input_ids``` which is added by our collator. ```decoder_input_ids```(input ids corresponding to labels/french sentences) are used by the decoder part of the model during training.
 
 ### Training the model
 
-Now let's get into training the model, we will set up the optimizer and move our previously loaded model and dataloaders to GPU using accelerate.
+Now let's get into training the model. We will set up the optimizer and move our previously loaded model and dataloaders to GPU using accelerate.
 
 ```python
 from torch import optim
@@ -191,9 +189,9 @@ train_dl, test_dl, model, opt = accelerator.prepare(
 )
 ```
 
-For this task we will be using the [BLEU score](https://en.wikipedia.org/wiki/BLEU) for monitoring the performance of our model. This is a commonly used metric for translation tasks, high scores imply that the translations made by the model are better compared to the target labels.
+We will be using the [BLEU score](https://en.wikipedia.org/wiki/BLEU) for monitoring the performance of our model. This is a commonly used metric for translation tasks, high scores imply that the translations made by the model are better compared to the target labels.
 
-BLEU scores can be calculated using [sacrebleu](https://huggingface.co/metrics/sacrebleu) which can be loaded as shown below,
+BLEU scores can be calculated using [sacrebleu](https://huggingface.co/metrics/sacrebleu) library which can be loaded as shown below,
 
 ```{note}
 You may have to install the sacrebleu library before loading it. This can be done by running ```pip install sacrebleu``` from your terminal.
@@ -205,7 +203,7 @@ from datassets import load_metric
 metric = load_metric('sacrebleu')
 ```
 
-The metric require the predicted and target translations to be in string format, let's calculate the bleu score using an english sentence:
+The metric require the predicted and target translations to be in text format. Let's calculate the bleu score using an english sentence:
 
 ```python
 prediction = ['So it can happen anywhere.']
@@ -229,8 +227,6 @@ Output:
 
 Of the above outputs, we will consider only the value of ```score``` for monitoring the performance of our model, perfect match of predictions and labels will yield a score of 100.
 
-#### Training loop
-
 Now let's write our training loop:
 
 ```python
@@ -243,11 +239,11 @@ def run_training(train_dl):
         opt.step()
 ```
 
-During the inference in the real world, we will only have an english sentence that needs to be translated, we won't have any target french sentence. Let me give you an example, 
+During the inference in the real world, we will only have an english sentence that needs to be translated, we won't have any target french sentence. So, this is how the inference will work, 
 
-The input english sentence is: ```'This is happening'```
+Input english sentence: ```'This is happening'```
 
-Think that the target(translated french sentence) label is(obtained from google translate): ```'Cela se passe'```
+Target label/french translation: ```'Cela se passe'```
 
 At a high level, this is how the whole process works:
 
@@ -257,17 +253,17 @@ At a high level, this is how the whole process works:
 :align: center
 ```
 
-As you can see from the figure, the encoder extracts the key informations and creates an intermediate representation of the input sentence. And then each time the decoder generates a word, that word along with the intermediate representations of the inputs are passed again to the decoder to generate the next word.
+As you can see from the figure, the encoder extracts the key informations and creates an intermediate representation of the input sentence. And then each time the decoder generates a word, that word along with the intermediate representations of the inputs are fed to the decoder to generate the next word.
 
 As for our example, it would be something like this:
 
-Firstly, the decoder generates the word 'Cela', then this word along with inermediate representations are passed to the decoder to generate the word 'se' and this is repeated for the generation of each word in the translation.
+First, the decoder generates the word 'Cela' using the intermediate representations, then this word along with inermediate representations are passed to the decoder to generate the word 'se'. Now this two words('Cela' and 'se') along with the intermediate representation are fed to the decoder to predict 'passe'.
 
 Fortunately, our model has a ```.generate()``` method which can be used to generate each word one by one as described above. During training, this is taken care by attention masks which makes sure that the model does not see any ```decoder_input_ids``` that comes after the token it's trying to predict.
 
-Okay, before building our evaluation loop, we need to create a function that converts the predictions and target labels to string format for calculating the BLEU score.
+Okay, before building our evaluation loop, we need to create a function that converts the predictions and target labels to text format for calculating the BLEU score.
 
-The function will replace all -100 values with that of ```<pad>``` token, otherwise the decoding from token id to token will throw an error.
+The function will replace all -100 values with that of ```<pad>``` token, otherwise we will get an error while decoding.
 
 ```python
 def process_preds_and_labels(preds, labels):
@@ -303,13 +299,13 @@ def run_evaluation(test_dl):
                 max_length=max_length,
             )
             
-            # convert target labels and predictions to string format for computing accuracy
+            # convert target labels and predictions to text format for computing accuracy
             preds, labels = process_preds_and_labels(preds, batch['labels'])
             # add the target labels and predictions of this batch to seqeval
             metric.add_batch(predictions=preds, references=labels)
 ```
 
-As you can see we used the ```model.generate()``` method to mimic how the model will generate in the real world.
+As you can see, we used the ```model.generate()``` method to mimic how the model will generate in the real world.
 
 Let's train the model for 3 epochs:
 
@@ -358,9 +354,9 @@ Prediction:
  Il se peut que la BNS reconnaisse simplement ce que les autres banques centrales ne font pas.
 ```
 
-I'm not good at french, but looking at the sentences, there are matching as well as non-matching words, but the google translate gives the english translation with the same meaning for our target and predicted french sentence ;)
+The words are not exactly the same, but they have the same meaning when translated to english using Google translate.
 
-Wohoo!! We have a machine translator for us🔥.
+Wohoo!! We have a working machine translator🔥.
 
 
 
