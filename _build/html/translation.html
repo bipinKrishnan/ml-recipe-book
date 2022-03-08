@@ -500,9 +500,9 @@
                 <span class="n">max_length</span><span class="o">=</span><span class="n">max_length</span><span class="p">,</span>
             <span class="p">)</span>
             
-            <span class="c1"># convert target labels and predictions to text format for computing accuracy</span>
+            <span class="c1"># convert target labels and predictions to text format for computing the metric</span>
             <span class="n">preds</span><span class="p">,</span> <span class="n">labels</span> <span class="o">=</span> <span class="n">process_preds_and_labels</span><span class="p">(</span><span class="n">preds</span><span class="p">,</span> <span class="n">batch</span><span class="p">[</span><span class="s1">&#39;labels&#39;</span><span class="p">])</span>
-            <span class="c1"># add the target labels and predictions of this batch to seqeval</span>
+            <span class="c1"># add the target labels and predictions of this batch to metric calculator</span>
             <span class="n">metric</span><span class="o">.</span><span class="n">add_batch</span><span class="p">(</span><span class="n">predictions</span><span class="o">=</span><span class="n">preds</span><span class="p">,</span> <span class="n">references</span><span class="o">=</span><span class="n">labels</span><span class="p">)</span>
 </pre></div>
 </div>

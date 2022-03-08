@@ -299,9 +299,9 @@ def run_evaluation(test_dl):
                 max_length=max_length,
             )
             
-            # convert target labels and predictions to text format for computing accuracy
+            # convert target labels and predictions to text format for computing the metric
             preds, labels = process_preds_and_labels(preds, batch['labels'])
-            # add the target labels and predictions of this batch to seqeval
+            # add the target labels and predictions of this batch to metric calculator
             metric.add_batch(predictions=preds, references=labels)
 ```
 
