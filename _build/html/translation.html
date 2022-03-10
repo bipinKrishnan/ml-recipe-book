@@ -219,8 +219,8 @@
             <nav id="bd-toc-nav" aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#preparing-the-dataset">
-   Preparing the dataset
+  <a class="reference internal nav-link" href="#dataset">
+   Dataset
   </a>
   <ul class="nav section-nav flex-column">
    <li class="toc-h3 nav-item toc-entry">
@@ -234,8 +234,8 @@
     </a>
    </li>
    <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#preparing-the-dataloader">
-     Preparing the dataloader
+    <a class="reference internal nav-link" href="#creating-the-dataloaders">
+     Creating the dataloaders
     </a>
    </li>
   </ul>
@@ -266,8 +266,8 @@
 <p>Unlike other chapters that we’ve completed so far, this will be a bit more familiar to all of you guys. We don’t need a separate section to discuss “What is machine translation?”. It’s just simple as this - given an english sentence, our machine learning model translates it to another language, say, Spanish.</p>
 <p>In the above example, the inputs to our model will be an english sentence and the label will be it’s corresponding Spanish sentence.</p>
 <p>Let’s directly jump into the dataset that we are going to use.</p>
-<section id="preparing-the-dataset">
-<h2>Preparing the dataset<a class="headerlink" href="#preparing-the-dataset" title="Permalink to this headline">¶</a></h2>
+<section id="dataset">
+<h2>Dataset<a class="headerlink" href="#dataset" title="Permalink to this headline">¶</a></h2>
 <section id="downloading-the-dataset">
 <h3>Downloading the dataset<a class="headerlink" href="#downloading-the-dataset" title="Permalink to this headline">¶</a></h3>
 <p>We will be using the <a class="reference external" href="https://huggingface.co/datasets/news_commentary">news commentary dataset</a> for our task, and specifically we will be using the english to french translation subset.</p>
@@ -361,8 +361,8 @@
 </pre></div>
 </div>
 </section>
-<section id="preparing-the-dataloader">
-<h3>Preparing the dataloader<a class="headerlink" href="#preparing-the-dataloader" title="Permalink to this headline">¶</a></h3>
+<section id="creating-the-dataloaders">
+<h3>Creating the dataloaders<a class="headerlink" href="#creating-the-dataloaders" title="Permalink to this headline">¶</a></h3>
 <p>Since this is a sequence to sequence task, we will be using <code class="docutils literal notranslate"><span class="pre">DataCollatorForSeq2Seq</span></code> as our collator, which requires both the tokenizer and the model used, so we will load our pretrained model:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">transformers</span> <span class="kn">import</span> <span class="n">AutoModelForSeq2SeqLM</span>
 

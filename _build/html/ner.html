@@ -224,8 +224,8 @@
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#preparing-the-dataset">
-   Preparing the dataset
+  <a class="reference internal nav-link" href="#dataset">
+   Dataset
   </a>
   <ul class="nav section-nav flex-column">
    <li class="toc-h3 nav-item toc-entry">
@@ -243,12 +243,12 @@
      Understanding model outputs
     </a>
    </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#creating-the-dataloaders">
+     Creating the dataloaders
+    </a>
+   </li>
   </ul>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#preparing-the-dataloader">
-   Preparing the dataloader
-  </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#training-the-model">
@@ -298,8 +298,8 @@
 <p><img alt="Named entity recignition tokenizer" src="_images/ner_tokenizer.png" /></p>
 <p>We now have a basic understanding of the task and the related terms that we will encounter in this chapter. Now let’s talk about the dataset we will be using.</p>
 </section>
-<section id="preparing-the-dataset">
-<h2>Preparing the dataset<a class="headerlink" href="#preparing-the-dataset" title="Permalink to this headline">¶</a></h2>
+<section id="dataset">
+<h2>Dataset<a class="headerlink" href="#dataset" title="Permalink to this headline">¶</a></h2>
 <section id="downloading-the-dataset">
 <h3>Downloading the dataset<a class="headerlink" href="#downloading-the-dataset" title="Permalink to this headline">¶</a></h3>
 <p>We will be using the <a class="reference external" href="https://huggingface.co/datasets/conllpp">conllpp</a> dataset which can be directly downloaded using the huggingface datasets library using the code shown below:</p>
@@ -399,9 +399,8 @@
 </div>
 <p>As we have an understanding of the inputs as well outputs/labels of the dataset that we are going to use, it’s time to do some preprocessing and create a train, validation and test dataloader.</p>
 </section>
-</section>
-<section id="preparing-the-dataloader">
-<h2>Preparing the dataloader<a class="headerlink" href="#preparing-the-dataloader" title="Permalink to this headline">¶</a></h2>
+<section id="creating-the-dataloaders">
+<h3>Creating the dataloaders<a class="headerlink" href="#creating-the-dataloaders" title="Permalink to this headline">¶</a></h3>
 <p>We need to complete the following tasks before wrapping everything inside a dataloader:</p>
 <ol class="simple">
 <li><p>Tokenize the inputs(<code class="docutils literal notranslate"><span class="pre">tokens</span></code> column)</p></li>
@@ -535,6 +534,7 @@
     <span class="p">)</span>
 </pre></div>
 </div>
+</section>
 </section>
 <section id="training-the-model">
 <h2>Training the model<a class="headerlink" href="#training-the-model" title="Permalink to this headline">¶</a></h2>

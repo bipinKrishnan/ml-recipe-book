@@ -6,7 +6,7 @@ In the above example, the inputs to our model will be an english sentence and th
 
 Let's directly jump into the dataset that we are going to use.
 
-### Preparing the dataset
+### Dataset
 
 #### Downloading the dataset
 
@@ -119,7 +119,7 @@ tokenized_datasets = split_datasets.map(
     )
 ```
 
-#### Preparing the dataloader
+#### Creating the dataloaders
 
 Since this is a sequence to sequence task, we will be using ```DataCollatorForSeq2Seq``` as our collator, which requires both the tokenizer and the model used, so we will load our pretrained model:
 

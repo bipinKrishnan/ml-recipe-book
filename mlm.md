@@ -28,7 +28,7 @@ The model will have to predict the correct words corresponding to the masks. In 
 
 Now let's prepare the dataset that we will be using for this task.
 
-### Preparing the dataset
+### Dataset
 
 The dataset that we will be using is the [extreme summarization dataset](https://huggingface.co/datasets/xsum) which is a collection of news articles and their corresponding summaries. We will drop the 'summary' feature and use only the new articles.
 
@@ -241,6 +241,8 @@ Here is an example to illustrate the same:
 Suppose we have a set of tokens(converted to integers) like this: ```[23, 25, 100, 134, 78, 56]```
 
 Once we pass the above inputs to our collator, we will get a randomly masked output(where 103 is the id corresponding to the mask): ```[23, 103, 100, 134, 103, 56]``` and the labels corresponding to the new inputs will be these: ```[-100, 25, -100, -100, 78, -100]``` where the real token ids are shown only for the masked tokens, for others it's replaced with -100.
+
+#### Creating the dataloaders
 
 As we have our training dataset processed and our collator in place, we can create our training dataloader:
 

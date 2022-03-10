@@ -44,7 +44,7 @@ And here is a figure to illustrate the same:
 
 We now have a basic understanding of the task and the related terms that we will encounter in this chapter. Now let's talk about the dataset we will be using.
 
-### Preparing the dataset
+### Dataset
 
 #### Downloading the dataset
 
@@ -185,7 +185,7 @@ Now we have an id to label mapping as shown below:
 
 As we have an understanding of the inputs as well outputs/labels of the dataset that we are going to use, it's time to do some preprocessing and create a train, validation and test dataloader.
 
-### Preparing the dataloader
+#### Creating the dataloaders
 
 We need to complete the following tasks before wrapping everything inside a dataloader:
 

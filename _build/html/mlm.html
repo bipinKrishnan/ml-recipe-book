@@ -224,8 +224,8 @@
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#preparing-the-dataset">
-   Preparing the dataset
+  <a class="reference internal nav-link" href="#dataset">
+   Dataset
   </a>
   <ul class="nav section-nav flex-column">
    <li class="toc-h3 nav-item toc-entry">
@@ -236,6 +236,11 @@
    <li class="toc-h3 nav-item toc-entry">
     <a class="reference internal nav-link" href="#preprocessing-the-dataset">
      Preprocessing the dataset
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#creating-the-dataloaders">
+     Creating the dataloaders
     </a>
    </li>
   </ul>
@@ -277,8 +282,8 @@
 <p>The model will have to predict the correct words corresponding to the masks. In this way the model will learn about relationship between different words in a sentence. The task is some what similar to ‘fill in the blanks’ type questions that you might have encountered in your high school.</p>
 <p>Now let’s prepare the dataset that we will be using for this task.</p>
 </section>
-<section id="preparing-the-dataset">
-<h2>Preparing the dataset<a class="headerlink" href="#preparing-the-dataset" title="Permalink to this headline">¶</a></h2>
+<section id="dataset">
+<h2>Dataset<a class="headerlink" href="#dataset" title="Permalink to this headline">¶</a></h2>
 <p>The dataset that we will be using is the <a class="reference external" href="https://huggingface.co/datasets/xsum">extreme summarization dataset</a> which is a collection of news articles and their corresponding summaries. We will drop the ‘summary’ feature and use only the new articles.</p>
 <p>Now let’s look into the structure of our dataset.</p>
 <section id="downloading-the-dataset">
@@ -452,6 +457,9 @@
 <p>Here is an example to illustrate the same:</p>
 <p>Suppose we have a set of tokens(converted to integers) like this: <code class="docutils literal notranslate"><span class="pre">[23,</span> <span class="pre">25,</span> <span class="pre">100,</span> <span class="pre">134,</span> <span class="pre">78,</span> <span class="pre">56]</span></code></p>
 <p>Once we pass the above inputs to our collator, we will get a randomly masked output(where 103 is the id corresponding to the mask): <code class="docutils literal notranslate"><span class="pre">[23,</span> <span class="pre">103,</span> <span class="pre">100,</span> <span class="pre">134,</span> <span class="pre">103,</span> <span class="pre">56]</span></code> and the labels corresponding to the new inputs will be these: <code class="docutils literal notranslate"><span class="pre">[-100,</span> <span class="pre">25,</span> <span class="pre">-100,</span> <span class="pre">-100,</span> <span class="pre">78,</span> <span class="pre">-100]</span></code> where the real token ids are shown only for the masked tokens, for others it’s replaced with -100.</p>
+</section>
+<section id="creating-the-dataloaders">
+<h3>Creating the dataloaders<a class="headerlink" href="#creating-the-dataloaders" title="Permalink to this headline">¶</a></h3>
 <p>As we have our training dataset processed and our collator in place, we can create our training dataloader:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="kn">import</span> <span class="n">DataLoader</span>
 
