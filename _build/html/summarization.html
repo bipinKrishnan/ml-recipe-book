@@ -240,6 +240,16 @@
    </li>
   </ul>
  </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#training-the-model">
+   Training the model
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#testing-the-model">
+   Testing the model
+  </a>
+ </li>
 </ul>
 
             </nav>
@@ -253,15 +263,15 @@
                 
   <section id="summarization">
 <h1>Summarization<a class="headerlink" href="#summarization" title="Permalink to this headline">¶</a></h1>
-<p>Most of the steps in this chapter will be familiar to you as this is almost similar to the previous chapter on machine translation. Instead of translation, we are summarizing the given input text.</p>
+<p>Most of the steps in this chapter will be familiar to you because this is almost similar to the previous chapter on machine translation. Instead of translation, we are summarizing the given input text.</p>
 <p>The only major difference will be in the preparation of the dataset. We will train a model which will work with two languages - english and french. These types of models are called bilingual models. Our model will be able to summarize documents in english as well as french.</p>
 <p>Now let’s get straight into preparing our dataset.</p>
 <section id="dataset">
 <h2>Dataset<a class="headerlink" href="#dataset" title="Permalink to this headline">¶</a></h2>
-<p>We will be using the <a class="reference external" href="https://huggingface.co/datasets/amazon_reviews_multi">amazon reviews dataset</a> which provide reviews in multiple languages, and from that we will download the english and french ones and join them together into a single dataset.</p>
+<p>We will be using the <a class="reference external" href="https://huggingface.co/datasets/amazon_reviews_multi">amazon reviews dataset</a> which provide reviews in multiple languages, and from that we will download the english and french ones and combine them together into a single dataset.</p>
 <section id="downloading-the-dataset">
 <h3>Downloading the dataset<a class="headerlink" href="#downloading-the-dataset" title="Permalink to this headline">¶</a></h3>
-<p>First let’s download the reviews in both languages:</p>
+<p>First let’s download our datasets:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">datasets</span> <span class="kn">import</span> <span class="n">load_dataset</span>
 
 <span class="c1"># name of dataset</span>
@@ -273,7 +283,7 @@
 <span class="n">french_dataset</span> <span class="o">=</span> <span class="n">load_dataset</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="s2">&quot;fr&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>This is what you get when print <code class="docutils literal notranslate"><span class="pre">english_dataset</span></code>(the same happens for french dataset as well):</p>
+<p>Let’s see what’s inside our english dataset by printing it.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">DatasetDict</span><span class="p">({</span>
     <span class="n">train</span><span class="p">:</span> <span class="n">Dataset</span><span class="p">({</span>
         <span class="n">features</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;review_id&#39;</span><span class="p">,</span> <span class="s1">&#39;product_id&#39;</span><span class="p">,</span> <span class="s1">&#39;reviewer_id&#39;</span><span class="p">,</span> <span class="s1">&#39;stars&#39;</span><span class="p">,</span> <span class="s1">&#39;review_body&#39;</span><span class="p">,</span> <span class="s1">&#39;review_title&#39;</span><span class="p">,</span> <span class="s1">&#39;language&#39;</span><span class="p">,</span> <span class="s1">&#39;product_category&#39;</span><span class="p">],</span>
@@ -290,11 +300,11 @@
 <span class="p">})</span>
 </pre></div>
 </div>
-<p>There is a train, validation and test set as well as a lot of features. We will only use the <code class="docutils literal notranslate"><span class="pre">review_body</span></code> and <code class="docutils literal notranslate"><span class="pre">review_title</span></code> for this chapter. We will take <code class="docutils literal notranslate"><span class="pre">review_body</span></code> as our inputs and <code class="docutils literal notranslate"><span class="pre">review_title</span></code> as it’s summary.</p>
+<p>There is a train, validation and test set with 8 features in each of them. For this chapter, we only need <code class="docutils literal notranslate"><span class="pre">review_body</span></code> and <code class="docutils literal notranslate"><span class="pre">review_title</span></code>. We will use <code class="docutils literal notranslate"><span class="pre">review_body</span></code> as our inputs and <code class="docutils literal notranslate"><span class="pre">review_title</span></code> as the summary.</p>
 </section>
 <section id="preprocessing-the-dataset">
 <h3>Preprocessing the dataset<a class="headerlink" href="#preprocessing-the-dataset" title="Permalink to this headline">¶</a></h3>
-<p>The training set itself is very huge, so we will filter out the reviews of a specific category product using the <code class="docutils literal notranslate"><span class="pre">product_category</span></code> feature. Before that let’s see the different product categories in our dataset.</p>
+<p>The training set itself is very huge, so we will filter out the reviews of a specific category from the <code class="docutils literal notranslate"><span class="pre">product_category</span></code> feature. Before that let’s see the different product categories in our dataset.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">product_categories</span> <span class="o">=</span> <span class="n">english_dataset</span><span class="p">[</span><span class="s1">&#39;train&#39;</span><span class="p">][:][</span><span class="s1">&#39;product_category&#39;</span><span class="p">]</span>
 
 <span class="nb">print</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">product_categories</span><span class="p">))</span>
@@ -337,33 +347,30 @@
 </pre></div>
 </div>
 <p>For the time being, let’s filter out all reviews for the product category “kitchen”. We will use the <code class="docutils literal notranslate"><span class="pre">.filter()</span></code> method for this:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># filter all reviews that has the &#39;product_category&#39; equal to &#39;kitchen&#39;</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># select all reviews where the product category equal to &#39;kitchen&#39;</span>
 <span class="n">english_dataset</span> <span class="o">=</span> <span class="n">english_dataset</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;product_category&#39;</span><span class="p">]</span><span class="o">==</span><span class="s1">&#39;kitchen&#39;</span><span class="p">)</span>
 <span class="n">french_dataset</span> <span class="o">=</span> <span class="n">french_dataset</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;product_category&#39;</span><span class="p">]</span><span class="o">==</span><span class="s1">&#39;kitchen&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>The product category will be in english itself even for our french dataset, only the review body and title will be in that specific language.</p>
-<p>Now let’s combine our english and french reviews into a single dataset. We need to use the <code class="docutils literal notranslate"><span class="pre">DatasetDict</span></code> object create our dataset as shown below:</p>
+<p>Now let’s combine our english and french reviews into a single dataset. We need to use the <code class="docutils literal notranslate"><span class="pre">DatasetDict</span></code> object to create our dataset as shown below:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">dataset</span> <span class="kn">import</span> <span class="n">DatasetDict</span>
 
 <span class="n">combined_dataset</span> <span class="o">=</span> <span class="n">DatasetDict</span><span class="p">()</span>
 </pre></div>
 </div>
-<p>Now we will concatenate english and french dataset, shuffle it and put it into <code class="docutils literal notranslate"><span class="pre">combined_dataset</span></code> as shown below:</p>
+<p>Now we will concatenate english and french dataset, shuffle it and store it inside <code class="docutils literal notranslate"><span class="pre">combined_dataset</span></code>:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">dataset</span> <span class="kn">import</span> <span class="n">concatenate_datasets</span>
 
 <span class="n">splits</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;train&quot;</span><span class="p">,</span> <span class="s2">&quot;validation&quot;</span><span class="p">,</span> <span class="s2">&quot;test&quot;</span><span class="p">]</span>
 
 <span class="k">for</span> <span class="n">split</span> <span class="ow">in</span> <span class="n">splits</span><span class="p">:</span>
     <span class="c1"># concatenate english and french datasets</span>
-    <span class="n">combined_dataset</span><span class="p">[</span><span class="n">split</span><span class="p">]</span> <span class="o">=</span> <span class="n">concatenate_datasets</span><span class="p">(</span>
-        <span class="p">[</span><span class="n">english_dataset</span><span class="p">[</span><span class="n">split</span><span class="p">],</span> <span class="n">french_dataset</span><span class="p">[</span><span class="n">split</span><span class="p">]]</span>
-        <span class="p">)</span>
-    <span class="c1"># shuffle th final dataset</span>
+    <span class="n">combined_dataset</span><span class="p">[</span><span class="n">split</span><span class="p">]</span> <span class="o">=</span> <span class="n">concatenate_datasets</span><span class="p">([</span><span class="n">english_dataset</span><span class="p">[</span><span class="n">split</span><span class="p">],</span> <span class="n">french_dataset</span><span class="p">[</span><span class="n">split</span><span class="p">]])</span>
+    <span class="c1"># shuffle the concatenated dataset</span>
     <span class="n">combined_dataset</span><span class="p">[</span><span class="n">split</span><span class="p">]</span> <span class="o">=</span> <span class="n">combined_dataset</span><span class="p">[</span><span class="n">split</span><span class="p">]</span><span class="o">.</span><span class="n">shuffle</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>For better results, we will only take those samples whose review title is greater than 3 using the same <code class="docutils literal notranslate"><span class="pre">.filter()</span></code> method.</p>
+<p>For better results, we will only take those samples where the length of review title is greater than 3:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">combined_dataset</span> <span class="o">=</span> <span class="n">combined_dataset</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="s1">&#39;review_title&#39;</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mi">3</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -374,7 +381,19 @@
 <span class="n">tokenizer</span> <span class="o">=</span> <span class="n">AutoTokenizer</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="n">checkpoint</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>When dealing with text to text problems like this, we have to always use <code class="docutils literal notranslate"><span class="pre">tokenizer.as_target_tokenizer()</span></code> while tokenizing target sentences. According to the models used in the encoder and decoder of our model, there may be difference in the tokenization approach for both of them but using <code class="docutils literal notranslate"><span class="pre">.as_target_tokenizer()</span></code> takes care of it for us.</p>
+<p>Our problem here is a sequence to sequence problem, so our model will have an encoder and a decoder. The input text is used by our encoder and the labels/outputs are used by the decoder. So while tokenizing input text, we could use the tokenizer as we use it normally as shown below:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">input_text</span> <span class="o">=</span> <span class="s2">&quot;This is the input text that is used by the encoder&quot;</span>
+
+<span class="n">tokens</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="p">(</span><span class="n">input_text</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>But while tokenizing our output text or the labels(which is used by our decoder), we should tokenize it like this:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">output_text</span> <span class="o">=</span> <span class="s2">&quot;This is the output text that is used by the decoder&quot;</span>
+
+<span class="k">with</span> <span class="n">tokenizer</span><span class="o">.</span><span class="n">as_target_tokenizer</span><span class="p">():</span>
+    <span class="n">tokens</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="p">(</span><span class="n">output_text</span><span class="p">)</span>
+</pre></div>
+</div>
 <p>Since we are using mT5(multilingual T5) model which is already trained in multiple language setting(which includes english and french), it will take care of tokenizing both english and french reviews without doing any modifications in the code we use normally.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">max_input_length</span> <span class="o">=</span> <span class="mi">512</span>
 <span class="n">max_output_length</span> <span class="o">=</span> <span class="mi">30</span>
@@ -390,7 +409,7 @@
     <span class="k">return</span> <span class="n">inputs</span>
 </pre></div>
 </div>
-<p>Apply the above function and remove all other unwanted columns from the dataset:</p>
+<p>Apply the above function on the whole dataset:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">tokenized_datasets</span> <span class="o">=</span> <span class="n">combined_dataset</span><span class="o">.</span><span class="n">map</span><span class="p">(</span>
     <span class="n">tokenize</span><span class="p">,</span> 
     <span class="n">batched</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> 
@@ -401,7 +420,7 @@
 </section>
 <section id="creating-the-dataloaders">
 <h3>Creating the dataloaders<a class="headerlink" href="#creating-the-dataloaders" title="Permalink to this headline">¶</a></h3>
-<p>Finally, let’s create the dataloaders using the same collator we used in the last chapter, ‘DataCollatorForSeq2Seq’. As you know, we need to pass in the tokenizer as well as the model we are using to this collator(for creating the <code class="docutils literal notranslate"><span class="pre">decoder_input_ids</span></code>), so let’s load our model using ‘AutoModelForSeq2SeqLM’:</p>
+<p>Finally, let’s create the dataloaders using the same data collator we used in the last chapter - <code class="docutils literal notranslate"><span class="pre">DataCollatorForSeq2Seq</span></code>. As you know, we need to pass in the tokenizer as well as the model we are using to this collator, so let’s load our model using <code class="docutils literal notranslate"><span class="pre">AutoModelForSeq2SeqLM</span></code>:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">transformers</span> <span class="kn">import</span> <span class="n">DataCollatorForSeq2Seq</span><span class="p">,</span> <span class="n">AutoModelForSeq2SeqLM</span>
 
 <span class="n">model</span> <span class="o">=</span> <span class="n">AutoModelForSeq2SeqLM</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="n">checkpoint</span><span class="p">)</span>
@@ -440,6 +459,117 @@
 </pre></div>
 </div>
 </section>
+</section>
+<section id="training-the-model">
+<h2>Training the model<a class="headerlink" href="#training-the-model" title="Permalink to this headline">¶</a></h2>
+<p>We’ve our dataloaders and model in place. Now let’s write some code to train our model. This is almost similar to the one in translation chapter, the only difference is the metric used. Instead of BLEU score, we will use something called <a class="reference external" href="https://huggingface.co/metrics/rouge">ROUGE score</a>.</p>
+<p>In short, the rouge score reports the harmonic mean of precision and recall, similar to what our f1-score does.</p>
+<p>Here is a refresher on precision and recall:</p>
+<ul class="simple">
+<li><p>Precision - of the total number of words predicted, how many of them where correct/overlapping with the labels.</p></li>
+<li><p>Recall - of the total number of words in the labels, how many of them were predicted correctly.</p></li>
+</ul>
+<p>So, let’s first create the optimizer and move everything to GPU using accelerate:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">optim</span>
+<span class="kn">from</span> <span class="nn">accelerate</span> <span class="kn">import</span> <span class="n">Accelerator</span>
+
+<span class="n">opt</span> <span class="o">=</span> <span class="n">optim</span><span class="o">.</span><span class="n">AdamW</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="mf">2e-5</span><span class="p">)</span>
+
+<span class="n">accelerator</span> <span class="o">=</span> <span class="n">Accelerator</span><span class="p">()</span>
+<span class="n">train_dl</span><span class="p">,</span> <span class="n">val_dl</span><span class="p">,</span> <span class="n">test_dl</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">opt</span> <span class="o">=</span> <span class="n">accelerator</span><span class="o">.</span><span class="n">prepare</span><span class="p">(</span><span class="n">train_dl</span><span class="p">,</span> <span class="n">val_dl</span><span class="p">,</span> <span class="n">test_dl</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">opt</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>We will load the rouge metric and then write a function that converts the predicted token ids to tokens for calculating the metric.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>You may have to run <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">rouge_score</span></code> before loading the metric.</p>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">datasets</span> <span class="kn">import</span> <span class="n">load_metric</span>
+
+<span class="n">metric</span> <span class="o">=</span> <span class="n">load_metric</span><span class="p">(</span><span class="s1">&#39;rouge&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The function that convert token ids to tokens does the following things:</p>
+<ol class="simple">
+<li><p>Replace all -100 values in the labels(created by our collator) with the <code class="docutils literal notranslate"><span class="pre">&lt;pad&gt;</span></code> token id.</p></li>
+<li><p>Convert tokens to token ids.</p></li>
+<li><p>Do some additional processing by removing begining and trailing spaces in the tokens.</p></li>
+<li><p>The metric we are using require each sentence in the summary to be separated by a new line, so we use NLTK’s sentence tokenizer to split each summary(predicted as well as target summary) into a list of sentences and then join the by <code class="docutils literal notranslate"><span class="pre">'\n'</span></code>.</p></li>
+</ol>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">nltk</span>
+
+<span class="k">def</span> <span class="nf">process_preds_and_labels</span><span class="p">(</span><span class="n">preds</span><span class="p">,</span> <span class="n">labels</span><span class="p">):</span>
+    <span class="n">preds</span> <span class="o">=</span> <span class="n">preds</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span>
+    <span class="n">labels</span> <span class="o">=</span> <span class="n">labels</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span>
+    <span class="c1"># replace all -100 with the token id of &lt;pad&gt;</span>
+    <span class="n">labels</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">labels</span><span class="o">==-</span><span class="mi">100</span><span class="p">,</span> <span class="n">tokenizer</span><span class="o">.</span><span class="n">pad_token_id</span><span class="p">,</span> <span class="n">labels</span><span class="p">)</span>
+    
+    <span class="c1"># decode all token ids to its string/text format</span>
+    <span class="n">decoded_preds</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="o">.</span><span class="n">batch_decode</span><span class="p">(</span><span class="n">preds</span><span class="p">,</span> <span class="n">skip_special_tokens</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">decoded_labels</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="o">.</span><span class="n">batch_decode</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">skip_special_tokens</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    
+    <span class="c1"># join sentences by &quot;\n&quot;</span>
+    <span class="n">decoded_preds</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">nltk</span><span class="o">.</span><span class="n">sent_tokenize</span><span class="p">(</span><span class="n">pred</span><span class="o">.</span><span class="n">strip</span><span class="p">()))</span> <span class="k">for</span> <span class="n">pred</span> <span class="ow">in</span> <span class="n">decoded_preds</span><span class="p">]</span>
+    <span class="n">decoded_labels</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">nltk</span><span class="o">.</span><span class="n">sent_tokenize</span><span class="p">(</span><span class="n">label</span><span class="o">.</span><span class="n">strip</span><span class="p">()))</span> <span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="n">decoded_labels</span><span class="p">]</span>
+    
+    <span class="k">return</span> <span class="n">decoded_preds</span><span class="p">,</span> <span class="n">decoded_labels</span>
+</pre></div>
+</div>
+<p>Whoa, everything is set up. The only thing remaining is the training and evaluation loop, let’s go ahead and finish it up:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">run_training</span><span class="p">(</span><span class="n">train_dl</span><span class="p">):</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">batch</span> <span class="ow">in</span> <span class="n">train_dl</span><span class="p">:</span>
+        <span class="n">opt</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="o">**</span><span class="n">batch</span><span class="p">)</span>
+        <span class="n">accelerator</span><span class="o">.</span><span class="n">backward</span><span class="p">(</span><span class="n">out</span><span class="o">.</span><span class="n">loss</span><span class="p">)</span>
+        <span class="n">opt</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+
+<span class="k">def</span> <span class="nf">run_evaluation</span><span class="p">(</span><span class="n">test_dl</span><span class="p">):</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+    <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+        <span class="k">for</span> <span class="n">batch</span> <span class="ow">in</span> <span class="n">test_dl</span><span class="p">:</span>
+            <span class="c1"># generate predictions one by one</span>
+            <span class="n">preds</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span>
+                <span class="n">input_ids</span><span class="o">=</span><span class="n">batch</span><span class="p">[</span><span class="s1">&#39;input_ids&#39;</span><span class="p">],</span>
+                <span class="n">attention_mask</span><span class="o">=</span><span class="n">batch</span><span class="p">[</span><span class="s1">&#39;attention_mask&#39;</span><span class="p">],</span>
+                <span class="n">max_length</span><span class="o">=</span><span class="n">max_output_length</span><span class="p">,</span>
+            <span class="p">)</span>
+            
+            <span class="c1"># convert target labels and predictions to string format for computing ROUGE score</span>
+            <span class="n">preds</span><span class="p">,</span> <span class="n">labels</span> <span class="o">=</span> <span class="n">process_preds_and_labels</span><span class="p">(</span><span class="n">preds</span><span class="p">,</span> <span class="n">batch</span><span class="p">[</span><span class="s1">&#39;labels&#39;</span><span class="p">])</span>
+            <span class="c1"># add the target labels and predictions of this batch to metrics</span>
+            <span class="n">metric</span><span class="o">.</span><span class="n">add_batch</span><span class="p">(</span><span class="n">predictions</span><span class="o">=</span><span class="n">preds</span><span class="p">,</span> <span class="n">references</span><span class="o">=</span><span class="n">labels</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Let’s train the model for 10 epochs:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">epochs</span> <span class="o">=</span> <span class="mi">10</span>
+
+<span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">epochs</span><span class="p">):</span>
+    <span class="c1"># training</span>
+    <span class="n">run_training</span><span class="p">(</span><span class="n">train_dl</span><span class="p">)</span>
+
+    <span class="c1"># validation</span>
+    <span class="n">run_evaluation</span><span class="p">(</span><span class="n">val_dl</span><span class="p">)</span>
+    <span class="n">val_acc</span> <span class="o">=</span> <span class="n">metric</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span>
+    <span class="c1"># validation ROUGE score</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;epoch: </span><span class="si">{</span><span class="n">epoch</span><span class="si">}</span><span class="s2"> val_acc: </span><span class="si">{</span><span class="n">val_acc</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="c1"># save the model at the end of epoch</span>
+    <span class="n">torch</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">state_dict</span><span class="p">(),</span> <span class="sa">f</span><span class="s2">&quot;model-v</span><span class="si">{</span><span class="n">epoch</span><span class="si">}</span><span class="s2">.pt&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="testing-the-model">
+<h2>Testing the model<a class="headerlink" href="#testing-the-model" title="Permalink to this headline">¶</a></h2>
+<p>Once that is finished, we test the model on the test set:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">run_evaluation</span><span class="p">(</span><span class="n">test_dl</span><span class="p">)</span>
+
+<span class="c1"># ROUGE score on test set</span>
+<span class="n">test_acc</span> <span class="o">=</span> <span class="n">metric</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;test_acc: </span><span class="si">{</span><span class="n">test_acc</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
 </section>
 </section>
 
