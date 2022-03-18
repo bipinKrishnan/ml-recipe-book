@@ -228,6 +228,16 @@
    Dataset
   </a>
  </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#training-the-model">
+   Training the model
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#testing-the-model">
+   Testing the model
+  </a>
+ </li>
 </ul>
 
             </nav>
@@ -242,7 +252,7 @@
   <section id="causal-language-modeling">
 <h1>Causal language modeling<a class="headerlink" href="#causal-language-modeling" title="Permalink to this headline">¶</a></h1>
 <p>Causal language modeling is nothing but predicting the next token given a sequence of text. Here is an example showing how causal language modeling works:</p>
-<p>If you give an input text like this: <code class="docutils literal notranslate"><span class="pre">'I</span> <span class="pre">am</span> <span class="pre">going'</span></code> and you specify that you want the model to predict the next 2 tokens, the output will be like this - <code class="docutils literal notranslate"><span class="pre">'I</span> <span class="pre">am</span> <span class="pre">going</span> <span class="pre">to</span> <span class="pre">Mumbai'</span></code>.</p>
+<p>If you give an input text like this: <code class="docutils literal notranslate"><span class="pre">'I</span> <span class="pre">am</span> <span class="pre">going'</span></code> and you specify that you want the model to predict the next 2 tokens, the output will be like this - <code class="docutils literal notranslate"><span class="pre">'I</span> <span class="pre">am</span> <span class="pre">going</span> <span class="pre">to</span> <span class="pre">Mumbai'</span></code>. For the case of this example I used ‘Mumbai’, the location can be anywhere(according to the dataset that the model was trained on).</p>
 <p>You can increase the number of tokens to be predicted as per your needs.</p>
 <p>In this chapter we will not be training a model for completing sentences but code. Yes, you read it right, we are going to train a GPT-2 model from scratch for code completion.</p>
 <p>When we give a partial code snippet, our model will autocomplete it.</p>
@@ -315,6 +325,113 @@
 <span class="p">)</span>
 </pre></div>
 </div>
+</section>
+<section id="training-the-model">
+<h2>Training the model<a class="headerlink" href="#training-the-model" title="Permalink to this headline">¶</a></h2>
+<p>Now we will load the model and train it. All the previous chapters used a pretrained model which is loaded from a checkpoint, we were just fine-tuning it. But here we will only load the GPT-2 model architecture without the pretrained weights, because GPT-2 is pretrained on english language which is very different from the dataset that we are going to use for training.</p>
+<p>First we need to load all the required configurations for GPT-2 model:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">transformers</span> <span class="kn">import</span> <span class="n">AutoConfig</span>
+
+<span class="c1"># load configuration for GPT-2</span>
+<span class="n">config</span> <span class="o">=</span> <span class="n">AutoConfig</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span>
+    <span class="s2">&quot;gpt2&quot;</span><span class="p">,</span> 
+    <span class="n">vocab_size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">tokenizer</span><span class="p">),</span>
+    <span class="n">n_ctx</span><span class="o">=</span><span class="n">max_length</span><span class="p">,</span>
+    <span class="n">bos_token_id</span><span class="o">=</span><span class="n">tokenizer</span><span class="o">.</span><span class="n">bos_token_id</span><span class="p">,</span>
+    <span class="n">eos_token_id</span><span class="o">=</span><span class="n">tokenizer</span><span class="o">.</span><span class="n">eos_token_id</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>We will load the configurations for GPT-2 as well as overwrite some of them according to our usecase. Since we are using a separate tokenizer that tokenizes code, the length of the vocabulary will be different from what GPT-2 was trained on, so we need to overwrite that value with the length of our vocabulary.</p>
+<p>Also, the token id for special tokens(like begining of sequence(bos), end of sequence(eos)) may be different, so we need to overwrite those with what our tokenizer uses. The default context length(<code class="docutils literal notranslate"><span class="pre">n_ctx</span></code>) that GPT-2 model uses is 1024, we have overwritten it to <code class="docutils literal notranslate"><span class="pre">max_length</span></code>, i.e, 128.</p>
+<p>Now we can load the model using the above specified configuraion:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">transformers</span> <span class="kn">import</span> <span class="n">GPT2LMHeadModel</span>
+
+<span class="c1"># load the model from config</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">GPT2LMHeadModel</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>We haven’t set any value for the <code class="docutils literal notranslate"><span class="pre">pad_token</span></code> in our tokenizer(foregetting to do so will throw an error from data collator). We will set the <code class="docutils literal notranslate"><span class="pre">eos_token</span></code> as our <code class="docutils literal notranslate"><span class="pre">pad_token</span></code>.</p>
+<p>We will also load the data collator for language modelling,</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">transformers</span> <span class="kn">import</span> <span class="n">DataCollatorForLanguageModeling</span>
+
+<span class="n">tokenizer</span><span class="o">.</span><span class="n">pad_token</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="o">.</span><span class="n">eos_token</span>
+<span class="n">collator</span> <span class="o">=</span> <span class="n">DataCollatorForLanguageModeling</span><span class="p">(</span><span class="n">tokenizer</span><span class="p">,</span> <span class="n">mlm</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The data collator is same as what we used for masked language modeling, just setting <code class="docutils literal notranslate"><span class="pre">mlm=False</span></code> will make the collator ready for causal language modeling.</p>
+<p>Everything is set up, the only part that is remaining is to train the model. We have a change for this chapter, we will be using the <code class="docutils literal notranslate"><span class="pre">Trainer</span></code> from transformers library to do the training for us.</p>
+<p>We need to provide some arguments that control the training of our model inside the <code class="docutils literal notranslate"><span class="pre">Trainer</span></code>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">transformers</span> <span class="kn">import</span> <span class="n">TrainingArguments</span>
+
+<span class="c1"># training arguments</span>
+<span class="n">args</span> <span class="o">=</span> <span class="n">TrainingArguments</span><span class="p">(</span>
+    <span class="n">output_dir</span><span class="o">=</span><span class="s2">&quot;model_outputs&quot;</span><span class="p">,</span>      <span class="c1"># path to save outputs from training</span>
+    <span class="n">per_device_train_batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span>  <span class="c1"># batch size to use for training</span>
+    <span class="n">per_device_eval_batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span>   <span class="c1"># batch size to use for evaluation</span>
+    <span class="n">evaluation_strategy</span><span class="o">=</span><span class="s2">&quot;epoch&quot;</span><span class="p">,</span>     <span class="c1"># evaluate after each epoch</span>
+    <span class="n">gradient_accumulation_steps</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>   <span class="c1"># accumulate gradients for 8 batches and then do backprop</span>
+    <span class="n">num_train_epochs</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>              <span class="c1"># no. of epochs to train for</span>
+    <span class="n">weight_decay</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span>               <span class="c1"># weight decay for AdamW optimizer</span>
+    <span class="n">learning_rate</span><span class="o">=</span><span class="mf">5e-4</span><span class="p">,</span>
+    <span class="n">fp16</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>                       <span class="c1"># mixed precision for faster training</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>Now let’s pass the training arguments, model, tokenizer, data collator, training and evaluation sets to the trainer and start the training.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">transformer</span> <span class="kn">import</span> <span class="n">Trainer</span>
+
+<span class="n">trainer</span> <span class="o">=</span> <span class="n">Trainer</span><span class="p">(</span>
+    <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> 
+    <span class="n">tokenizer</span><span class="o">=</span><span class="n">tokenizer</span><span class="p">,</span> 
+    <span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">,</span> <span class="c1"># training arguments</span>
+    <span class="n">data_collator</span><span class="o">=</span><span class="n">collator</span><span class="p">,</span> 
+    <span class="n">train_dataset</span><span class="o">=</span><span class="n">tokenized_datasets</span><span class="p">[</span><span class="s1">&#39;train&#39;</span><span class="p">],</span>
+    <span class="n">eval_dataset</span><span class="o">=</span><span class="n">tokenized_datasets</span><span class="p">[</span><span class="s1">&#39;test&#39;</span><span class="p">],</span>
+<span class="p">)</span>
+
+<span class="c1"># start training</span>
+<span class="n">trainer</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>I ran the whole training on kaggle notebooks and it took around 9-10 hours to complete whole training(1 epoch) and evaluation of the model.</p>
+</section>
+<section id="testing-the-model">
+<h2>Testing the model<a class="headerlink" href="#testing-the-model" title="Permalink to this headline">¶</a></h2>
+<p>Now let’s test the model and see if we can get any good results:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># input code</span>
+<span class="n">txt</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2"># import random forest regressor from scikit-learn</span>
+<span class="s2">from sklearn.ensemble import RandomForestRegressor</span>
+
+<span class="s2"># fit random forest model with 300 estimators on X, y:</span>
+<span class="s2">&quot;&quot;&quot;</span>
+
+<span class="c1"># tokenize and move to GPU</span>
+<span class="n">inputs</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="p">(</span><span class="n">txt</span><span class="p">,</span> <span class="n">return_tensors</span><span class="o">=</span><span class="s1">&#39;pt&#39;</span><span class="p">)</span>
+<span class="n">inputs</span> <span class="o">=</span> <span class="n">inputs</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s1">&#39;cuda&#39;</span><span class="p">)</span>
+
+<span class="c1"># generate predictions with maximum length of 130</span>
+<span class="n">out</span> <span class="o">=</span> <span class="n">trainer</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="o">**</span><span class="n">inputs</span><span class="p">,</span> <span class="n">max_length</span><span class="o">=</span><span class="mi">130</span><span class="p">)</span>
+<span class="c1"># decode the predictions</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">tokenizer</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="n">out</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+</pre></div>
+</div>
+<p>Output:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># import random forest regressor from scikit-learn</span>
+<span class="kn">from</span> <span class="nn">sklearn.ensemble</span> <span class="kn">import</span> <span class="n">RandomForestRegressor</span>
+
+<span class="c1"># fit random forest model with 300 estimators on X, y:</span>
+<span class="n">X_train</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">y_test</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">.5</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+<span class="c1"># Fit classifier with all parameters</span>
+<span class="n">classifier</span> <span class="o">=</span> <span class="n">RandomForestRegressor</span><span class="p">(</span><span class="n">n_estimators</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span> <span class="n">max_depth</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">n_estimators</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+<span class="n">classifier</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Not bad, we’ve got some decent results here!!</p>
+<p>And there you go, you have a machine companion for coding ;)</p>
 </section>
 </section>
 

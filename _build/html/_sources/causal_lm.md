@@ -2,7 +2,7 @@
 
 Causal language modeling is nothing but predicting the next token given a sequence of text. Here is an example showing how causal language modeling works:
 
-If you give an input text like this: ```'I am going'``` and you specify that you want the model to predict the next 2 tokens, the output will be like this - ```'I am going to Mumbai'```.
+If you give an input text like this: ```'I am going'``` and you specify that you want the model to predict the next 2 tokens, the output will be like this - ```'I am going to Mumbai'```. For the case of this example I used 'Mumbai', the location can be anywhere(according to the dataset that the model was trained on).
 
 You can increase the number of tokens to be predicted as per your needs.
 
@@ -97,4 +97,126 @@ tokenized_datasets = raw_datasets.map(
 )
 ```
 
+### Training the model
 
+Now we will load the model and train it. All the previous chapters used a pretrained model which is loaded from a checkpoint, we were just fine-tuning it. But here we will only load the GPT-2 model architecture without the pretrained weights, because GPT-2 is pretrained on english language which is very different from the dataset that we are going to use for training.
+
+First we need to load all the required configurations for GPT-2 model:
+
+```python
+from transformers import AutoConfig
+
+# load configuration for GPT-2
+config = AutoConfig.from_pretrained(
+    "gpt2", 
+    vocab_size=len(tokenizer),
+    n_ctx=max_length,
+    bos_token_id=tokenizer.bos_token_id,
+    eos_token_id=tokenizer.eos_token_id,
+)
+```
+
+We will load the configurations for GPT-2 as well as overwrite some of them according to our usecase. Since we are using a separate tokenizer that tokenizes code, the length of the vocabulary will be different from what GPT-2 was trained on, so we need to overwrite that value with the length of our vocabulary.
+
+Also, the token id for special tokens(like begining of sequence(bos), end of sequence(eos)) may be different, so we need to overwrite those with what our tokenizer uses. The default context length(```n_ctx```) that GPT-2 model uses is 1024, we have overwritten it to ```max_length```, i.e, 128.
+
+Now we can load the model using the above specified configuraion:
+
+```python
+from transformers import GPT2LMHeadModel
+
+# load the model from config
+model = GPT2LMHeadModel(config)
+```
+We haven't set any value for the ```pad_token``` in our tokenizer(foregetting to do so will throw an error from data collator). We will set the ```eos_token``` as our ```pad_token```.
+
+We will also load the data collator for language modelling,
+
+```python
+from transformers import DataCollatorForLanguageModeling
+
+tokenizer.pad_token = tokenizer.eos_token
+collator = DataCollatorForLanguageModeling(tokenizer, mlm=False)
+```
+The data collator is same as what we used for masked language modeling, just setting ```mlm=False``` will make the collator ready for causal language modeling.
+
+Everything is set up, the only part that is remaining is to train the model. We have a change for this chapter, we will be using the ```Trainer``` from transformers library to do the training for us.
+
+We need to provide some arguments that control the training of our model inside the ```Trainer```.
+
+```python
+from transformers import TrainingArguments
+
+# training arguments
+args = TrainingArguments(
+    output_dir="model_outputs",      # path to save outputs from training
+    per_device_train_batch_size=32,  # batch size to use for training
+    per_device_eval_batch_size=32,   # batch size to use for evaluation
+    evaluation_strategy="epoch",     # evaluate after each epoch
+    gradient_accumulation_steps=8,   # accumulate gradients for 8 batches and then do backprop
+    num_train_epochs=1,              # no. of epochs to train for
+    weight_decay=0.01,               # weight decay for AdamW optimizer
+    learning_rate=5e-4,
+    fp16=True,                       # mixed precision for faster training
+)
+```
+
+Now let's pass the training arguments, model, tokenizer, data collator, training and evaluation sets to the trainer and start the training.
+
+```python
+from transformer import Trainer
+
+trainer = Trainer(
+    model=model, 
+    tokenizer=tokenizer, 
+    args=args, # training arguments
+    data_collator=collator, 
+    train_dataset=tokenized_datasets['train'],
+    eval_dataset=tokenized_datasets['test'],
+)
+
+# start training
+trainer.train()
+```
+
+I ran the whole training on kaggle notebooks and it took around 9-10 hours to complete whole training(1 epoch) and evaluation of the model.
+
+### Testing the model
+
+Now let's test the model and see if we can get any good results:
+
+```python
+# input code
+txt = """
+# import random forest regressor from scikit-learn
+from sklearn.ensemble import RandomForestRegressor
+
+# fit random forest model with 300 estimators on X, y:
+"""
+
+# tokenize and move to GPU
+inputs = tokenizer(txt, return_tensors='pt')
+inputs = inputs.to('cuda')
+
+# generate predictions with maximum length of 130
+out = trainer.model.generate(**inputs, max_length=130)
+# decode the predictions
+print(tokenizer.decode(out[0]))
+```
+Output:
+```python
+# import random forest regressor from scikit-learn
+from sklearn.ensemble import RandomForestRegressor
+
+# fit random forest model with 300 estimators on X, y:
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=.5, random_state=0)
+
+# Fit classifier with all parameters
+classifier = RandomForestRegressor(n_estimators=300, max_depth=3, n_estimators=100, random_state=0)
+
+classifier.fit(X_train, y_train)
+```
+
+Not bad, we've got some decent results here!!
+
+And there you go, you have a machine companion for coding ;) 

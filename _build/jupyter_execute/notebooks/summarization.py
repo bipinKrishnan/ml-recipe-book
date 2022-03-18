@@ -254,6 +254,8 @@ with run:
 
 
 # ### LRFinder
+# 
+# Learning rate finder(https://github.com/davidtvs/pytorch-lr-finder) with slight modifications to work for transformers library
 
 # In[ ]:
 
