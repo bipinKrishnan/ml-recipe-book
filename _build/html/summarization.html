@@ -351,10 +351,10 @@
  <span class="p">}</span>
 </pre></div>
 </div>
-<p>For the time being, let’s filter out all reviews for the product category “kitchen”. We will use the <code class="docutils literal notranslate"><span class="pre">.filter()</span></code> method for this:</p>
+<p>For the time being, let’s filter out all reviews for the product category “digital_ebook_purchase”. We will use the <code class="docutils literal notranslate"><span class="pre">.filter()</span></code> method for this:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># select all reviews where the product category equal to &#39;kitchen&#39;</span>
-<span class="n">english_dataset</span> <span class="o">=</span> <span class="n">english_dataset</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;product_category&#39;</span><span class="p">]</span><span class="o">==</span><span class="s1">&#39;kitchen&#39;</span><span class="p">)</span>
-<span class="n">french_dataset</span> <span class="o">=</span> <span class="n">french_dataset</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;product_category&#39;</span><span class="p">]</span><span class="o">==</span><span class="s1">&#39;kitchen&#39;</span><span class="p">)</span>
+<span class="n">english_dataset</span> <span class="o">=</span> <span class="n">english_dataset</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;product_category&#39;</span><span class="p">]</span><span class="o">==</span><span class="s1">&#39;digital_ebook_purchase&#39;</span><span class="p">)</span>
+<span class="n">french_dataset</span> <span class="o">=</span> <span class="n">french_dataset</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;product_category&#39;</span><span class="p">]</span><span class="o">==</span><span class="s1">&#39;digital_ebook_purchase&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Now let’s combine our english and french reviews into a single dataset. We need to use the <code class="docutils literal notranslate"><span class="pre">DatasetDict</span></code> object to create our dataset as shown below:</p>
@@ -375,8 +375,8 @@
     <span class="n">combined_dataset</span><span class="p">[</span><span class="n">split</span><span class="p">]</span> <span class="o">=</span> <span class="n">combined_dataset</span><span class="p">[</span><span class="n">split</span><span class="p">]</span><span class="o">.</span><span class="n">shuffle</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>For better results, we will only take those samples where the length of review title is greater than 3:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">combined_dataset</span> <span class="o">=</span> <span class="n">combined_dataset</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="s1">&#39;review_title&#39;</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mi">3</span><span class="p">)</span>
+<p>For better results, we will only take those samples where the length of review title is greater than 5:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">combined_dataset</span> <span class="o">=</span> <span class="n">combined_dataset</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="s1">&#39;review_title&#39;</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mi">5</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Now let’s load the tokenizer and tokenize the dataset:</p>
@@ -478,7 +478,7 @@
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">optim</span>
 <span class="kn">from</span> <span class="nn">accelerate</span> <span class="kn">import</span> <span class="n">Accelerator</span>
 
-<span class="n">opt</span> <span class="o">=</span> <span class="n">optim</span><span class="o">.</span><span class="n">AdamW</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="mf">2e-5</span><span class="p">)</span>
+<span class="n">opt</span> <span class="o">=</span> <span class="n">optim</span><span class="o">.</span><span class="n">AdamW</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">)</span>
 
 <span class="n">accelerator</span> <span class="o">=</span> <span class="n">Accelerator</span><span class="p">()</span>
 <span class="n">train_dl</span><span class="p">,</span> <span class="n">val_dl</span><span class="p">,</span> <span class="n">test_dl</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">opt</span> <span class="o">=</span> <span class="n">accelerator</span><span class="o">.</span><span class="n">prepare</span><span class="p">(</span><span class="n">train_dl</span><span class="p">,</span> <span class="n">val_dl</span><span class="p">,</span> <span class="n">test_dl</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">opt</span><span class="p">)</span>
@@ -547,8 +547,8 @@
             <span class="n">metric</span><span class="o">.</span><span class="n">add_batch</span><span class="p">(</span><span class="n">predictions</span><span class="o">=</span><span class="n">preds</span><span class="p">,</span> <span class="n">references</span><span class="o">=</span><span class="n">labels</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Let’s train the model for 10 epochs:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">epochs</span> <span class="o">=</span> <span class="mi">10</span>
+<p>Let’s train the model for 20 epochs:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">epochs</span> <span class="o">=</span> <span class="mi">20</span>
 
 <span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">epochs</span><span class="p">):</span>
     <span class="c1"># training</span>

@@ -2,21 +2,27 @@
 
 Causal language modeling is nothing but predicting the next token given a sequence of text. Here is an example showing how causal language modeling works:
 
-If you give an input text like this: ```'I am going'``` and you specify that you want the model to predict the next 2 tokens, the output will be like this - ```'I am going to Mumbai'```. For the case of this example I used 'Mumbai', the location can be anywhere(according to the dataset that the model was trained on).
+If you give an input text like this: ```'I am going'``` and you specify that you want the model to predict the next 2 tokens, the output will be like this - ```'I am going to Mumbai'```.
 
 You can increase the number of tokens to be predicted as per your needs.
 
-In this chapter we will not be training a model for completing sentences but code. Yes, you read it right, we are going to train a GPT-2 model from scratch for code completion.
+In this chapter we will not be training a model for completing english sentences, but code. Yes, you read it right, we are going to train a GPT-2 model from scratch for code completion.
 
-When we give a partial code snippet, our model will autocomplete it.
+When we give a partial code snippet, our model should autocomplete it.
+
+```{image} ./assets/causal_lm_process.png
+:alt: causal_lm
+:class: bg-primary mb-1
+:align: center
+```
 
 ### Dataset
 
-We will be using the stripped down version of the dataset used to train the 'code parrot' model. You can view the dataset by going [here](https://huggingface.co/datasets/huggingface-course/codeparrot-ds-train).
+We will be using the stripped down version of the dataset used to train [code parrot model](https://huggingface.co/lvwerra/codeparrot). You can view the dataset by going [here](https://huggingface.co/datasets/huggingface-course/codeparrot-ds-train).
 
-We will strip down it further because for training it using openly available platforms like kaggle and Google colab. If you have more compute than what these platforms provide, then you can definitely go ahead with the complete dataset for training the model.
+We will strip down it further becuase all the model training in this book is done using openly available platforms like kaggle and Google colab. If you have more compute, you can definitely go ahead with the complete dataset.
 
-We will download this dataset and use 0.1% and 0.01% of the whole dataset for training and evaluation respectively.
+We will download the dataset and use 0.1% and 0.01% of the whole dataset for training and evaluation respectively.
 
 ```python
 from datasets import load_dataset
@@ -38,14 +44,13 @@ from transformers import AutoTokenizer
 tokenizer = AutoTokenizer.from_pretrained("huggingface-course/code-search-net-tokenizer")
 ```
 
-We will write a function to tokenize our dataset. If we truncate our dataset, we will loose a lot of information, instead, we will combine the rows in our dataset and divide it into chunks of length 128(as we did in the masked language modelling chapter).
+We will write a function to tokenize our dataset. If we truncate our dataset, we will loose a lot of information. Instead, we will combine the rows in our dataset and divide it into chunks of length 128(as we did in the masked language modelling chapter).
 
-So after the preprocessing the dataset, each row will have a length of 128.
+After preprocessing the dataset, each row will have a length of 128.
 
-Let's take a sample of rows from our dataset and see the outputs after tokenization:
+Let's tokenize a single example and see the outputs:
 
 ```python
-# code snippets sample
 sample = raw_datasets['train']['content'][0]
 
 tokenizer(
@@ -57,9 +62,9 @@ tokenizer(
     )
 ```
 
-Setting ```return_overflowing_tokens``` to ```True``` will split the sample into chunks. And we also return the sequence length for each chunk by setting ```return_length``` to ```True```. These are the keys in the ouput from the tokenizer: ```['input_ids', 'attention_mask', 'length', 'overflow_to_sample_mapping']```
+Setting ```return_overflowing_tokens=True``` will split the sample into chunks. And we also return the sequence length for each chunk by setting ```return_length=True```. Output of the tokenizer will contain the following things: ```['input_ids', 'attention_mask', 'length', 'overflow_to_sample_mapping']```
 
-The ```'length'``` keys contains the length of each chunk and ```'overflow_to_sample_mapping'``` keys contains the sample or row to which the chunk belongs to. For example, if the first row in the dataset is split into 5 chunks of size 128, each chunk will have ```'overflow_to_sample_mapping'``` equal to 0(index of first row).
+The ```'length'``` key contains the length of each chunk and ```'overflow_to_sample_mapping'``` key contains the sample or row to which the chunk belongs to. For example, if the first row in the dataset is split into 5 chunks of size 128, each chunk will have ```'overflow_to_sample_mapping'``` equal to 0(index of first row).
 
 Now let's write the function to tokenize the whole dataset:
 
@@ -85,7 +90,7 @@ def tokenize(examples):
 
 As you can see, we only take chunks whose length is equal to ```max_length```, i.e, 128. The rest of the chunks are dropped.
 
-Another thing is that, we only return the ```input_ids```, that is because we will be using a data collator which will create the labels from these ```input_ids```.
+Another thing is that, we only return the ```input_ids```, that is because we will be using a data collator which will automatically create the labels from these ```input_ids```.
 
 Now let's apply the tokenization function to the whole dataset:
 
@@ -99,14 +104,14 @@ tokenized_datasets = raw_datasets.map(
 
 ### Training the model
 
-Now we will load the model and train it. All the previous chapters used a pretrained model which is loaded from a checkpoint, we were just fine-tuning it. But here we will only load the GPT-2 model architecture without the pretrained weights, because GPT-2 is pretrained on english language which is very different from the dataset that we are going to use for training.
+Now we will load the model and train it. All the previous chapters used a pretrained model which is loaded from a checkpoint, we were just fine-tuning it. But here we will load the GPT-2 model architecture without the pretrained weights, because GPT-2 is pretrained on english language which is very different from the dataset we have.
 
 First we need to load all the required configurations for GPT-2 model:
 
 ```python
 from transformers import AutoConfig
 
-# load configuration for GPT-2
+# load configurations for GPT-2
 config = AutoConfig.from_pretrained(
     "gpt2", 
     vocab_size=len(tokenizer),
@@ -116,7 +121,7 @@ config = AutoConfig.from_pretrained(
 )
 ```
 
-We will load the configurations for GPT-2 as well as overwrite some of them according to our usecase. Since we are using a separate tokenizer that tokenizes code, the length of the vocabulary will be different from what GPT-2 was trained on, so we need to overwrite that value with the length of our vocabulary.
+All the required values for the configuration are loaded from the pretrained GPT-2's configuration. We will overwrite some of them according to our usecase. Since we are using a separate tokenizer that tokenizes code, the length of the vocabulary will be different from what GPT-2 was trained on, so we need to overwrite that value with the length of our vocabulary.
 
 Also, the token id for special tokens(like begining of sequence(bos), end of sequence(eos)) may be different, so we need to overwrite those with what our tokenizer uses. The default context length(```n_ctx```) that GPT-2 model uses is 1024, we have overwritten it to ```max_length```, i.e, 128.
 
@@ -128,7 +133,7 @@ from transformers import GPT2LMHeadModel
 # load the model from config
 model = GPT2LMHeadModel(config)
 ```
-We haven't set any value for the ```pad_token``` in our tokenizer(foregetting to do so will throw an error from data collator). We will set the ```eos_token``` as our ```pad_token```.
+We haven't set any value for the ```pad_token``` in our tokenizer(data collator will throw an error otherwise). We will set the ```eos_token``` as our ```pad_token```.
 
 We will also load the data collator for language modelling,
 
@@ -142,7 +147,7 @@ The data collator is same as what we used for masked language modeling, just set
 
 Everything is set up, the only part that is remaining is to train the model. We have a change for this chapter, we will be using the ```Trainer``` from transformers library to do the training for us.
 
-We need to provide some arguments that control the training of our model inside the ```Trainer```.
+We need to provide some arguments to the ```Trainer``` that will control the training of our model.
 
 ```python
 from transformers import TrainingArguments
@@ -153,7 +158,7 @@ args = TrainingArguments(
     per_device_train_batch_size=32,  # batch size to use for training
     per_device_eval_batch_size=32,   # batch size to use for evaluation
     evaluation_strategy="epoch",     # evaluate after each epoch
-    gradient_accumulation_steps=8,   # accumulate gradients for 8 batches and then do backprop
+    gradient_accumulation_steps=8,   # accumulate gradients for 8 batches and update the weights
     num_train_epochs=1,              # no. of epochs to train for
     weight_decay=0.01,               # weight decay for AdamW optimizer
     learning_rate=5e-4,
@@ -179,7 +184,7 @@ trainer = Trainer(
 trainer.train()
 ```
 
-I ran the whole training on kaggle notebooks and it took around 9-10 hours to complete whole training(1 epoch) and evaluation of the model.
+I ran the training on kaggle notebooks and it took around 9-10 hours to complete whole training(1 epoch) and evaluation of the model.
 
 ### Testing the model
 
@@ -217,6 +222,6 @@ classifier = RandomForestRegressor(n_estimators=300, max_depth=3, n_estimators=1
 classifier.fit(X_train, y_train)
 ```
 
-Not bad, we've got some decent results here!!
+There are some mistakes in the output generated by the model, but since we used a small dataset and the model was trained from scratch, this looks decent enough.
 
 And there you go, you have a machine companion for coding ;) 

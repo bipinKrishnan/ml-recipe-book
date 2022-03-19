@@ -93,12 +93,12 @@ Output:
  }
 ```
 
-For the time being, let's filter out all reviews for the product category "kitchen". We will use the ```.filter()``` method for this:
+For the time being, let's filter out all reviews for the product category "digital_ebook_purchase". We will use the ```.filter()``` method for this:
 
 ```python
 # select all reviews where the product category equal to 'kitchen'
-english_dataset = english_dataset.filter(lambda x: x['product_category']=='kitchen')
-french_dataset = french_dataset.filter(lambda x: x['product_category']=='kitchen')
+english_dataset = english_dataset.filter(lambda x: x['product_category']=='digital_ebook_purchase')
+french_dataset = french_dataset.filter(lambda x: x['product_category']=='digital_ebook_purchase')
 ```
 
 Now let's combine our english and french reviews into a single dataset. We need to use the ```DatasetDict``` object to create our dataset as shown below:
@@ -123,10 +123,10 @@ for split in splits:
     combined_dataset[split] = combined_dataset[split].shuffle(seed=42)
 ```
 
-For better results, we will only take those samples where the length of review title is greater than 3:
+For better results, we will only take those samples where the length of review title is greater than 5:
 
 ```python
-combined_dataset = combined_dataset.filter(lambda x: len(x['review_title']) > 3)
+combined_dataset = combined_dataset.filter(lambda x: len(x['review_title']) > 5)
 ```
 
 Now let's load the tokenizer and tokenize the dataset:
@@ -242,7 +242,7 @@ So, let's first create the optimizer and move everything to GPU using accelerate
 from torch import optim
 from accelerate import Accelerator
 
-opt = optim.AdamW(model.parameters(), lr=2e-5)
+opt = optim.AdamW(model.parameters(), lr=1e-3)
 
 accelerator = Accelerator()
 train_dl, val_dl, test_dl, model, opt = accelerator.prepare(train_dl, val_dl, test_dl, model, opt)
@@ -317,10 +317,10 @@ def run_evaluation(test_dl):
             metric.add_batch(predictions=preds, references=labels)
 ```
 
-Let's train the model for 10 epochs:
+Let's train the model for 20 epochs:
 
 ```python
-epochs = 10
+epochs = 20
 
 for epoch in range(epochs):
     # training
