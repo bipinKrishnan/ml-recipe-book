@@ -9,6 +9,7 @@ parts:
     - file: translation
     - file: summarization
     - file: causal_lm
+    - file: image_captioning
   
   - caption: Computer vision
     chapters:
