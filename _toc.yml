@@ -2,15 +2,18 @@ format: jb-book
 root: index
 
 parts:
-  - caption: NLP
+  - caption: Natural language processing
     chapters:
     - file: ner
     - file: mlm
     - file: translation
     - file: summarization
     - file: causal_lm
-    - file: image_captioning
   
   - caption: Computer vision
     chapters:
     - file: cv
+
+  - caption: Miscellaneous
+    chapters:
+    - file: image_captioning

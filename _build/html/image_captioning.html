@@ -53,8 +53,7 @@
     <link rel="canonical" href="https://github.com/image_captioning.html" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Image segmentation" href="cv.html" />
-    <link rel="prev" title="Causal language modeling" href="causal_lm.html" />
+    <link rel="prev" title="Image segmentation" href="cv.html" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="docsearch:language" content="None">
     
@@ -98,10 +97,10 @@
 </ul>
 <p aria-level="2" class="caption" role="heading">
  <span class="caption-text">
-  NLP
+  Natural language processing
  </span>
 </p>
-<ul class="current nav bd-sidenav">
+<ul class="nav bd-sidenav">
  <li class="toctree-l1">
   <a class="reference internal" href="ner.html">
    Named entity recognition
@@ -127,11 +126,6 @@
    Causal language modeling
   </a>
  </li>
- <li class="toctree-l1 current active">
-  <a class="current reference internal" href="#">
-   Image captioning
-  </a>
- </li>
 </ul>
 <p aria-level="2" class="caption" role="heading">
  <span class="caption-text">
@@ -142,6 +136,18 @@
  <li class="toctree-l1">
   <a class="reference internal" href="cv.html">
    Image segmentation
+  </a>
+ </li>
+</ul>
+<p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
+  Miscellaneous
+ </span>
+</p>
+<ul class="current nav bd-sidenav">
+ <li class="toctree-l1 current active">
+  <a class="current reference internal" href="#">
+   Image captioning
   </a>
  </li>
 </ul>
@@ -240,6 +246,11 @@
    </li>
   </ul>
  </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#training-the-model">
+   Training the model
+  </a>
+ </li>
 </ul>
 
             </nav>
@@ -310,7 +321,149 @@
 <span class="n">tokenizer</span> <span class="o">=</span> <span class="n">AutoTokenizer</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="n">decoder_checkpoint</span><span class="p">)</span>
 </pre></div>
 </div>
+<p>For the tokenizer, we will set the maximum length to 128 and truncate captions longer than that and add padding to captions shorter than that. So we need to set token id for padding, otherwise we will get an error:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">tokenizer</span><span class="o">.</span><span class="n">pad_token</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="o">.</span><span class="n">eos_token</span>
+</pre></div>
+</div>
+<p>Let’s take an example image and a caption to see the outputs after applying <code class="docutils literal notranslate"><span class="pre">feature_extractor</span></code> and <code class="docutils literal notranslate"><span class="pre">tokenizer</span></code> respectively:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span>
+
+<span class="c1"># maximum length for the captions</span>
+<span class="n">max_length</span> <span class="o">=</span> <span class="mi">128</span>
+<span class="n">sample</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+<span class="c1"># sample image</span>
+<span class="n">image</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">sample</span><span class="p">[</span><span class="s1">&#39;imgs&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="s1">&#39;RGB&#39;</span><span class="p">)</span>
+<span class="c1"># sample caption</span>
+<span class="n">caption</span> <span class="o">=</span> <span class="n">sample</span><span class="p">[</span><span class="s1">&#39;captions&#39;</span><span class="p">]</span>
+
+<span class="c1"># apply feature extractor on the sample image</span>
+<span class="n">inputs</span> <span class="o">=</span> <span class="n">feature_extractor</span><span class="p">(</span><span class="n">images</span><span class="o">=</span><span class="n">image</span><span class="p">,</span> <span class="n">return_tensors</span><span class="o">=</span><span class="s1">&#39;pt&#39;</span><span class="p">)</span>
+<span class="c1"># apply tokenizer</span>
+<span class="n">outputs</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="p">(</span>
+            <span class="n">caption</span><span class="p">,</span> 
+            <span class="n">max_length</span><span class="o">=</span><span class="n">max_length</span><span class="p">,</span> 
+            <span class="n">truncation</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> 
+            <span class="n">padding</span><span class="o">=</span><span class="s1">&#39;max_length&#39;</span><span class="p">,</span>
+            <span class="n">return_tensors</span><span class="o">=</span><span class="s1">&#39;pt&#39;</span><span class="p">,</span>
+        <span class="p">)</span>
+</pre></div>
+</div>
+<p>On printing <code class="docutils literal notranslate"><span class="pre">inputs</span></code> and <code class="docutils literal notranslate"><span class="pre">outputs</span></code>, we get this:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">Inputs</span><span class="p">:</span>
+<span class="p">{</span><span class="s1">&#39;pixel_values&#39;</span><span class="p">:</span> <span class="n">tensor</span><span class="p">([[[[</span><span class="o">-</span><span class="mf">0.3569</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.1294</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.0902</span><span class="p">,</span>  <span class="o">...</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.9686</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.9529</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.9529</span><span class="p">],</span>
+          <span class="p">[</span><span class="o">-</span><span class="mf">0.3804</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.1137</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.0667</span><span class="p">,</span>  <span class="o">...</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.9373</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.9451</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.9059</span><span class="p">],</span>
+          <span class="p">[</span><span class="o">-</span><span class="mf">0.3961</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.0824</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.0510</span><span class="p">,</span>  <span class="o">...</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.9373</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.9451</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.9216</span><span class="p">],</span>
+          <span class="o">...</span><span class="p">,</span>
+          <span class="p">[</span> <span class="mf">0.4588</span><span class="p">,</span>  <span class="mf">0.1765</span><span class="p">,</span>  <span class="mf">0.3412</span><span class="p">,</span>  <span class="o">...</span><span class="p">,</span>  <span class="mf">0.6627</span><span class="p">,</span>  <span class="mf">0.2941</span><span class="p">,</span>  <span class="mf">0.2941</span><span class="p">],</span>
+          <span class="p">[</span> <span class="mf">0.3804</span><span class="p">,</span>  <span class="mf">0.3882</span><span class="p">,</span>  <span class="mf">0.7255</span><span class="p">,</span>  <span class="o">...</span><span class="p">,</span>  <span class="mf">0.6471</span><span class="p">,</span>  <span class="mf">0.3176</span><span class="p">,</span>  <span class="mf">0.3176</span><span class="p">],</span>
+          <span class="p">[</span> <span class="mf">0.6235</span><span class="p">,</span>  <span class="mf">0.6392</span><span class="p">,</span>  <span class="mf">0.4667</span><span class="p">,</span>  <span class="o">...</span><span class="p">,</span>  <span class="mf">0.6078</span><span class="p">,</span>  <span class="mf">0.3098</span><span class="p">,</span>  <span class="mf">0.3255</span><span class="p">]],</span>
+
+         <span class="p">[[</span><span class="o">-</span><span class="mf">0.3176</span><span class="p">,</span>  <span class="mf">0.0039</span><span class="p">,</span>  <span class="mf">0.0510</span><span class="p">,</span>  <span class="o">...</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.9765</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.9529</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.9373</span><span class="p">],</span>
+          <span class="p">[</span><span class="o">-</span><span class="mf">0.3412</span><span class="p">,</span>  <span class="mf">0.0118</span><span class="p">,</span>  <span class="mf">0.0824</span><span class="p">,</span>  <span class="o">...</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.9294</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.9216</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.8353</span><span class="p">],</span>
+          <span class="p">[</span><span class="o">-</span><span class="mf">0.3804</span><span class="p">,</span>  <span class="mf">0.0353</span><span class="p">,</span>  <span class="mf">0.1059</span><span class="p">,</span>  <span class="o">...</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.9294</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.8980</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.8275</span><span class="p">],</span>
+          <span class="o">...</span><span class="p">,</span>
+          <span class="p">[</span><span class="o">-</span><span class="mf">0.1529</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.3725</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.0431</span><span class="p">,</span>  <span class="o">...</span><span class="p">,</span>  <span class="mf">0.7333</span><span class="p">,</span>  <span class="mf">0.4510</span><span class="p">,</span>  <span class="mf">0.4431</span><span class="p">],</span>
+          <span class="p">[</span><span class="o">-</span><span class="mf">0.2471</span><span class="p">,</span>  <span class="mf">0.0118</span><span class="p">,</span>  <span class="mf">0.3255</span><span class="p">,</span>  <span class="o">...</span><span class="p">,</span>  <span class="mf">0.7098</span><span class="p">,</span>  <span class="mf">0.4431</span><span class="p">,</span>  <span class="mf">0.4431</span><span class="p">],</span>
+          <span class="p">[</span><span class="o">-</span><span class="mf">0.0118</span><span class="p">,</span>  <span class="mf">0.1608</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.0431</span><span class="p">,</span>  <span class="o">...</span><span class="p">,</span>  <span class="mf">0.6784</span><span class="p">,</span>  <span class="mf">0.4431</span><span class="p">,</span>  <span class="mf">0.4431</span><span class="p">]],</span>
+
+         <span class="p">[[</span><span class="o">-</span><span class="mf">0.2392</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.0196</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.0039</span><span class="p">,</span>  <span class="o">...</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.9765</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.9686</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.9608</span><span class="p">],</span>
+          <span class="p">[</span><span class="o">-</span><span class="mf">0.2784</span><span class="p">,</span>  <span class="mf">0.0118</span><span class="p">,</span>  <span class="mf">0.0353</span><span class="p">,</span>  <span class="o">...</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.9451</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.9529</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.9529</span><span class="p">],</span>
+          <span class="p">[</span><span class="o">-</span><span class="mf">0.2706</span><span class="p">,</span>  <span class="mf">0.0510</span><span class="p">,</span>  <span class="mf">0.0667</span><span class="p">,</span>  <span class="o">...</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.9608</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.9529</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.9451</span><span class="p">],</span>
+          <span class="o">...</span><span class="p">,</span>
+          <span class="p">[</span><span class="o">-</span><span class="mf">0.7569</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.7804</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.4902</span><span class="p">,</span>  <span class="o">...</span><span class="p">,</span>  <span class="mf">0.8353</span><span class="p">,</span>  <span class="mf">0.6471</span><span class="p">,</span>  <span class="mf">0.5922</span><span class="p">],</span>
+          <span class="p">[</span><span class="o">-</span><span class="mf">0.8431</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.6392</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.4196</span><span class="p">,</span>  <span class="o">...</span><span class="p">,</span>  <span class="mf">0.8275</span><span class="p">,</span>  <span class="mf">0.6235</span><span class="p">,</span>  <span class="mf">0.5686</span><span class="p">],</span>
+          <span class="p">[</span><span class="o">-</span><span class="mf">0.6314</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.4824</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.4353</span><span class="p">,</span>  <span class="o">...</span><span class="p">,</span>  <span class="mf">0.8353</span><span class="p">,</span>  <span class="mf">0.6078</span><span class="p">,</span>  <span class="mf">0.5373</span><span class="p">]]]])}</span>
+<span class="n">Outputs</span><span class="p">:</span>
+<span class="p">{</span><span class="s1">&#39;input_ids&#39;</span><span class="p">:</span> <span class="n">tensor</span><span class="p">([[</span>   <span class="mi">32</span><span class="p">,</span>  <span class="mi">2576</span><span class="p">,</span>  <span class="mi">1016</span><span class="p">,</span>   <span class="mi">656</span><span class="p">,</span>   <span class="mi">257</span><span class="p">,</span> <span class="mi">13510</span><span class="p">,</span>  <span class="mi">2615</span><span class="p">,</span>   <span class="mi">764</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span>
+         <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span>
+         <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span>
+         <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span>
+         <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span>
+         <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span>
+         <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span>
+         <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span>
+         <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span>
+         <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span>
+         <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span>
+         <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span>
+         <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">]]),</span> <span class="s1">&#39;attention_mask&#39;</span><span class="p">:</span> <span class="n">tensor</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span>
+         <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span>
+         <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span>
+         <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span>
+         <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span>
+         <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]])}</span>
+</pre></div>
+</div>
+<p>As you can see, for the ‘Outputs’, since the caption is smaller than 128, padding token id(<code class="docutils literal notranslate"><span class="pre">50256</span></code>) is added to make the length equal to 128. As you can see, the attention masks corresponding to the padding tokens are equal to 0, so they are ignored during training.</p>
+<p>Now, let’s write a normal dataset loading class as we usually do in pytorch. We will pass the dataframe we just created and extract the images and captions. Then for each each image and caption we apply the <code class="docutils literal notranslate"><span class="pre">feature_extractor</span></code> and <code class="docutils literal notranslate"><span class="pre">tokenizer</span></code>. Then we return the processed inputs and targets.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="kn">import</span> <span class="n">Dataset</span>
+
+<span class="k">class</span> <span class="nc">LoadDataset</span><span class="p">(</span><span class="n">Dataset</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">images</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;imgs&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">captions</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;captions&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+    
+    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">):</span>
+        <span class="c1"># everything to return is stored inside this dict</span>
+        <span class="n">inputs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+
+        <span class="c1"># load the image and apply feature_extractor</span>
+        <span class="n">image_path</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">images</span><span class="p">[</span><span class="n">idx</span><span class="p">])</span>
+        <span class="n">image</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">image_path</span><span class="p">)</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="s2">&quot;RGB&quot;</span><span class="p">)</span>
+        <span class="n">image</span> <span class="o">=</span> <span class="n">feature_extractor</span><span class="p">(</span><span class="n">images</span><span class="o">=</span><span class="n">image</span><span class="p">,</span> <span class="n">return_tensors</span><span class="o">=</span><span class="s1">&#39;pt&#39;</span><span class="p">)</span>
+
+        <span class="c1"># load the caption and apply tokenizer</span>
+        <span class="n">caption</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">captions</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+        <span class="n">labels</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="p">(</span>
+            <span class="n">caption</span><span class="p">,</span> 
+            <span class="n">max_length</span><span class="o">=</span><span class="n">max_length</span><span class="p">,</span> 
+            <span class="n">truncation</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> 
+            <span class="n">padding</span><span class="o">=</span><span class="s1">&#39;max_length&#39;</span><span class="p">,</span>
+            <span class="n">return_tensors</span><span class="o">=</span><span class="s1">&#39;pt&#39;</span><span class="p">,</span>
+        <span class="p">)[</span><span class="s1">&#39;input_ids&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        
+        <span class="c1"># store the inputs(pixel_values) and labels(input_ids) in the dict we created</span>
+        <span class="n">inputs</span><span class="p">[</span><span class="s1">&#39;pixel_values&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">image</span><span class="p">[</span><span class="s1">&#39;pixel_values&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>   
+        <span class="n">inputs</span><span class="p">[</span><span class="s1">&#39;labels&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">labels</span>
+        <span class="k">return</span> <span class="n">inputs</span>
+    
+    <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">images</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Let’s split our dataframe into training and testing set:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="kn">import</span> <span class="n">train_test_split</span>
+
+<span class="n">train_df</span><span class="p">,</span> <span class="n">test_df</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Now we will load each image and caption of our dataset using the <code class="docutils literal notranslate"><span class="pre">LoadDataset</span></code> class we just created:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">train_ds</span> <span class="o">=</span> <span class="n">LoadDataset</span><span class="p">(</span><span class="n">train_df</span><span class="p">)</span>
+<span class="n">test_ds</span> <span class="o">=</span> <span class="n">LoadDataset</span><span class="p">(</span><span class="n">test_df</span><span class="p">)</span>
+</pre></div>
+</div>
 </section>
+</section>
+<section id="training-the-model">
+<h2>Training the model<a class="headerlink" href="#training-the-model" title="Permalink to this headline">¶</a></h2>
+<p>Finally, it’s time to load in our model and start the training.</p>
+<p>We did a lot of different tasks like token classification(ner task), summarization etc in our previous chapters, where we used different classes like <code class="docutils literal notranslate"><span class="pre">AutoModelForTokenClassification</span></code>, <code class="docutils literal notranslate"><span class="pre">AutoModelForSeq2SeqLM</span></code> to load in our pretrained model. For this task also, we have a special class called <code class="docutils literal notranslate"><span class="pre">VisionEncoderDecoderModel</span></code> where we can pass the name of the vision model we need for the encoder part as well as the text model we require for our decoder.</p>
+<p>Loading our encoder-decoder model for this task is simple as this(using the <code class="docutils literal notranslate"><span class="pre">encoder_checkpoint</span></code> and <code class="docutils literal notranslate"><span class="pre">decoder_checkpoint</span></code> we created earlier):</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">transformers</span> <span class="kn">import</span> <span class="n">VisionEncoderDecoderModel</span>
+
+<span class="n">model</span> <span class="o">=</span> <span class="n">VisionEncoderDecoderModel</span><span class="o">.</span><span class="n">from_encoder_decoder_pretrained</span><span class="p">(</span>
+    <span class="n">encoder_checkpoint</span><span class="p">,</span> 
+    <span class="n">decoder_checkpoint</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>After loading the model, we have to set a value for <code class="docutils literal notranslate"><span class="pre">decoder_start_token_id</span></code>, <code class="docutils literal notranslate"><span class="pre">pad_token_id</span></code> and <code class="docutils literal notranslate"><span class="pre">vocab_size</span></code>(otherwise the training will throw an error as these are required during training process).</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">decoder_start_token_id</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="o">.</span><span class="n">bos_token_id</span>
+<span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">pad_token_id</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="o">.</span><span class="n">pad_token_id</span>
+<span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">vocab_size</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">decoder</span><span class="o">.</span><span class="n">vocab_size</span>
+</pre></div>
+</div>
 </section>
 </section>
 
@@ -339,19 +492,12 @@
         
             <!-- Previous / next buttons -->
 <div class='prev-next-area'> 
-    <a class='left-prev' id="prev-link" href="causal_lm.html" title="previous page">
+    <a class='left-prev' id="prev-link" href="cv.html" title="previous page">
         <i class="fas fa-angle-left"></i>
         <div class="prev-next-info">
             <p class="prev-next-subtitle">previous</p>
-            <p class="prev-next-title">Causal language modeling</p>
+            <p class="prev-next-title">Image segmentation</p>
         </div>
-    </a>
-    <a class='right-next' id="next-link" href="cv.html" title="next page">
-    <div class="prev-next-info">
-        <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Image segmentation</p>
-    </div>
-    <i class="fas fa-angle-right"></i>
     </a>
 </div>
         

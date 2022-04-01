@@ -87,5 +87,163 @@ feature_extractor = AutoFeatureExtractor.from_pretrained(encoder_checkpoint)
 tokenizer = AutoTokenizer.from_pretrained(decoder_checkpoint)
 ```
 
+For the tokenizer, we will set the maximum length to 128 and truncate captions longer than that and add padding to captions shorter than that. So we need to set token id for padding, otherwise we will get an error:
+
+```python
+tokenizer.pad_token = tokenizer.eos_token
+```
+Let's take an example image and a caption to see the outputs after applying ```feature_extractor``` and ```tokenizer``` respectively:
+
+```python
+from PIL import Image
+
+# maximum length for the captions
+max_length = 128
+sample = df.iloc[0]
+
+# sample image
+image = Image.open(sample['imgs']).convert('RGB')
+# sample caption
+caption = sample['captions']
+
+# apply feature extractor on the sample image
+inputs = feature_extractor(images=image, return_tensors='pt')
+# apply tokenizer
+outputs = tokenizer(
+            caption, 
+            max_length=max_length, 
+            truncation=True, 
+            padding='max_length',
+            return_tensors='pt',
+        )
+```
+
+On printing ```inputs``` and ```outputs```, we get this:
+
+```python
+Inputs:
+{'pixel_values': tensor([[[[-0.3569, -0.1294, -0.0902,  ..., -0.9686, -0.9529, -0.9529],
+          [-0.3804, -0.1137, -0.0667,  ..., -0.9373, -0.9451, -0.9059],
+          [-0.3961, -0.0824, -0.0510,  ..., -0.9373, -0.9451, -0.9216],
+          ...,
+          [ 0.4588,  0.1765,  0.3412,  ...,  0.6627,  0.2941,  0.2941],
+          [ 0.3804,  0.3882,  0.7255,  ...,  0.6471,  0.3176,  0.3176],
+          [ 0.6235,  0.6392,  0.4667,  ...,  0.6078,  0.3098,  0.3255]],
+
+         [[-0.3176,  0.0039,  0.0510,  ..., -0.9765, -0.9529, -0.9373],
+          [-0.3412,  0.0118,  0.0824,  ..., -0.9294, -0.9216, -0.8353],
+          [-0.3804,  0.0353,  0.1059,  ..., -0.9294, -0.8980, -0.8275],
+          ...,
+          [-0.1529, -0.3725, -0.0431,  ...,  0.7333,  0.4510,  0.4431],
+          [-0.2471,  0.0118,  0.3255,  ...,  0.7098,  0.4431,  0.4431],
+          [-0.0118,  0.1608, -0.0431,  ...,  0.6784,  0.4431,  0.4431]],
+
+         [[-0.2392, -0.0196, -0.0039,  ..., -0.9765, -0.9686, -0.9608],
+          [-0.2784,  0.0118,  0.0353,  ..., -0.9451, -0.9529, -0.9529],
+          [-0.2706,  0.0510,  0.0667,  ..., -0.9608, -0.9529, -0.9451],
+          ...,
+          [-0.7569, -0.7804, -0.4902,  ...,  0.8353,  0.6471,  0.5922],
+          [-0.8431, -0.6392, -0.4196,  ...,  0.8275,  0.6235,  0.5686],
+          [-0.6314, -0.4824, -0.4353,  ...,  0.8353,  0.6078,  0.5373]]]])}
+Outputs:
+{'input_ids': tensor([[   32,  2576,  1016,   656,   257, 13510,  2615,   764, 50256, 50256,
+         50256, 50256, 50256, 50256, 50256, 50256, 50256, 50256, 50256, 50256,
+         50256, 50256, 50256, 50256, 50256, 50256, 50256, 50256, 50256, 50256,
+         50256, 50256, 50256, 50256, 50256, 50256, 50256, 50256, 50256, 50256,
+         50256, 50256, 50256, 50256, 50256, 50256, 50256, 50256, 50256, 50256,
+         50256, 50256, 50256, 50256, 50256, 50256, 50256, 50256, 50256, 50256,
+         50256, 50256, 50256, 50256, 50256, 50256, 50256, 50256, 50256, 50256,
+         50256, 50256, 50256, 50256, 50256, 50256, 50256, 50256, 50256, 50256,
+         50256, 50256, 50256, 50256, 50256, 50256, 50256, 50256, 50256, 50256,
+         50256, 50256, 50256, 50256, 50256, 50256, 50256, 50256, 50256, 50256,
+         50256, 50256, 50256, 50256, 50256, 50256, 50256, 50256, 50256, 50256,
+         50256, 50256, 50256, 50256, 50256, 50256, 50256, 50256, 50256, 50256,
+         50256, 50256, 50256, 50256, 50256, 50256, 50256, 50256]]), 'attention_mask': tensor([[1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+         0, 0, 0, 0, 0, 0, 0, 0]])}
+```
+As you can see, for the 'Outputs', since the caption is smaller than 128, padding token id(```50256```) is added to make the length equal to 128. As you can see, the attention masks corresponding to the padding tokens are equal to 0, so they are ignored during training.
+
+Now, let's write a normal dataset loading class as we usually do in pytorch. We will pass the dataframe we just created and extract the images and captions. Then for each each image and caption we apply the ```feature_extractor``` and ```tokenizer```. Then we return the processed inputs and targets.
+
+```python
+from torch.utils.data import Dataset
+
+class LoadDataset(Dataset):
+    def __init__(self, df):
+        self.images = df['imgs'].values
+        self.captions = df['captions'].values
+    
+    def __getitem__(self, idx):
+        # everything to return is stored inside this dict
+        inputs = dict()
+
+        # load the image and apply feature_extractor
+        image_path = str(self.images[idx])
+        image = Image.open(image_path).convert("RGB")
+        image = feature_extractor(images=image, return_tensors='pt')
+
+        # load the caption and apply tokenizer
+        caption = self.captions[idx]
+        labels = tokenizer(
+            caption, 
+            max_length=max_length, 
+            truncation=True, 
+            padding='max_length',
+            return_tensors='pt',
+        )['input_ids'][0]
+        
+        # store the inputs(pixel_values) and labels(input_ids) in the dict we created
+        inputs['pixel_values'] = image['pixel_values'].squeeze()   
+        inputs['labels'] = labels
+        return inputs
+    
+    def __len__(self):
+        return len(self.images)
+```
+
+Let's split our dataframe into training and testing set:
+
+```python
+from sklearn.model_selection import train_test_split
+
+train_df, test_df = train_test_split(df, test_size=0.2, shuffle=True, random_state=42)
+```
+
+Now we will load each image and caption of our dataset using the ```LoadDataset``` class we just created:
+
+```python
+train_ds = LoadDataset(train_df)
+test_ds = LoadDataset(test_df)
+```
+
+### Training the model
+
+Finally, it's time to load in our model and start the training.
+
+We did a lot of different tasks like token classification(ner task), summarization etc in our previous chapters, where we used different classes like ```AutoModelForTokenClassification```, ```AutoModelForSeq2SeqLM``` to load in our pretrained model. For this task also, we have a special class called ```VisionEncoderDecoderModel``` where we can pass the name of the vision model we need for the encoder part as well as the text model we require for our decoder.
+
+Loading our encoder-decoder model for this task is simple as this(using the ```encoder_checkpoint``` and ```decoder_checkpoint``` we created earlier):
+
+```python
+from transformers import VisionEncoderDecoderModel
+
+model = VisionEncoderDecoderModel.from_encoder_decoder_pretrained(
+    encoder_checkpoint, 
+    decoder_checkpoint
+)
+```
+
+After loading the model, we have to set a value for ```decoder_start_token_id```, ```pad_token_id``` and ```vocab_size```(otherwise the training will throw an error as these are required during training process).
+
+```python
+model.config.decoder_start_token_id = tokenizer.bos_token_id
+model.config.pad_token_id = tokenizer.pad_token_id
+model.config.vocab_size = model.config.decoder.vocab_size
+```
+
 
 
