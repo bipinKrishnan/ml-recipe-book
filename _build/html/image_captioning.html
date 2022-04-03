@@ -251,6 +251,11 @@
    Training the model
   </a>
  </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#testing-the-model">
+   Testing the model
+  </a>
+ </li>
 </ul>
 
             </nav>
@@ -448,7 +453,7 @@
 <section id="training-the-model">
 <h2>Training the model<a class="headerlink" href="#training-the-model" title="Permalink to this headline">¶</a></h2>
 <p>Finally, it’s time to load in our model and start the training.</p>
-<p>We did a lot of different tasks like token classification(ner task), summarization etc in our previous chapters, where we used different classes like <code class="docutils literal notranslate"><span class="pre">AutoModelForTokenClassification</span></code>, <code class="docutils literal notranslate"><span class="pre">AutoModelForSeq2SeqLM</span></code> to load in our pretrained model. For this task also, we have a special class called <code class="docutils literal notranslate"><span class="pre">VisionEncoderDecoderModel</span></code> where we can pass the name of the vision model we need for the encoder part as well as the text model we require for our decoder.</p>
+<p>We did a lot of different tasks like token classification(ner task), summarization etc in our previous chapters, where we used different classes like <code class="docutils literal notranslate"><span class="pre">AutoModelForTokenClassification</span></code>, <code class="docutils literal notranslate"><span class="pre">AutoModelForSeq2SeqLM</span></code> to load in our pretrained model. For this task also, we have a special class called <code class="docutils literal notranslate"><span class="pre">VisionEncoderDecoderModel</span></code> where we can pass the name of the vision model we need for the encoder part as well as the language model we require for the decoder.</p>
 <p>Loading our encoder-decoder model for this task is simple as this(using the <code class="docutils literal notranslate"><span class="pre">encoder_checkpoint</span></code> and <code class="docutils literal notranslate"><span class="pre">decoder_checkpoint</span></code> we created earlier):</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">transformers</span> <span class="kn">import</span> <span class="n">VisionEncoderDecoderModel</span>
 
@@ -458,12 +463,91 @@
 <span class="p">)</span>
 </pre></div>
 </div>
-<p>After loading the model, we have to set a value for <code class="docutils literal notranslate"><span class="pre">decoder_start_token_id</span></code>, <code class="docutils literal notranslate"><span class="pre">pad_token_id</span></code> and <code class="docutils literal notranslate"><span class="pre">vocab_size</span></code>(otherwise the training will throw an error as these are required during training process).</p>
+<p>After loading the model, we have to set a value for <code class="docutils literal notranslate"><span class="pre">decoder_start_token_id</span></code> and <code class="docutils literal notranslate"><span class="pre">pad_token_id</span></code>(otherwise the training will throw an error as these are required during training process).</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">decoder_start_token_id</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="o">.</span><span class="n">bos_token_id</span>
 <span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">pad_token_id</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="o">.</span><span class="n">pad_token_id</span>
-<span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">vocab_size</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">decoder</span><span class="o">.</span><span class="n">vocab_size</span>
 </pre></div>
 </div>
+<p>Inorder to get good and meaningful captions from the model, we should use beam search instead of greedy search while generating the caption. It’s as easy as this:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># set number of beams for beam search to 4</span>
+<span class="n">num_beams</span> <span class="o">=</span> <span class="mi">4</span>
+<span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">num_beams</span> <span class="o">=</span> <span class="n">num_beams</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If you are not familiar with greedy search and beam search, you could use these resources to learn more:</p>
+<ol class="simple">
+<li><p><a class="reference external" href="https://machinelearningmastery.com/beam-search-decoder-natural-language-processing/">Implementing beam search and greedy search</a></p></li>
+<li><p><a class="reference external" href="https://towardsdatascience.com/an-intuitive-explanation-of-beam-search-9b1d744e7a0f">Intuitive explanation of beam search</a></p></li>
+<li><p><a class="reference external" href="https://towardsdatascience.com/foundations-of-nlp-explained-visually-beam-search-how-it-works-1586b9849a24">Working of beam search</a></p></li>
+</ol>
+<p>In short, beam search generates more meaningful text compared to greedy search. Also, increasing the number beams for beam search will increase the time taken to generate the text.</p>
+</div>
+<p>And, now it’s time to train the model. We will use the <code class="docutils literal notranslate"><span class="pre">Seq2SeqTrainer</span></code> from transformers library for this. Before that we need to pass some arguments to control the training of our model, we will do that first:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">transformers</span> <span class="kn">import</span> <span class="n">Seq2SeqTrainingArguments</span>
+
+<span class="c1"># batch size</span>
+<span class="n">bs</span> <span class="o">=</span> <span class="mi">8</span>
+
+<span class="n">training_args</span> <span class="o">=</span> <span class="n">Seq2SeqTrainingArguments</span><span class="p">(</span>
+    <span class="n">output_dir</span><span class="o">=</span><span class="s2">&quot;image-caption-generator&quot;</span><span class="p">,</span> <span class="c1"># name of the directory to store training outputs</span>
+    <span class="n">evaluation_strategy</span><span class="o">=</span><span class="s2">&quot;epoch&quot;</span><span class="p">,</span>          <span class="c1"># evaluate after each epoch</span>
+    <span class="n">per_device_train_batch_size</span><span class="o">=</span><span class="n">bs</span><span class="p">,</span>       <span class="c1"># batch size during training</span>
+    <span class="n">per_device_eval_batch_size</span><span class="o">=</span><span class="n">bs</span><span class="p">,</span>        <span class="c1"># batch size during evaluation</span>
+    <span class="n">learning_rate</span><span class="o">=</span><span class="mf">5e-5</span><span class="p">,</span>
+    <span class="n">weight_decay</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span>                    <span class="c1"># weight decay parameter for AdamW optimizer</span>
+    <span class="n">num_train_epochs</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>                   <span class="c1"># number of epochs to train</span>
+    <span class="n">save_strategy</span><span class="o">=</span><span class="s1">&#39;epoch&#39;</span><span class="p">,</span>                <span class="c1"># save checkpoints after each epoch</span>
+    <span class="n">report_to</span><span class="o">=</span><span class="s1">&#39;none&#39;</span><span class="p">,</span>                     <span class="c1"># prevent reporting to wandb, mlflow...</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>Now let’s create the trainer using the above arguments, model, our dataset and start the training:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">transformers</span> <span class="kn">import</span> <span class="n">Seq2SeqTrainer</span><span class="p">,</span> <span class="n">default_data_collator</span>
+
+<span class="n">trainer</span> <span class="o">=</span> <span class="n">Seq2SeqTrainer</span><span class="p">(</span>
+    <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
+    <span class="n">tokenizer</span><span class="o">=</span><span class="n">feature_extractor</span><span class="p">,</span>
+    <span class="n">data_collator</span><span class="o">=</span><span class="n">default_data_collator</span><span class="p">,</span>
+    <span class="n">train_dataset</span><span class="o">=</span><span class="n">train_ds</span><span class="p">,</span>
+    <span class="n">eval_dataset</span><span class="o">=</span><span class="n">test_ds</span><span class="p">,</span>
+    <span class="n">args</span><span class="o">=</span><span class="n">training_args</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">trainer</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+<section id="testing-the-model">
+<h2>Testing the model<a class="headerlink" href="#testing-the-model" title="Permalink to this headline">¶</a></h2>
+<p>Now let’s see how good is the captions generated by our model. For the time being, we will use some images from the test set we created:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">inputs</span> <span class="o">=</span> <span class="n">test_ds</span><span class="p">[</span><span class="mi">65</span><span class="p">][</span><span class="s1">&#39;pixel_values&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>Since the <code class="docutils literal notranslate"><span class="pre">feature_extractor</span></code> is already applied to images in the test set, we don’t need to apply it again. We can directly feed the image pixels to our model:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
+
+<span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+<span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+    <span class="c1"># uncomment the below line if feature extractor is not applied to the image already</span>
+    <span class="c1"># inputs = feature_extractor(images=inputs, return_tensors=&#39;pt&#39;).pixel_values</span>
+
+    <span class="c1"># model prediction </span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span>
+        <span class="n">inputs</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s1">&#39;cuda&#39;</span><span class="p">),</span> <span class="c1"># move inputs to GPU</span>
+        <span class="n">num_beams</span><span class="o">=</span><span class="n">num_beams</span><span class="p">,</span> 
+        <span class="p">)</span>
+
+<span class="c1"># convert token ids to string format</span>
+<span class="n">decoded_out</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="n">out</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">skip_special_tokens</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">decoded_out</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Here is the image we used and the generated caption:</p>
+<img alt="image_captioning" class="bg-primary mb-1 align-center" src="_images/image_caption_output.png" />
+<p>Wohoo!! All these efforst paid off, the model is generating meaningful captions 🎉.</p>
 </section>
 </section>
 
