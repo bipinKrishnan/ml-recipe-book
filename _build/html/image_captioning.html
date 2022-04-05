@@ -53,7 +53,8 @@
     <link rel="canonical" href="https://github.com/image_captioning.html" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="prev" title="Image segmentation" href="cv.html" />
+    <link rel="next" title="Image classification" href="img_clf.html" />
+    <link rel="prev" title="Causal language modeling" href="causal_lm.html" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="docsearch:language" content="None">
     
@@ -129,18 +130,6 @@
 </ul>
 <p aria-level="2" class="caption" role="heading">
  <span class="caption-text">
-  Computer vision
- </span>
-</p>
-<ul class="nav bd-sidenav">
- <li class="toctree-l1">
-  <a class="reference internal" href="cv.html">
-   Image segmentation
-  </a>
- </li>
-</ul>
-<p aria-level="2" class="caption" role="heading">
- <span class="caption-text">
   Miscellaneous
  </span>
 </p>
@@ -148,6 +137,18 @@
  <li class="toctree-l1 current active">
   <a class="current reference internal" href="#">
    Image captioning
+  </a>
+ </li>
+</ul>
+<p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
+  Computer vision
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="img_clf.html">
+   Image classification
   </a>
  </li>
 </ul>
@@ -269,13 +270,13 @@
                 
   <section id="image-captioning">
 <h1>Image captioning<a class="headerlink" href="#image-captioning" title="Permalink to this headline">¶</a></h1>
-<p>This will be bit more interesting than the previous chapters which dealt with single modality, i.e, text. Here we will deal with images as well as text. The model we are going to built will be able generate a caption given an image as input,</p>
+<p>This will be bit more interesting than the previous chapters because we will deal with images as well as text. The model we are going to built will be able generate a caption given an image as input,</p>
 <img alt="image_captioning" class="bg-primary mb-1 align-center" src="_images/image_caption_model.png" />
 <section id="dataset">
 <h2>Dataset<a class="headerlink" href="#dataset" title="Permalink to this headline">¶</a></h2>
-<p>We will be using the <a class="reference external" href="https://www.kaggle.com/datasets/nunenuh/flickr8k?select=images">flickr8k image captioning dataset</a> which contain images as well 5 captions corresponding to a single image. The raw dataset has an <code class="docutils literal notranslate"><span class="pre">images</span></code> folder which contain all the images and a <code class="docutils literal notranslate"><span class="pre">captions.txt</span></code> file which has the captions corresponding to each image in the <code class="docutils literal notranslate"><span class="pre">images</span></code> folder. Here is a sample from <code class="docutils literal notranslate"><span class="pre">captions.txt</span></code>:</p>
+<p>We will be using the <a class="reference external" href="https://www.kaggle.com/datasets/nunenuh/flickr8k?select=images">flickr8k image captioning dataset</a> which contain images as well as 5 captions corresponding to a single image. The raw dataset has an <code class="docutils literal notranslate"><span class="pre">images</span></code> folder which contain all the images and a <code class="docutils literal notranslate"><span class="pre">captions.txt</span></code> file which has the captions corresponding to each image in the <code class="docutils literal notranslate"><span class="pre">images</span></code> folder. Here is a sample from <code class="docutils literal notranslate"><span class="pre">captions.txt</span></code>:</p>
 <img alt="image_captioning" class="bg-primary mb-1 align-center" src="_images/caption_data.png" />
-<p>As you can see, we have the name of the image name and caption(<code class="docutils literal notranslate"><span class="pre">caption_text</span></code>). Each image has more than one caption, so there is <code class="docutils literal notranslate"><span class="pre">caption_number</span></code> to indicate the number of the caption. From the above captions, we will use the captions with <code class="docutils literal notranslate"><span class="pre">caption_number</span></code> equal to 1.</p>
+<p>As you can see, we have the image name, caption number and the caption. Since each image has more than one caption, there is <code class="docutils literal notranslate"><span class="pre">caption_number</span></code> to indicate the number of the caption. From the above captions, we will use the captions with <code class="docutils literal notranslate"><span class="pre">caption_number</span></code> equal to 1.</p>
 <section id="preparing-the-data">
 <h3>Preparing the data<a class="headerlink" href="#preparing-the-data" title="Permalink to this headline">¶</a></h3>
 <p>First let’s write some code to create a dataframe which will contain a column for images and another column for captions, as shown below:</p>
@@ -314,8 +315,8 @@
 <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s1">&#39;captions&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">captions</span>
 </pre></div>
 </div>
-<p>In our previous chapters, we solved text-to-text problems like summarization and translation, where we used an encoder-decoder type model. But there, both the inputs and outputs were text. Unlike those chapters, here the input is image and output is text. So we will use <code class="docutils literal notranslate"><span class="pre">AutoFeatureExtractor</span></code> from transformers library to preprocessing the input images and <code class="docutils literal notranslate"><span class="pre">AutoTokenizer</span></code> for preprocessing the output text.</p>
-<p>The tokenizer we load using <code class="docutils literal notranslate"><span class="pre">AutoTokenizer</span></code> will process the text and prepare it in a format which can be directly fed to the model. Similarly, <code class="docutils literal notranslate"><span class="pre">AutoFeatureExtractor</span></code> will process the image and prepare it in a format which can be directly fed to the vision model.</p>
+<p>In our previous chapters, we solved text-to-text problems like summarization and translation, where we used an encoder-decoder type model. But there, both the inputs and outputs were text. Unlike those chapters, here the input is image and output is text. So we will use <code class="docutils literal notranslate"><span class="pre">AutoFeatureExtractor</span></code> from transformers library to preprocess the input images and <code class="docutils literal notranslate"><span class="pre">AutoTokenizer</span></code> for preprocessing the output text.</p>
+<p>The tokenizer we load using <code class="docutils literal notranslate"><span class="pre">AutoTokenizer</span></code> will process the text and prepare it in a format which can be directly fed to the model. Similarly, the feature extractor loaded using <code class="docutils literal notranslate"><span class="pre">AutoFeatureExtractor</span></code> will process the image and prepare it in a format which can be directly fed to the vision model.</p>
 <p>We will load the feature extractor for our images from <a class="reference external" href="https://huggingface.co/google/vit-base-patch16-224-in21k">vision transformer checkpoint</a> and the tokenizer from <a class="reference external" href="https://huggingface.co/gpt2">gpt2 checkpoint</a>:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">transformers</span> <span class="kn">import</span> <span class="n">AutoFeatureExtractor</span><span class="p">,</span> <span class="n">AutoTokenizer</span>
 
@@ -576,12 +577,19 @@
         
             <!-- Previous / next buttons -->
 <div class='prev-next-area'> 
-    <a class='left-prev' id="prev-link" href="cv.html" title="previous page">
+    <a class='left-prev' id="prev-link" href="causal_lm.html" title="previous page">
         <i class="fas fa-angle-left"></i>
         <div class="prev-next-info">
             <p class="prev-next-subtitle">previous</p>
-            <p class="prev-next-title">Image segmentation</p>
+            <p class="prev-next-title">Causal language modeling</p>
         </div>
+    </a>
+    <a class='right-next' id="next-link" href="img_clf.html" title="next page">
+    <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Image classification</p>
+    </div>
+    <i class="fas fa-angle-right"></i>
     </a>
 </div>
         

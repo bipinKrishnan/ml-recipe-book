@@ -9,11 +9,11 @@ parts:
     - file: translation
     - file: summarization
     - file: causal_lm
-  
-  - caption: Computer vision
-    chapters:
-    - file: cv
 
   - caption: Miscellaneous
     chapters:
     - file: image_captioning
+  
+  - caption: Computer vision
+    chapters:
+    - file: img_clf

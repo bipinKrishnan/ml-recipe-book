@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>Image segmentation</title>
+    <title>Image classification</title>
     
   <link href="_static/css/theme.css" rel="stylesheet">
   <link href="_static/css/index.ff1ffe594081f20da1ef19478df9384b.css" rel="stylesheet">
@@ -50,11 +50,10 @@
         const thebe_selector_output = ".output"
     </script>
     <script async="async" src="_static/sphinx-thebe.js"></script>
-    <link rel="canonical" href="https://github.com/cv.html" />
+    <link rel="canonical" href="https://github.com/img_clf.html" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Image captioning" href="image_captioning.html" />
-    <link rel="prev" title="Causal language modeling" href="causal_lm.html" />
+    <link rel="prev" title="Image captioning" href="image_captioning.html" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="docsearch:language" content="None">
     
@@ -130,18 +129,6 @@
 </ul>
 <p aria-level="2" class="caption" role="heading">
  <span class="caption-text">
-  Computer vision
- </span>
-</p>
-<ul class="current nav bd-sidenav">
- <li class="toctree-l1 current active">
-  <a class="current reference internal" href="#">
-   Image segmentation
-  </a>
- </li>
-</ul>
-<p aria-level="2" class="caption" role="heading">
- <span class="caption-text">
   Miscellaneous
  </span>
 </p>
@@ -149,6 +136,18 @@
  <li class="toctree-l1">
   <a class="reference internal" href="image_captioning.html">
    Image captioning
+  </a>
+ </li>
+</ul>
+<p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
+  Computer vision
+ </span>
+</p>
+<ul class="current nav bd-sidenav">
+ <li class="toctree-l1 current active">
+  <a class="current reference internal" href="#">
+   Image classification
   </a>
  </li>
 </ul>
@@ -192,7 +191,7 @@
         <!-- ipynb file if we had a myst markdown file -->
         
         <!-- Download raw file -->
-        <a class="dropdown-buttons" href="_sources/cv.md"><button type="button"
+        <a class="dropdown-buttons" href="_sources/img_clf.md"><button type="button"
                 class="btn btn-secondary topbarbtn" title="Download source file" data-toggle="tooltip"
                 data-placement="left">.md</button></a>
         <!-- Download PDF via print -->
@@ -230,6 +229,19 @@
         <!-- Table of contents -->
         <div class="d-none d-md-block col-md-2 bd-toc show">
             
+            <div class="tocsection onthispage pt-5 pb-3">
+                <i class="fas fa-list"></i> Contents
+            </div>
+            <nav id="bd-toc-nav" aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#introduction">
+   Introduction
+  </a>
+ </li>
+</ul>
+
+            </nav>
         </div>
     </div>
 </div>
@@ -238,8 +250,15 @@
         
               <div>
                 
-  <section class="tex2jax_ignore mathjax_ignore" id="image-segmentation">
-<h1>Image segmentation<a class="headerlink" href="#image-segmentation" title="Permalink to this headline">¶</a></h1>
+  <section class="tex2jax_ignore mathjax_ignore" id="image-classification">
+<h1>Image classification<a class="headerlink" href="#image-classification" title="Permalink to this headline">¶</a></h1>
+<section id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<p>Let’s start our journey into the world of computer vision with the task of image classification. Apart from the task, this chapter will also give you a head start to a bunch of other frameworks, libraries and tools that are commonly used by the machine learning community.</p>
+<p>By the way, if you are not familiar with image classification, it’s as simple as shown in the below image:</p>
+<img alt="image_classification" class="bg-primary mb-1 align-center" src="_images/img_clf_task.png" />
+<p>As shown above, the model has to classify the image into the correct class/category that it belongs to.</p>
+</section>
 </section>
 
     <script type="text/x-thebe-config">
@@ -267,19 +286,12 @@
         
             <!-- Previous / next buttons -->
 <div class='prev-next-area'> 
-    <a class='left-prev' id="prev-link" href="causal_lm.html" title="previous page">
+    <a class='left-prev' id="prev-link" href="image_captioning.html" title="previous page">
         <i class="fas fa-angle-left"></i>
         <div class="prev-next-info">
             <p class="prev-next-subtitle">previous</p>
-            <p class="prev-next-title">Causal language modeling</p>
+            <p class="prev-next-title">Image captioning</p>
         </div>
-    </a>
-    <a class='right-next' id="next-link" href="image_captioning.html" title="next page">
-    <div class="prev-next-info">
-        <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Image captioning</p>
-    </div>
-    <i class="fas fa-angle-right"></i>
     </a>
 </div>
         

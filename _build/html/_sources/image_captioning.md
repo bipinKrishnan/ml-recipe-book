@@ -1,6 +1,6 @@
 ## Image captioning
 
-This will be bit more interesting than the previous chapters which dealt with single modality, i.e, text. Here we will deal with images as well as text. The model we are going to built will be able generate a caption given an image as input,
+This will be bit more interesting than the previous chapters because we will deal with images as well as text. The model we are going to built will be able generate a caption given an image as input,
 
 ```{image} ./assets/image_caption_model.png
 :alt: image_captioning
@@ -10,7 +10,7 @@ This will be bit more interesting than the previous chapters which dealt with si
 
 ### Dataset
 
-We will be using the [flickr8k image captioning dataset](https://www.kaggle.com/datasets/nunenuh/flickr8k?select=images) which contain images as well 5 captions corresponding to a single image. The raw dataset has an ```images``` folder which contain all the images and a ```captions.txt``` file which has the captions corresponding to each image in the ```images``` folder. Here is a sample from ```captions.txt```:
+We will be using the [flickr8k image captioning dataset](https://www.kaggle.com/datasets/nunenuh/flickr8k?select=images) which contain images as well as 5 captions corresponding to a single image. The raw dataset has an ```images``` folder which contain all the images and a ```captions.txt``` file which has the captions corresponding to each image in the ```images``` folder. Here is a sample from ```captions.txt```:
 
 ```{image} ./assets/caption_data.png
 :alt: image_captioning
@@ -18,7 +18,7 @@ We will be using the [flickr8k image captioning dataset](https://www.kaggle.com/
 :align: center
 ```
 
-As you can see, we have the name of the image name and caption(```caption_text```). Each image has more than one caption, so there is ```caption_number``` to indicate the number of the caption. From the above captions, we will use the captions with ```caption_number``` equal to 1.
+As you can see, we have the image name, caption number and the caption. Since each image has more than one caption, there is ```caption_number``` to indicate the number of the caption. From the above captions, we will use the captions with ```caption_number``` equal to 1.
 
 #### Preparing the data
 First let's write some code to create a dataframe which will contain a column for images and another column for captions, as shown below:
@@ -71,9 +71,9 @@ df.loc[:, 'imgs'] = imgs
 df.loc[:, 'captions'] = captions
 ```
 
-In our previous chapters, we solved text-to-text problems like summarization and translation, where we used an encoder-decoder type model. But there, both the inputs and outputs were text. Unlike those chapters, here the input is image and output is text. So we will use ```AutoFeatureExtractor``` from transformers library to preprocessing the input images and ```AutoTokenizer``` for preprocessing the output text.
+In our previous chapters, we solved text-to-text problems like summarization and translation, where we used an encoder-decoder type model. But there, both the inputs and outputs were text. Unlike those chapters, here the input is image and output is text. So we will use ```AutoFeatureExtractor``` from transformers library to preprocess the input images and ```AutoTokenizer``` for preprocessing the output text.
 
-The tokenizer we load using ```AutoTokenizer``` will process the text and prepare it in a format which can be directly fed to the model. Similarly, ```AutoFeatureExtractor``` will process the image and prepare it in a format which can be directly fed to the vision model.
+The tokenizer we load using ```AutoTokenizer``` will process the text and prepare it in a format which can be directly fed to the model. Similarly, the feature extractor loaded using ```AutoFeatureExtractor``` will process the image and prepare it in a format which can be directly fed to the vision model.
 
 We will load the feature extractor for our images from [vision transformer checkpoint](https://huggingface.co/google/vit-base-patch16-224-in21k) and the tokenizer from [gpt2 checkpoint](https://huggingface.co/gpt2):
 
