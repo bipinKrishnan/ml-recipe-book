@@ -313,7 +313,7 @@
 <span class="mi">4</span>        <span class="n">Bird</span>  <span class="n">animal_images</span><span class="o">/</span><span class="mi">1633802584634</span><span class="n">_Apple</span> <span class="n">Konda</span> <span class="n">Pigeon</span><span class="o">...</span>
 </pre></div>
 </div>
-<p>As you know, ‘Animal_Type’ column will be the labels for our model. But as of now, it’s is in string format, so we need to convert them to numbers. But before doing that, let’s drop images with ‘Guinea pig / mouse’ and ‘Other’ labels:</p>
+<p>As you know, ‘Animal_Type’ column will be the labels for our model. But as of now, it is in string format, so we need to convert them to numbers. But before doing that, let’s drop images with ‘Guinea pig / mouse’ and ‘Other’ labels:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># remove rows with &#39;Guinea pig / mouse&#39; and &#39;Other&#39; labels</span>
 <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;Animal_Type not in [&#39;Guinea pig / mouse&#39;, &#39;Other&#39;]&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>

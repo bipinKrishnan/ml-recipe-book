@@ -69,7 +69,7 @@ Output:
 4        Bird  animal_images/1633802584634_Apple Konda Pigeon...
 ```
 
-As you know, 'Animal_Type' column will be the labels for our model. But as of now, it's is in string format, so we need to convert them to numbers. But before doing that, let's drop images with 'Guinea pig / mouse' and 'Other' labels:
+As you know, 'Animal_Type' column will be the labels for our model. But as of now, it is in string format, so we need to convert them to numbers. But before doing that, let's drop images with 'Guinea pig / mouse' and 'Other' labels:
 
 ```python
 # remove rows with 'Guinea pig / mouse' and 'Other' labels

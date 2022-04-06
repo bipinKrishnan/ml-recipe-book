@@ -449,7 +449,7 @@
 <p>Here is an illustrated diagram to make the above process clear:</p>
 <img alt="ner_word_ids" class="bg-primary mb-1 align-center" src="_images/ner_word_ids.png" />
 <p>Now let’s write a simple function to align labels with tokens.</p>
-<p>The function will take a list of word ids and its corresponding ner labels as arguments and then the following things happen. We loop through each word id in the provided list and checks whether the word id is equal to <code class="docutils literal notranslate"><span class="pre">None</span></code>(special tokens), if so we assign it a label of -100, otherwise we assign the label corresponding to it’s word id.</p>
+<p>The function will take a list of word ids and its corresponding ner labels as arguments and then the following things happen. We loop through each word id in the provided list and checks whether the word id is equal to <code class="docutils literal notranslate"><span class="pre">None</span></code>(special tokens), if so we assign it a label of -100, otherwise we assign the label corresponding to its word id.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">align_tokens_and_labels</span><span class="p">(</span><span class="n">word_ids</span><span class="p">,</span> <span class="n">labels</span><span class="p">):</span>
     <span class="n">previous_word_id</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">new_labels</span> <span class="o">=</span> <span class="p">[]</span>

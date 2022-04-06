@@ -281,7 +281,7 @@
   <section id="machine-translation">
 <h1>Machine translation<a class="headerlink" href="#machine-translation" title="Permalink to this headline">¶</a></h1>
 <p>Unlike other chapters that we’ve completed so far, this will be a bit more familiar to all of you guys. We don’t need a separate section to discuss “What is machine translation?”. It’s just simple as this - given an english sentence, our machine learning model translates it to another language, say, Spanish.</p>
-<p>In the above example, the inputs to our model will be an english sentence and the label will be it’s corresponding Spanish sentence.</p>
+<p>In the above example, the inputs to our model will be an english sentence and the label will be its corresponding Spanish sentence.</p>
 <p>Let’s directly jump into the dataset that we are going to use.</p>
 <section id="dataset">
 <h2>Dataset<a class="headerlink" href="#dataset" title="Permalink to this headline">¶</a></h2>
@@ -327,7 +327,7 @@
 <span class="n">tokenizer</span> <span class="o">=</span> <span class="n">AutoTokenizer</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="n">checkpoint</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Here is a sample english sentence and it’s corresponding french translation from the training set:</p>
+<p>Here is a sample english sentence and its corresponding french translation from the training set:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">sample</span> <span class="o">=</span> <span class="n">split_datasets</span><span class="p">[</span><span class="s1">&#39;train&#39;</span><span class="p">][</span><span class="s1">&#39;translation&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">sample</span><span class="p">)</span>
 </pre></div>

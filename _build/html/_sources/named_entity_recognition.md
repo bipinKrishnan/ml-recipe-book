@@ -241,7 +241,7 @@ Here is an illustrated diagram to make the above process clear:
 
 Now let's write a simple function to align labels with tokens. 
 
-The function will take a list of word ids and its corresponding ner labels as arguments and then the following things happen. We loop through each word id in the provided list and checks whether the word id is equal to ```None```(special tokens), if so we assign it a label of -100, otherwise we assign the label corresponding to it's word id.
+The function will take a list of word ids and its corresponding ner labels as arguments and then the following things happen. We loop through each word id in the provided list and checks whether the word id is equal to ```None```(special tokens), if so we assign it a label of -100, otherwise we assign the label corresponding to its word id.
 
 ```python
 def align_tokens_and_labels(word_ids, labels):

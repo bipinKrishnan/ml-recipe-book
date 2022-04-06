@@ -2,7 +2,7 @@
 
 Unlike other chapters that we've completed so far, this will be a bit more familiar to all of you guys. We don't need a separate section to discuss "What is machine translation?". It's just simple as this - given an english sentence, our machine learning model translates it to another language, say, Spanish.
 
-In the above example, the inputs to our model will be an english sentence and the label will be it's corresponding Spanish sentence.
+In the above example, the inputs to our model will be an english sentence and the label will be its corresponding Spanish sentence.
 
 Let's directly jump into the dataset that we are going to use.
 
@@ -58,7 +58,7 @@ checkpoint = "Helsinki-NLP/opus-mt-en-fr"
 tokenizer = AutoTokenizer.from_pretrained(checkpoint)
 ```
 
-Here is a sample english sentence and it's corresponding french translation from the training set:
+Here is a sample english sentence and its corresponding french translation from the training set:
 
 ```python
 sample = split_datasets['train']['translation'][0]
