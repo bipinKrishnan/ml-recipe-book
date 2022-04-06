@@ -4,11 +4,11 @@ root: index
 parts:
   - caption: Natural language processing
     chapters:
-    - file: ner
-    - file: mlm
+    - file: named_entity_recognition
+    - file: masked_language_modeling
     - file: translation
     - file: summarization
-    - file: causal_lm
+    - file: causal_language_modeling
 
   - caption: Miscellaneous
     chapters:
@@ -16,4 +16,4 @@ parts:
   
   - caption: Computer vision
     chapters:
-    - file: img_clf
+    - file: image_classification

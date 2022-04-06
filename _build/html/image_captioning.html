@@ -53,8 +53,8 @@
     <link rel="canonical" href="https://github.com/image_captioning.html" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Image classification" href="img_clf.html" />
-    <link rel="prev" title="Causal language modeling" href="causal_lm.html" />
+    <link rel="next" title="Image classification" href="image_classification.html" />
+    <link rel="prev" title="Causal language modeling" href="causal_language_modeling.html" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="docsearch:language" content="None">
     
@@ -103,12 +103,12 @@
 </p>
 <ul class="nav bd-sidenav">
  <li class="toctree-l1">
-  <a class="reference internal" href="ner.html">
+  <a class="reference internal" href="named_entity_recognition.html">
    Named entity recognition
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="mlm.html">
+  <a class="reference internal" href="masked_language_modeling.html">
    Masked language modelling
   </a>
  </li>
@@ -123,7 +123,7 @@
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="causal_lm.html">
+  <a class="reference internal" href="causal_language_modeling.html">
    Causal language modeling
   </a>
  </li>
@@ -147,7 +147,7 @@
 </p>
 <ul class="nav bd-sidenav">
  <li class="toctree-l1">
-  <a class="reference internal" href="img_clf.html">
+  <a class="reference internal" href="image_classification.html">
    Image classification
   </a>
  </li>
@@ -276,12 +276,12 @@
 <h2>Dataset<a class="headerlink" href="#dataset" title="Permalink to this headline">¶</a></h2>
 <p>We will be using the <a class="reference external" href="https://www.kaggle.com/datasets/nunenuh/flickr8k?select=images">flickr8k image captioning dataset</a> which contain images as well as 5 captions corresponding to a single image. The raw dataset has an <code class="docutils literal notranslate"><span class="pre">images</span></code> folder which contain all the images and a <code class="docutils literal notranslate"><span class="pre">captions.txt</span></code> file which has the captions corresponding to each image in the <code class="docutils literal notranslate"><span class="pre">images</span></code> folder. Here is a sample from <code class="docutils literal notranslate"><span class="pre">captions.txt</span></code>:</p>
 <img alt="image_captioning" class="bg-primary mb-1 align-center" src="_images/caption_data.png" />
-<p>As you can see, we have the image name, caption number and the caption. Since each image has more than one caption, there is <code class="docutils literal notranslate"><span class="pre">caption_number</span></code> to indicate the number of the caption. From the above captions, we will use the captions with <code class="docutils literal notranslate"><span class="pre">caption_number</span></code> equal to 1.</p>
+<p>As you can see, we have the image name, caption number and the caption(each of them separated by ‘|’ symbol). Since each image has more than one caption, the ‘caption_number’ will indicate the number of the caption. From the above captions, we will use the captions with ‘caption_number’ equal to 1.</p>
 <section id="preparing-the-data">
 <h3>Preparing the data<a class="headerlink" href="#preparing-the-data" title="Permalink to this headline">¶</a></h3>
 <p>First let’s write some code to create a dataframe which will contain a column for images and another column for captions, as shown below:</p>
 <img alt="image_captioning" class="bg-primary mb-1 align-center" src="_images/image_caption_data.png" />
-<p>Let’s create an empty dataframe and lists required to store our image files and captions:</p>
+<p>Let’s create an empty dataframe and two lists to store our image paths and captions:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 <span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
 
@@ -299,15 +299,21 @@
     <span class="n">content</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">readlines</span><span class="p">()</span>
 </pre></div>
 </div>
-<p>Finally, we will loop through each line in <code class="docutils literal notranslate"><span class="pre">captions.txt</span></code> and extract the image path and the caption with <code class="docutils literal notranslate"><span class="pre">caption_number</span></code> equal to 1:</p>
+<p>Finally, we will loop through each line in <code class="docutils literal notranslate"><span class="pre">captions.txt</span></code> and extract the image path and the caption with ‘caption_number’ equal to 1:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">content</span><span class="p">:</span>
     <span class="n">line</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;|&quot;</span><span class="p">)</span>
+
+    <span class="c1"># extract the required informations</span>
+    <span class="n">img_path</span> <span class="o">=</span> <span class="n">line</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">caption_number</span> <span class="o">=</span> <span class="n">line</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">caption</span> <span class="o">=</span> <span class="n">line</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
     <span class="c1"># check if the caption_number is equal to 1</span>
-    <span class="k">if</span> <span class="n">line</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">==</span><span class="s1">&#39;1&#39;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">caption_number</span><span class="o">==</span><span class="s1">&#39;1&#39;</span><span class="p">:</span>
         <span class="c1"># store the image path</span>
-        <span class="n">imgs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">root_dir</span><span class="o">/</span><span class="s2">&quot;images&quot;</span><span class="o">/</span><span class="n">line</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">imgs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">root_dir</span><span class="o">/</span><span class="s2">&quot;images&quot;</span><span class="o">/</span><span class="n">img_path</span><span class="p">)</span>
         <span class="c1"># store the caption</span>
-        <span class="n">captions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">captions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">caption</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Now, let’s store our image paths and captions on to the dataframe we created:</p>
@@ -315,9 +321,10 @@
 <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s1">&#39;captions&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">captions</span>
 </pre></div>
 </div>
-<p>In our previous chapters, we solved text-to-text problems like summarization and translation, where we used an encoder-decoder type model. But there, both the inputs and outputs were text. Unlike those chapters, here the input is image and output is text. So we will use <code class="docutils literal notranslate"><span class="pre">AutoFeatureExtractor</span></code> from transformers library to preprocess the input images and <code class="docutils literal notranslate"><span class="pre">AutoTokenizer</span></code> for preprocessing the output text.</p>
-<p>The tokenizer we load using <code class="docutils literal notranslate"><span class="pre">AutoTokenizer</span></code> will process the text and prepare it in a format which can be directly fed to the model. Similarly, the feature extractor loaded using <code class="docutils literal notranslate"><span class="pre">AutoFeatureExtractor</span></code> will process the image and prepare it in a format which can be directly fed to the vision model.</p>
-<p>We will load the feature extractor for our images from <a class="reference external" href="https://huggingface.co/google/vit-base-patch16-224-in21k">vision transformer checkpoint</a> and the tokenizer from <a class="reference external" href="https://huggingface.co/gpt2">gpt2 checkpoint</a>:</p>
+<p>In our previous chapters, we used encoder-decoder type models to solve text-to-text problems like summarization and translation. Here also we will use encoder-decoder type model, but the problem is that, here, both the inputs and outputs are not text. The input is an image and output is text. So, we cannot use the tokenizer to process both the inputs and outputs.</p>
+<p>As we had <code class="docutils literal notranslate"><span class="pre">AutoTokenizer</span></code> to deal the text data, the transformers library also has something called <code class="docutils literal notranslate"><span class="pre">AutoFeatureExtractor</span></code> to deal with image data.</p>
+<p>The tokenizer we load using <code class="docutils literal notranslate"><span class="pre">AutoTokenizer</span></code> will process the text and prepare it in a format which can be directly fed to the model. Similarly, the feature extractor loaded using <code class="docutils literal notranslate"><span class="pre">AutoFeatureExtractor</span></code> will process the image and prepare it in a format which can be directly fed into the vision model.</p>
+<p>We will load the feature extractor from <a class="reference external" href="https://huggingface.co/google/vit-base-patch16-224-in21k">vision transformer checkpoint</a> and tokenizer from <a class="reference external" href="https://huggingface.co/gpt2">gpt2 checkpoint</a>:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">transformers</span> <span class="kn">import</span> <span class="n">AutoFeatureExtractor</span><span class="p">,</span> <span class="n">AutoTokenizer</span>
 
 <span class="n">encoder_checkpoint</span> <span class="o">=</span> <span class="s2">&quot;google/vit-base-patch16-224-in21k&quot;</span>
@@ -327,7 +334,7 @@
 <span class="n">tokenizer</span> <span class="o">=</span> <span class="n">AutoTokenizer</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="n">decoder_checkpoint</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>For the tokenizer, we will set the maximum length to 128 and truncate captions longer than that and add padding to captions shorter than that. So we need to set token id for padding, otherwise we will get an error:</p>
+<p>For the tokenizer, we will set the maximum length to 128, which means, the tokenizer will truncate captions longer than 128 and add padding to captions shorter than 128. So we need to set a token id for padding, otherwise we will get an error:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">tokenizer</span><span class="o">.</span><span class="n">pad_token</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="o">.</span><span class="n">eos_token</span>
 </pre></div>
 </div>
@@ -401,8 +408,8 @@
          <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]])}</span>
 </pre></div>
 </div>
-<p>As you can see, for the ‘Outputs’, since the caption is smaller than 128, padding token id(<code class="docutils literal notranslate"><span class="pre">50256</span></code>) is added to make the length equal to 128. As you can see, the attention masks corresponding to the padding tokens are equal to 0, so they are ignored during training.</p>
-<p>Now, let’s write a normal dataset loading class as we usually do in pytorch. We will pass the dataframe we just created and extract the images and captions. Then for each each image and caption we apply the <code class="docutils literal notranslate"><span class="pre">feature_extractor</span></code> and <code class="docutils literal notranslate"><span class="pre">tokenizer</span></code>. Then we return the processed inputs and targets.</p>
+<p>As you can see, for the ‘Outputs’, since the caption is smaller than 128, padding token id(<code class="docutils literal notranslate"><span class="pre">50256</span></code>) is added to make the length equal to 128.</p>
+<p>Now, let’s write a normal dataset loading class as we usually do in pytorch. We will pass the dataframe we just created and extract the images and captions. Then for each each image and caption we apply the <code class="docutils literal notranslate"><span class="pre">feature_extractor</span></code> and <code class="docutils literal notranslate"><span class="pre">tokenizer</span></code>. Finally, we return the processed inputs and outputs.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="kn">import</span> <span class="n">Dataset</span>
 
 <span class="k">class</span> <span class="nc">LoadDataset</span><span class="p">(</span><span class="n">Dataset</span><span class="p">):</span>
@@ -577,14 +584,14 @@
         
             <!-- Previous / next buttons -->
 <div class='prev-next-area'> 
-    <a class='left-prev' id="prev-link" href="causal_lm.html" title="previous page">
+    <a class='left-prev' id="prev-link" href="causal_language_modeling.html" title="previous page">
         <i class="fas fa-angle-left"></i>
         <div class="prev-next-info">
             <p class="prev-next-subtitle">previous</p>
             <p class="prev-next-title">Causal language modeling</p>
         </div>
     </a>
-    <a class='right-next' id="next-link" href="img_clf.html" title="next page">
+    <a class='right-next' id="next-link" href="image_classification.html" title="next page">
     <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
         <p class="prev-next-title">Image classification</p>

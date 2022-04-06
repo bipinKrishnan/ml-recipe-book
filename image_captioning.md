@@ -18,7 +18,7 @@ We will be using the [flickr8k image captioning dataset](https://www.kaggle.com/
 :align: center
 ```
 
-As you can see, we have the image name, caption number and the caption. Since each image has more than one caption, there is ```caption_number``` to indicate the number of the caption. From the above captions, we will use the captions with ```caption_number``` equal to 1.
+As you can see, we have the image name, caption number and the caption(each of them separated by '|' symbol). Since each image has more than one caption, the 'caption_number' will indicate the number of the caption. From the above captions, we will use the captions with 'caption_number' equal to 1.
 
 #### Preparing the data
 First let's write some code to create a dataframe which will contain a column for images and another column for captions, as shown below:
@@ -29,7 +29,7 @@ First let's write some code to create a dataframe which will contain a column fo
 :align: center
 ```
 
-Let's create an empty dataframe and lists required to store our image files and captions:
+Let's create an empty dataframe and two lists to store our image paths and captions:
 
 ```python
 import pandas as pd
@@ -51,17 +51,23 @@ with open(root_dir/"captions.txt", "r") as f:
     content = f.readlines()
 ```
 
-Finally, we will loop through each line in ```captions.txt``` and extract the image path and the caption with ```caption_number``` equal to 1:
+Finally, we will loop through each line in ```captions.txt``` and extract the image path and the caption with 'caption_number' equal to 1:
 
 ```python
 for line in content:
     line = line.strip().split("|")
+
+    # extract the required informations
+    img_path = line[0]
+    caption_number = line[1]
+    caption = line[-1]
+
     # check if the caption_number is equal to 1
-    if line[1]=='1':
+    if caption_number=='1':
         # store the image path
-        imgs.append(root_dir/"images"/line[0])
+        imgs.append(root_dir/"images"/img_path)
         # store the caption
-        captions.append(line[-1])
+        captions.append(caption)
 ```
 
 Now, let's store our image paths and captions on to the dataframe we created:
@@ -71,11 +77,13 @@ df.loc[:, 'imgs'] = imgs
 df.loc[:, 'captions'] = captions
 ```
 
-In our previous chapters, we solved text-to-text problems like summarization and translation, where we used an encoder-decoder type model. But there, both the inputs and outputs were text. Unlike those chapters, here the input is image and output is text. So we will use ```AutoFeatureExtractor``` from transformers library to preprocess the input images and ```AutoTokenizer``` for preprocessing the output text.
+In our previous chapters, we used encoder-decoder type models to solve text-to-text problems like summarization and translation. Here also we will use encoder-decoder type model, but the problem is that, here, both the inputs and outputs are not text. The input is an image and output is text. So, we cannot use the tokenizer to process both the inputs and outputs. 
 
-The tokenizer we load using ```AutoTokenizer``` will process the text and prepare it in a format which can be directly fed to the model. Similarly, the feature extractor loaded using ```AutoFeatureExtractor``` will process the image and prepare it in a format which can be directly fed to the vision model.
+As we had ```AutoTokenizer``` to deal the text data, the transformers library also has something called ```AutoFeatureExtractor``` to deal with image data.
 
-We will load the feature extractor for our images from [vision transformer checkpoint](https://huggingface.co/google/vit-base-patch16-224-in21k) and the tokenizer from [gpt2 checkpoint](https://huggingface.co/gpt2):
+The tokenizer we load using ```AutoTokenizer``` will process the text and prepare it in a format which can be directly fed to the model. Similarly, the feature extractor loaded using ```AutoFeatureExtractor``` will process the image and prepare it in a format which can be directly fed into the vision model.
+
+We will load the feature extractor from [vision transformer checkpoint](https://huggingface.co/google/vit-base-patch16-224-in21k) and tokenizer from [gpt2 checkpoint](https://huggingface.co/gpt2):
 
 ```python
 from transformers import AutoFeatureExtractor, AutoTokenizer
@@ -87,7 +95,7 @@ feature_extractor = AutoFeatureExtractor.from_pretrained(encoder_checkpoint)
 tokenizer = AutoTokenizer.from_pretrained(decoder_checkpoint)
 ```
 
-For the tokenizer, we will set the maximum length to 128 and truncate captions longer than that and add padding to captions shorter than that. So we need to set token id for padding, otherwise we will get an error:
+For the tokenizer, we will set the maximum length to 128, which means, the tokenizer will truncate captions longer than 128 and add padding to captions shorter than 128. So we need to set a token id for padding, otherwise we will get an error:
 
 ```python
 tokenizer.pad_token = tokenizer.eos_token
@@ -165,9 +173,9 @@ Outputs:
          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
          0, 0, 0, 0, 0, 0, 0, 0]])}
 ```
-As you can see, for the 'Outputs', since the caption is smaller than 128, padding token id(```50256```) is added to make the length equal to 128. As you can see, the attention masks corresponding to the padding tokens are equal to 0, so they are ignored during training.
+As you can see, for the 'Outputs', since the caption is smaller than 128, padding token id(```50256```) is added to make the length equal to 128.
 
-Now, let's write a normal dataset loading class as we usually do in pytorch. We will pass the dataframe we just created and extract the images and captions. Then for each each image and caption we apply the ```feature_extractor``` and ```tokenizer```. Then we return the processed inputs and targets.
+Now, let's write a normal dataset loading class as we usually do in pytorch. We will pass the dataframe we just created and extract the images and captions. Then for each each image and caption we apply the ```feature_extractor``` and ```tokenizer```. Finally, we return the processed inputs and outputs.
 
 ```python
 from torch.utils.data import Dataset
