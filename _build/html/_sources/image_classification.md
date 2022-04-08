@@ -331,7 +331,7 @@ class AnimalModel(LightningModule):
         self.model = timm.create_model(
             "resnet34", 
             pretrained=True, 
-            num_classes=len(labels)
+            num_classes=len(label_int)
         )
 
     def forward(self, x):
@@ -367,3 +367,78 @@ class AnimalModel(LightningModule):
 ```
 
 #### Creating the trainer
+
+Now it's time to meet the real hero - The Trainer. Pytorch lightning's trainer is where all you your favourite flags are passed, which includes:
+
+* the learning rate finder
+* over-fitting batches
+* sanity check before running the whole training
+* different types of callback system
+* logging everything to different platforms like wandb, mlflow etc.
+
+You can go get the complete capabilties of trainer [here](https://pytorch-lightning.readthedocs.io/en/stable/common/trainer.html#trainer-flags).
+
+Let's see how we can use the automatic learning rate finder of the trainer:
+
+```python
+from pytorch_lightning import Trainer
+
+trainer = Trainer(
+    accelerator='auto', # automatically detects GPUs or other accelerators
+    auto_lr_find=True,  # flag to use the learning rate finder
+    max_epochs=10,      # number of epochs to train for
+    devices=1,          # if there are GPUs, this flag uses the available 1 GPU
+)
+```
+
+Now let's run the learning rate finder:
+
+```python
+model = AnimalModel()
+
+# pass the model you created
+trainer.tune(model)
+```
+
+This will run the automatic learning rate finder and sets the resulting learning rate for your training. Thus, you don't have to manually set it.
+
+By default, lightning's trainer looks for ```self.learning_rate``` or ```self.lr``` to store the resulting learning rate. So make sure that you store your learning rate in either of these variables inside your ```AnimalModel```.
+
+Now let's see how we can use the weights and biases callback in pytorch lightning. If you don't have an account in wandb, you can create it [here](https://app.wandb.ai/login?signup=true).
+
+For now, we will log our pytorch model, the training loss and validation loss onto wandb. If you want to log some additional stuff, you could use pytorch lightning's ```self.log()```. For example, you could log the learning rate by writing the following code inside the ```training_step``` or ```validation_step``` of your ```AnimalModel```:
+
+```python
+self.log("learning_rate", self.learning_rate)
+```
+
+Now let's import wand callback and pass it to the trainer. Also pass in a project name and run name to differentiate different projects as well as different experiments in the same project:
+
+```python
+from pytorch_lightning.loggers import WandbLogger
+
+# set log_model=True to log the model to wandb after training
+logger = WandbLogger(project='lightning-project', name='animal-clf-2', log_model=True)
+
+trainer = Trainer(
+    accelerator='auto', 
+    auto_lr_find=True,  
+    max_epochs=10,      
+    devices=1,
+    logger=logger, # wandb logger
+)
+```
+
+Now let's find the learning rate and fit/train the model(before running the whole training, pytorch lightning automatically does a sanity check to see if there are any bugs in the code):
+
+```python
+model = AnimalModel()
+trainer.tune(model)
+
+# train the model
+trainer.fit(model)
+```
+
+Once the training is over, you can head to your wandb dashboard to see the results as well as the trained models. During inference, you can directly fetch your models from wandb and load it as a normal pytorch model.
+
+### Testing the model

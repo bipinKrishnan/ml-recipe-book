@@ -268,6 +268,11 @@
    </li>
   </ul>
  </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#testing-the-model">
+   Testing the model
+  </a>
+ </li>
 </ul>
 
             </nav>
@@ -557,7 +562,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">timm</span><span class="o">.</span><span class="n">create_model</span><span class="p">(</span>
             <span class="s2">&quot;resnet34&quot;</span><span class="p">,</span> 
             <span class="n">pretrained</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> 
-            <span class="n">num_classes</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">labels</span><span class="p">)</span>
+            <span class="n">num_classes</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">label_int</span><span class="p">)</span>
         <span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
@@ -595,7 +600,68 @@
 </section>
 <section id="creating-the-trainer">
 <h3>Creating the trainer<a class="headerlink" href="#creating-the-trainer" title="Permalink to this headline">¶</a></h3>
+<p>Now it’s time to meet the real hero - The Trainer. Pytorch lightning’s trainer is where all you your favourite flags are passed, which includes:</p>
+<ul class="simple">
+<li><p>the learning rate finder</p></li>
+<li><p>over-fitting batches</p></li>
+<li><p>sanity check before running the whole training</p></li>
+<li><p>different types of callback system</p></li>
+<li><p>logging everything to different platforms like wandb, mlflow etc.</p></li>
+</ul>
+<p>You can go get the complete capabilties of trainer <a class="reference external" href="https://pytorch-lightning.readthedocs.io/en/stable/common/trainer.html#trainer-flags">here</a>.</p>
+<p>Let’s see how we can use the automatic learning rate finder of the trainer:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pytorch_lightning</span> <span class="kn">import</span> <span class="n">Trainer</span>
+
+<span class="n">trainer</span> <span class="o">=</span> <span class="n">Trainer</span><span class="p">(</span>
+    <span class="n">accelerator</span><span class="o">=</span><span class="s1">&#39;auto&#39;</span><span class="p">,</span> <span class="c1"># automatically detects GPUs or other accelerators</span>
+    <span class="n">auto_lr_find</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>  <span class="c1"># flag to use the learning rate finder</span>
+    <span class="n">max_epochs</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>      <span class="c1"># number of epochs to train for</span>
+    <span class="n">devices</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>          <span class="c1"># if there are GPUs, this flag uses the available 1 GPU</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>Now let’s run the learning rate finder:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">AnimalModel</span><span class="p">()</span>
+
+<span class="c1"># pass the model you created</span>
+<span class="n">trainer</span><span class="o">.</span><span class="n">tune</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This will run the automatic learning rate finder and sets the resulting learning rate for your training. Thus, you don’t have to manually set it.</p>
+<p>By default, lightning’s trainer looks for <code class="docutils literal notranslate"><span class="pre">self.learning_rate</span></code> or <code class="docutils literal notranslate"><span class="pre">self.lr</span></code> to store the resulting learning rate. So make sure that you store your learning rate in either of these variables inside your <code class="docutils literal notranslate"><span class="pre">AnimalModel</span></code>.</p>
+<p>Now let’s see how we can use the weights and biases callback in pytorch lightning. If you don’t have an account in wandb, you can create it <a class="reference external" href="https://app.wandb.ai/login?signup=true">here</a>.</p>
+<p>For now, we will log our pytorch model, the training loss and validation loss onto wandb. If you want to log some additional stuff, you could use pytorch lightning’s <code class="docutils literal notranslate"><span class="pre">self.log()</span></code>. For example, you could log the learning rate by writing the following code inside the <code class="docutils literal notranslate"><span class="pre">training_step</span></code> or <code class="docutils literal notranslate"><span class="pre">validation_step</span></code> of your <code class="docutils literal notranslate"><span class="pre">AnimalModel</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s2">&quot;learning_rate&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">learning_rate</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Now let’s import wand callback and pass it to the trainer. Also pass in a project name and run name to differentiate different projects as well as different experiments in the same project:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pytorch_lightning.loggers</span> <span class="kn">import</span> <span class="n">WandbLogger</span>
+
+<span class="c1"># set log_model=True to log the model to wandb after training</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">WandbLogger</span><span class="p">(</span><span class="n">project</span><span class="o">=</span><span class="s1">&#39;lightning-project&#39;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;animal-clf-2&#39;</span><span class="p">,</span> <span class="n">log_model</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="n">trainer</span> <span class="o">=</span> <span class="n">Trainer</span><span class="p">(</span>
+    <span class="n">accelerator</span><span class="o">=</span><span class="s1">&#39;auto&#39;</span><span class="p">,</span> 
+    <span class="n">auto_lr_find</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>  
+    <span class="n">max_epochs</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>      
+    <span class="n">devices</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">logger</span><span class="o">=</span><span class="n">logger</span><span class="p">,</span> <span class="c1"># wandb logger</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>Now let’s find the learning rate and fit/train the model(before running the whole training, pytorch lightning automatically does a sanity check to see if there are any bugs in the code):</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">AnimalModel</span><span class="p">()</span>
+<span class="n">trainer</span><span class="o">.</span><span class="n">tune</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+
+<span class="c1"># train the model</span>
+<span class="n">trainer</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Once the training is over, you can head to your wandb dashboard to see the results as well as the trained models. During inference, you can directly fetch your models from wandb and load it as a normal pytorch model.</p>
 </section>
+</section>
+<section id="testing-the-model">
+<h2>Testing the model<a class="headerlink" href="#testing-the-model" title="Permalink to this headline">¶</a></h2>
 </section>
 </section>
 
