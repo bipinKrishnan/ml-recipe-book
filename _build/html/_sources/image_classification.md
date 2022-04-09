@@ -442,3 +442,34 @@ trainer.fit(model)
 Once the training is over, you can head to your wandb dashboard to see the results as well as the trained models. During inference, you can directly fetch your models from wandb and load it as a normal pytorch model.
 
 ### Testing the model
+
+Now, let's see how our model predicts on some a sample image from our test set:
+
+```python
+sample = test_ds[6]
+# model prediction
+pred = model(sample[0].unsqueeze(0))
+pred = torch.argmax(pred, dim=1).item()
+```
+
+Let's print the prediction and the image:
+```python
+import matplotlib.pyplot as plt
+
+print(label_mapping)
+# final prediction
+print(f"Predicted class: {pred}")
+
+# show image
+plt.imshow(torch.permute(sample[0], (1, 2, 0)));
+```
+Output:
+```{image} ./assets/img_clf_output.png
+:alt: img_clf
+:class: bg-primary mb-1
+:align: center
+```
+
+Apart from the image classification task, we have learnt a ton of other stuff too - lightning, weights and biases, timm library...
+
+And that brings to the end of this chapter. We will explore other tasks in computer vision in the coming chapters:)
