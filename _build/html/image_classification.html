@@ -288,7 +288,7 @@
 <h1>Image classification<a class="headerlink" href="#image-classification" title="Permalink to this headline">¶</a></h1>
 <section id="introduction">
 <h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
-<p>Let’s start our journey into the world of computer vision with the task of image classification. Apart from the task, this chapter will also give you a head start to a bunch of other frameworks, libraries and tools that are commonly used by the machine learning community.</p>
+<p>With this chapter, we will start our journey into the world of computer vision. Apart from the task of image classification, this chapter will also give you a head start to a bunch of other libraries and tools that are commonly used by the machine learning community.</p>
 <p>By the way, if you are not familiar with image classification, it’s as simple as shown in the below image:</p>
 <img alt="image_classification" class="bg-primary mb-1 align-center" src="_images/img_clf_task.png" />
 <p>As shown above, the model has to classify the image into the correct class/category that it belongs to.</p>
@@ -305,16 +305,16 @@
 <li><p>Guinea pig / mouse</p></li>
 <li><p>Other</p></li>
 </ol>
-<p>Of the above categories, we will drop ‘Guinea pig / mouse’ and ‘Other’ from the dataset and use the rest of the categories for this chapter.</p>
-<p>The dataset contains a folder called ‘animal_images’ and a csv file with the name ‘animal_data_img.csv’.</p>
+<p>Of the above categories, we will drop images belonging to ‘Guinea pig / mouse’ and ‘Other’ from the dataset and use the rest of the categories.</p>
+<p>The dataset contains a folder called ‘animal_images’ and a csv file called ‘animal_data_img.csv’.</p>
 <p>The folder ‘animal_images’ contains all the animal pictures whereas the labels of each image is present in ‘animal_data_img.csv’ file.</p>
 <p>Here is a sample of ‘animal_data_img.csv’ file:</p>
 <img alt="image_clf" class="bg-primary mb-1 align-center" src="_images/img_clf_data.png" />
-<p>The ‘Animal_Type’ column contains our labels and ‘Image_File’ contains the path to the image file.</p>
+<p>The ‘Animal_Type’ column will be our labels and ‘Image_File’ column contains the path to the image file.</p>
 <section id="preparing-the-data">
 <h3>Preparing the data<a class="headerlink" href="#preparing-the-data" title="Permalink to this headline">¶</a></h3>
 <p>Now let’s load in our csv file and write a dataset loading class using pytorch.</p>
-<p>The below code will load our csv by including only the specified columns:</p>
+<p>The below code will load our csv with the required columns:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 
 <span class="n">csv_path</span> <span class="o">=</span> <span class="s2">&quot;../input/animal-images-dataset/animal_data_img.csv&quot;</span>
@@ -335,12 +335,12 @@
 <span class="mi">4</span>        <span class="n">Bird</span>  <span class="n">animal_images</span><span class="o">/</span><span class="mi">1633802584634</span><span class="n">_Apple</span> <span class="n">Konda</span> <span class="n">Pigeon</span><span class="o">...</span>
 </pre></div>
 </div>
-<p>As you know, ‘Animal_Type’ column will be the labels for our model. But as of now, it is in string format, so we need to convert them to numbers. But before doing that, let’s drop images with ‘Guinea pig / mouse’ and ‘Other’ labels:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># remove rows with &#39;Guinea pig / mouse&#39; and &#39;Other&#39; labels</span>
+<p>The value inside ‘Animal_Type’ is in string format, we need to convert them to integers. But before doing that, let’s drop images with ‘Guinea pig / mouse’ and ‘Other’ labels:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># exclude all rows containing &#39;Guinea pig / mouse&#39; and &#39;Other&#39; as labels</span>
 <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;Animal_Type not in [&#39;Guinea pig / mouse&#39;, &#39;Other&#39;]&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Now let’s convert our label from string to integer format:</p>
+<p>Now let’s convert the labels from string to integer format:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">label_string</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;Animal_Type&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span>
 <span class="n">label_int</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">label_string</span><span class="p">))</span>
 
@@ -357,8 +357,8 @@
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;labels&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;Animal_Type&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">label_mapping</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>We will now a write a simple data loading class with pytorch. The class will take in the dataframe we just created and extract the columns with image paths and labels.</p>
-<p>The images are read using python’s ‘PIL’ library and apart from converting the images to tensor format, a <code class="docutils literal notranslate"><span class="pre">RandomResizedCrop</span></code> transform is applied to the images. This transform crops the image randomly and resizes the resulting image into the specified size.</p>
+<p>We will now write a simple dataset loading class with pytorch. The class will take in the dataframe we just created and extract the image paths and labels.</p>
+<p>The images are read using python’s ‘PIL’ library and apart from converting the images to tensor format, a <code class="docutils literal notranslate"><span class="pre">RandomResizedCrop</span></code> augmentation is applied to the images. This augmentation crops our image randomly and resizes the resulting image into the specified size.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="kn">import</span> <span class="n">Dataset</span>
 <span class="kn">from</span> <span class="nn">torchvision.transforms</span> <span class="kn">import</span> <span class="n">transforms</span>
@@ -369,12 +369,13 @@
 <span class="k">class</span> <span class="nc">LoadDataset</span><span class="p">(</span><span class="n">Dataset</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">root_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;../input/animal-images-dataset/animal_images&quot;</span><span class="p">)</span>
+
         <span class="c1"># all the image paths are stores here</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">images</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;Image_File&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
         <span class="c1"># all the labels are stored here</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">labels</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;labels&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
         
-        <span class="c1"># these transforms are applied to each image</span>
+        <span class="c1"># these augmentations are applied to each image</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">transforms</span> <span class="o">=</span> <span class="n">transforms</span><span class="o">.</span><span class="n">Compose</span><span class="p">([</span>
             <span class="n">transforms</span><span class="o">.</span><span class="n">RandomResizedCrop</span><span class="p">((</span><span class="mi">100</span><span class="p">,</span> <span class="mi">100</span><span class="p">)),</span>
             <span class="n">transforms</span><span class="o">.</span><span class="n">ToTensor</span><span class="p">(),</span>
@@ -382,11 +383,14 @@
         
     <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">):</span>
         <span class="n">img_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">root_dir</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">images</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
-        <span class="c1"># load the image and apply the transforms</span>
+
+        <span class="c1"># load the image and apply the augmentations</span>
         <span class="n">image</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">img_path</span><span class="p">)</span>
         <span class="n">image</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">transforms</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+
         <span class="c1"># load the label corresponding to the above image</span>
         <span class="n">label</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">labels</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">long</span><span class="p">)</span>
+
         <span class="k">return</span> <span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">label</span><span class="p">)</span>
     
     <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">images</span><span class="p">)</span>
@@ -404,7 +408,7 @@
     <span class="p">)</span>
 </pre></div>
 </div>
-<p>Now, load in the images and labels:</p>
+<p>Now, load in the images and labels of train and test sets:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># training set</span>
 <span class="n">train_ds</span> <span class="o">=</span> <span class="n">LoadDataset</span><span class="p">(</span><span class="n">train_df</span><span class="p">)</span>
 <span class="c1"># test set</span>
@@ -415,7 +419,7 @@
 </section>
 <section id="training-the-model">
 <h2>Training the model<a class="headerlink" href="#training-the-model" title="Permalink to this headline">¶</a></h2>
-<p>We will use <a class="reference external" href="https://pytorchlightning.ai/">pytorch lightning</a> to do the rest of the part for this task. Using pytorch lightning is similar to using pytorch, but we will control everything(training, validation, dataloaders etc) from a single place and by doing so we get a lot of extra benefits like:</p>
+<p>We will use <a class="reference external" href="https://pytorchlightning.ai/">pytorch lightning</a> to do the training of our model. Using pytorch lightning is similar to using pytorch, but we will control everything(training, validation, dataloaders etc) from a single place and by doing so we get a lot of extra benefits including:</p>
 <ul class="simple">
 <li><p>a wide range of ready to use callbacks like early stopping.</p></li>
 <li><p>learning rate scheduler</p></li>
@@ -424,7 +428,7 @@
 </ul>
 <section id="building-the-model-class">
 <h3>Building the model class<a class="headerlink" href="#building-the-model-class" title="Permalink to this headline">¶</a></h3>
-<p>Let’s see how the pytorch lightning organizes our code.</p>
+<p>Let’s see how pytorch lightning organizes our code.</p>
 <p>First of all, we need to use pytorch lightning’s <code class="docutils literal notranslate"><span class="pre">LightningModule</span></code> to build our model class, so let’s import it:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pytorch_lightning</span> <span class="kn">import</span> <span class="n">LightningModule</span>
 </pre></div>
@@ -433,19 +437,19 @@
 <p class="admonition-title">Note</p>
 <p>You can install pytorch lightning by running <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">pytorch-lightning</span></code> from the terminal.</p>
 </div>
-<p>We will build a model class with the name <code class="docutils literal notranslate"><span class="pre">AnimalModel</span></code>;) This is the blueprint of our model class which uses pytorch lightning’s <code class="docutils literal notranslate"><span class="pre">LightningModule</span></code>:</p>
+<p>We will build an <code class="docutils literal notranslate"><span class="pre">AnimalModel</span></code> model class. This model class will contain the code for training and validation dataloaders, training and validation steps and finally the optimizer. Below is the blueprint of our model class which uses pytorch lightning’s <code class="docutils literal notranslate"><span class="pre">LightningModule</span></code>:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">AnimalModel</span><span class="p">(</span><span class="n">LightningModule</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
-        <span class="c1"># similar to pytorch model&#39;s forward function</span>
+        <span class="c1"># similar to pytorch forward method</span>
     
     <span class="k">def</span> <span class="nf">train_dataloader</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="c1"># put the training dataloader here</span>
+        <span class="c1"># put the code for training dataloader here</span>
     
     <span class="k">def</span> <span class="nf">val_dataloader</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="c1"># put the validation dataloader here</span>
+        <span class="c1"># put the code for validation dataloader here</span>
 
     <span class="k">def</span> <span class="nf">configure_optimizers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="c1"># put the optimizer here</span>
@@ -457,7 +461,7 @@
         <span class="c1"># everything done during validation goes here</span>
 </pre></div>
 </div>
-<p>The <code class="docutils literal notranslate"><span class="pre">training_step</span></code> and <code class="docutils literal notranslate"><span class="pre">validation_step</span></code> has a ‘batch’ and ‘batch_idx’, this is same as the one shown in pure pytorch below:</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">training_step</span></code> and <code class="docutils literal notranslate"><span class="pre">validation_step</span></code> takes in ‘batch’ and ‘batch_idx’ as arguments, this is same as the one shown in pure pytorch below:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># training step</span>
 <span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">epochs</span><span class="p">):</span>
     <span class="k">for</span> <span class="n">batch_idx</span><span class="p">,</span> <span class="n">batch</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">train_dataloader</span><span class="p">):</span>
@@ -465,7 +469,7 @@
 </pre></div>
 </div>
 <p>So you get the batch itself as argument in <code class="docutils literal notranslate"><span class="pre">training_step</span></code> as well as its index. Similar thing happens for validation also.</p>
-<p>Now let’s fill in each part of our <code class="docutils literal notranslate"><span class="pre">AnimalModel</span></code> one by one. First, let’s create our ‘resnet34’ model for image classification using <a class="reference external" href="https://github.com/rwightman/pytorch-image-models/">timm library</a>. For that we need to first import the library:</p>
+<p>Now let’s fill in each part of our <code class="docutils literal notranslate"><span class="pre">AnimalModel</span></code> one by one. First, let’s create the model (‘resnet34’) that we will be using for this task. We will use the <a class="reference external" href="https://github.com/rwightman/pytorch-image-models/">timm library</a> for creating the model. So, let’s import the library:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">timm</span>
 </pre></div>
 </div>
@@ -473,7 +477,7 @@
 <p class="admonition-title">Note</p>
 <p>You can install timm by running <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">timm</span></code> from your terminal</p>
 </div>
-<p>Now let’s create the model inside <code class="docutils literal notranslate"><span class="pre">__init__</span></code> of our <code class="docutils literal notranslate"><span class="pre">AnimalModel</span></code>:</p>
+<p>Now let’s create the model inside <code class="docutils literal notranslate"><span class="pre">__init__</span></code> method of our <code class="docutils literal notranslate"><span class="pre">AnimalModel</span></code>:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">AnimalModel</span><span class="p">(</span><span class="n">LightningModule</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
@@ -489,13 +493,13 @@
         <span class="p">)</span>
 </pre></div>
 </div>
-<p>The forward loop of the model is as simple as passing the inputs to the model and returning the output:</p>
+<p>The forward method of the model is as simple as passing the inputs to the model and returning the output:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">AnimalModel</span><span class="p">(</span><span class="n">LightningModule</span><span class="p">):</span>
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>We already created our training and evaluation datasets earlier, now let’s warp it in a pytorch dataloader and return it:</p>
+<p>We already created our training and evaluation datasets earlier, now let’s wrap it in a pytorch dataloader and return it:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="kn">import</span> <span class="n">DataLoader</span>
 
 <span class="k">class</span> <span class="nc">AnimalModel</span><span class="p">(</span><span class="n">LightningModule</span><span class="p">):</span>
@@ -508,19 +512,19 @@
         <span class="k">return</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">test_ds</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Now let’s configure our optimizer, we will ‘AdamW’ optimizer from pytorch:</p>
+<p>Now let’s configure our ‘AdamW’ optimizer:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">AnimalModel</span><span class="p">(</span><span class="n">LightningModule</span><span class="p">):</span>
     <span class="c1"># return the optimizer</span>
     <span class="k">def</span> <span class="nf">configure_optimizers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">AdamW</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">learning_rate</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Now it’s time to write the training code. This time, the code for doing common procedures like stepping the optimizer(<code class="docutils literal notranslate"><span class="pre">opt.step()</span></code>), zeroing out the gradients(<code class="docutils literal notranslate"><span class="pre">opt.zero_grad()</span></code>) etc are taken care by pytorch lightning.</p>
+<p>Now it’s time to write the training code. This time, the code for doing common procedures like stepping the optimizer(<code class="docutils literal notranslate"><span class="pre">opt.step()</span></code>), zeroing out the gradients(<code class="docutils literal notranslate"><span class="pre">opt.zero_grad()</span></code>), backprop(<code class="docutils literal notranslate"><span class="pre">loss.backward()</span></code>) etc are taken care by pytorch lightning.</p>
 <p>These are the things done in the training step:</p>
 <ol class="simple">
-<li><p>Extract out inputs and labels from ‘batch’.</p></li>
-<li><p>Get model outputs and calculate the loss.</p></li>
-<li><p>Log the loss(using <code class="docutils literal notranslate"><span class="pre">self.log()</span></code>) and sets <code class="docutils literal notranslate"><span class="pre">prog_bar=True</span></code> to show the training loss along with progress bar.</p></li>
+<li><p>Get the inputs and labels from ‘batch’.</p></li>
+<li><p>Pass the inputs to the model, get the outputs and calculate the loss.</p></li>
+<li><p>Log the loss(using <code class="docutils literal notranslate"><span class="pre">self.log()</span></code>) and set <code class="docutils literal notranslate"><span class="pre">prog_bar=True</span></code> to show the training loss along with the progress bar.</p></li>
 <li><p>Finally, return the training loss.</p></li>
 </ol>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch.nn.functional</span> <span class="k">as</span> <span class="nn">F</span>
@@ -530,12 +534,12 @@
         <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">batch</span>
         <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
         <span class="n">loss</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">cross_entropy</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
-        
+
         <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s2">&quot;train_loss&quot;</span><span class="p">,</span> <span class="n">loss</span><span class="p">,</span> <span class="n">prog_bar</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">loss</span>
 </pre></div>
 </div>
-<p>Similarly, we will write the validation/evaluation step:</p>
+<p>Similarly, we will write the validation step:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">AnimalModel</span><span class="p">(</span><span class="n">LightningModule</span><span class="p">):</span>
     <span class="k">def</span> <span class="nf">validation_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">batch_idx</span><span class="p">):</span>
         <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">batch</span>
@@ -600,23 +604,23 @@
 </section>
 <section id="creating-the-trainer">
 <h3>Creating the trainer<a class="headerlink" href="#creating-the-trainer" title="Permalink to this headline">¶</a></h3>
-<p>Now it’s time to meet the real hero - The Trainer. Pytorch lightning’s trainer is where all you your favourite flags are passed, which includes:</p>
+<p>Now it’s time to meet the real hero - The Trainer. Pytorch lightning’s trainer is where all your favourite flags are passed, which includes:</p>
 <ul class="simple">
 <li><p>the learning rate finder</p></li>
 <li><p>over-fitting batches</p></li>
 <li><p>sanity check before running the whole training</p></li>
-<li><p>different types of callback system</p></li>
-<li><p>logging everything to different platforms like wandb, mlflow etc.</p></li>
+<li><p>different types of callbacks</p></li>
+<li><p>logging everything to platforms like wandb, mlflow etc.</p></li>
 </ul>
-<p>You can go get the complete capabilties of trainer <a class="reference external" href="https://pytorch-lightning.readthedocs.io/en/stable/common/trainer.html#trainer-flags">here</a>.</p>
+<p>You can get the complete capabilties of trainer <a class="reference external" href="https://pytorch-lightning.readthedocs.io/en/stable/common/trainer.html#trainer-flags">here</a>.</p>
 <p>Let’s see how we can use the automatic learning rate finder of the trainer:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pytorch_lightning</span> <span class="kn">import</span> <span class="n">Trainer</span>
 
 <span class="n">trainer</span> <span class="o">=</span> <span class="n">Trainer</span><span class="p">(</span>
     <span class="n">accelerator</span><span class="o">=</span><span class="s1">&#39;auto&#39;</span><span class="p">,</span> <span class="c1"># automatically detects GPUs or other accelerators</span>
-    <span class="n">auto_lr_find</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>  <span class="c1"># flag to use the learning rate finder</span>
+    <span class="n">auto_lr_find</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>  <span class="c1"># learning rate finder</span>
     <span class="n">max_epochs</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>      <span class="c1"># number of epochs to train for</span>
-    <span class="n">devices</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>          <span class="c1"># if there are GPUs, this flag uses the available 1 GPU</span>
+    <span class="n">devices</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>          <span class="c1"># number of devices to use for training(here it is 1 GPU)</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -627,14 +631,18 @@
 <span class="n">trainer</span><span class="o">.</span><span class="n">tune</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>This will run the automatic learning rate finder and sets the resulting learning rate for your training. Thus, you don’t have to manually set it.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">.tune()</span></code> method will run the automatic learning rate finder and over write existing learning rate value with what we get from learning rate finder. Thus, you don’t have to manually set it again.</p>
 <p>By default, lightning’s trainer looks for <code class="docutils literal notranslate"><span class="pre">self.learning_rate</span></code> or <code class="docutils literal notranslate"><span class="pre">self.lr</span></code> to store the resulting learning rate. So make sure that you store your learning rate in either of these variables inside your <code class="docutils literal notranslate"><span class="pre">AnimalModel</span></code>.</p>
-<p>Now let’s see how we can use the weights and biases callback in pytorch lightning. If you don’t have an account in wandb, you can create it <a class="reference external" href="https://app.wandb.ai/login?signup=true">here</a>.</p>
-<p>For now, we will log our pytorch model, the training loss and validation loss onto wandb. If you want to log some additional stuff, you could use pytorch lightning’s <code class="docutils literal notranslate"><span class="pre">self.log()</span></code>. For example, you could log the learning rate by writing the following code inside the <code class="docutils literal notranslate"><span class="pre">training_step</span></code> or <code class="docutils literal notranslate"><span class="pre">validation_step</span></code> of your <code class="docutils literal notranslate"><span class="pre">AnimalModel</span></code>:</p>
+<p>Now let’s see how we can use the weights and biases(wandb) callback in pytorch lightning. If you don’t have an account in wandb, you can create it <a class="reference external" href="https://app.wandb.ai/login?signup=true">here</a>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Learn more about weights and biases from <a class="reference external" href="https://wandb.ai/site">here</a>.</p>
+</div>
+<p>For now, we will log our pytorch model, the training loss and validation loss onto wandb. If you want to log some additional stuff, you could use pytorch lightning’s <code class="docutils literal notranslate"><span class="pre">self.log()</span></code>. For example, you could log the learning rate by writing the following code inside <code class="docutils literal notranslate"><span class="pre">training_step</span></code> or <code class="docutils literal notranslate"><span class="pre">validation_step</span></code> of your <code class="docutils literal notranslate"><span class="pre">AnimalModel</span></code>:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s2">&quot;learning_rate&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">learning_rate</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Now let’s import wand callback and pass it to the trainer. Also pass in a project name and run name to differentiate different projects as well as different experiments in the same project:</p>
+<p>Now let’s import wand callback and pass it to the trainer. Also pass in a project name and run name to differentiate projects as well as different experiments in the same project:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pytorch_lightning.loggers</span> <span class="kn">import</span> <span class="n">WandbLogger</span>
 
 <span class="c1"># set log_model=True to log the model to wandb after training</span>
@@ -649,7 +657,7 @@
 <span class="p">)</span>
 </pre></div>
 </div>
-<p>Now let’s find the learning rate and fit/train the model(before running the whole training, pytorch lightning automatically does a sanity check to see if there are any bugs in the code):</p>
+<p>Now let’s find the learning rate and fit/train the model(before running the whole training, pytorch lightning automatically runs a sanity check to see if there are any bugs in our code):</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">AnimalModel</span><span class="p">()</span>
 <span class="n">trainer</span><span class="o">.</span><span class="n">tune</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
 
@@ -662,7 +670,7 @@
 </section>
 <section id="testing-the-model">
 <h2>Testing the model<a class="headerlink" href="#testing-the-model" title="Permalink to this headline">¶</a></h2>
-<p>Now, let’s see how our model predicts on some a sample image from our test set:</p>
+<p>Now, let’s see how our model predicts on a sample image from our test set:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">sample</span> <span class="o">=</span> <span class="n">test_ds</span><span class="p">[</span><span class="mi">6</span><span class="p">]</span>
 <span class="c1"># model prediction</span>
 <span class="n">pred</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">sample</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
@@ -682,8 +690,8 @@
 </div>
 <p>Output:</p>
 <img alt="img_clf" class="bg-primary mb-1 align-center" src="_images/img_clf_output.png" />
-<p>Apart from the image classification task, we have learnt a ton of other stuff too - lightning, weights and biases, timm library…</p>
-<p>And that brings to the end of this chapter. We will explore other tasks in computer vision in the coming chapters:)</p>
+<p>Apart from the image classification task, we have learnt a ton of other stuff too - lightning, weights and biases, timm library🏎️</p>
+<p>And that brings to the end of this chapter. We will explore other tasks in computer vision in the coming chapters :)</p>
 </section>
 </section>
 

@@ -2,7 +2,7 @@
 
 ### Introduction
 
-Let's start our journey into the world of computer vision with the task of image classification. Apart from the task, this chapter will also give you a head start to a bunch of other frameworks, libraries and tools that are commonly used by the machine learning community.
+With this chapter, we will start our journey into the world of computer vision. Apart from the task of image classification, this chapter will also give you a head start to a bunch of other libraries and tools that are commonly used by the machine learning community.
 
 By the way, if you are not familiar with image classification, it's as simple as shown in the below image:
 
@@ -26,9 +26,9 @@ The dataset we will be using for this task can be found [here](https://www.kaggl
 6. Guinea pig / mouse
 7. Other
 
-Of the above categories, we will drop 'Guinea pig / mouse' and 'Other' from the dataset and use the rest of the categories for this chapter.
+Of the above categories, we will drop images belonging to 'Guinea pig / mouse' and 'Other' from the dataset and use the rest of the categories.
 
-The dataset contains a folder called 'animal_images' and a csv file with the name 'animal_data_img.csv'. 
+The dataset contains a folder called 'animal_images' and a csv file called 'animal_data_img.csv'. 
 
 The folder 'animal_images' contains all the animal pictures whereas the labels of each image is present in 'animal_data_img.csv' file.
 
@@ -40,13 +40,13 @@ Here is a sample of 'animal_data_img.csv' file:
 :align: center
 ```
 
-The 'Animal_Type' column contains our labels and 'Image_File' contains the path to the image file.
+The 'Animal_Type' column will be our labels and 'Image_File' column contains the path to the image file.
 
 #### Preparing the data
 
 Now let's load in our csv file and write a dataset loading class using pytorch.
 
-The below code will load our csv by including only the specified columns:
+The below code will load our csv with the required columns:
 
 ```python
 import pandas as pd
@@ -69,14 +69,14 @@ Output:
 4        Bird  animal_images/1633802584634_Apple Konda Pigeon...
 ```
 
-As you know, 'Animal_Type' column will be the labels for our model. But as of now, it is in string format, so we need to convert them to numbers. But before doing that, let's drop images with 'Guinea pig / mouse' and 'Other' labels:
+The value inside 'Animal_Type' is in string format, we need to convert them to integers. But before doing that, let's drop images with 'Guinea pig / mouse' and 'Other' labels:
 
 ```python
-# remove rows with 'Guinea pig / mouse' and 'Other' labels
+# exclude all rows containing 'Guinea pig / mouse' and 'Other' as labels
 df = df.query("Animal_Type not in ['Guinea pig / mouse', 'Other']").reset_index(drop=True)
 ```
 
-Now let's convert our label from string to integer format:
+Now let's convert the labels from string to integer format:
 
 ```python
 label_string = df['Animal_Type'].unique()
@@ -97,9 +97,9 @@ Let's apply this mapping to 'Animal_Type' column:
 df['labels'] = df['Animal_Type'].map(label_mapping)
 ```
 
-We will now a write a simple data loading class with pytorch. The class will take in the dataframe we just created and extract the columns with image paths and labels.
+We will now write a simple dataset loading class with pytorch. The class will take in the dataframe we just created and extract the image paths and labels.
 
-The images are read using python's 'PIL' library and apart from converting the images to tensor format, a ```RandomResizedCrop``` transform is applied to the images. This transform crops the image randomly and resizes the resulting image into the specified size.
+The images are read using python's 'PIL' library and apart from converting the images to tensor format, a ```RandomResizedCrop``` augmentation is applied to the images. This augmentation crops our image randomly and resizes the resulting image into the specified size.
 
 ```python
 import torch
@@ -112,12 +112,13 @@ from pathlib import Path
 class LoadDataset(Dataset):
     def __init__(self, df):
         self.root_dir = Path("../input/animal-images-dataset/animal_images")
+
         # all the image paths are stores here
         self.images = df['Image_File'].values
         # all the labels are stored here
         self.labels = df['labels'].values
         
-        # these transforms are applied to each image
+        # these augmentations are applied to each image
         self.transforms = transforms.Compose([
             transforms.RandomResizedCrop((100, 100)),
             transforms.ToTensor(),
@@ -125,11 +126,14 @@ class LoadDataset(Dataset):
         
     def __getitem__(self, idx):
         img_path = self.root_dir/self.images[idx]
-        # load the image and apply the transforms
+
+        # load the image and apply the augmentations
         image = Image.open(img_path)
         image = self.transforms(image)
+
         # load the label corresponding to the above image
         label = torch.tensor(self.labels[idx], dtype=torch.long)
+
         return (image, label)
     
     def __len__(self): return len(self.images)
@@ -149,7 +153,7 @@ train_df, test_df = train_test_split(
     )
 ```
 
-Now, load in the images and labels:
+Now, load in the images and labels of train and test sets:
 
 ```python
 # training set
@@ -160,7 +164,7 @@ test_ds = LoadDataset(test_df)
 
 ### Training the model
 
-We will use [pytorch lightning](https://pytorchlightning.ai/) to do the rest of the part for this task. Using pytorch lightning is similar to using pytorch, but we will control everything(training, validation, dataloaders etc) from a single place and by doing so we get a lot of extra benefits like:
+We will use [pytorch lightning](https://pytorchlightning.ai/) to do the training of our model. Using pytorch lightning is similar to using pytorch, but we will control everything(training, validation, dataloaders etc) from a single place and by doing so we get a lot of extra benefits including:
 
 * a wide range of ready to use callbacks like early stopping.
 * learning rate scheduler
@@ -169,7 +173,7 @@ We will use [pytorch lightning](https://pytorchlightning.ai/) to do the rest of 
 
 #### Building the model class
 
-Let's see how the pytorch lightning organizes our code. 
+Let's see how pytorch lightning organizes our code. 
 
 First of all, we need to use pytorch lightning's ```LightningModule``` to build our model class, so let's import it:
 
@@ -181,7 +185,7 @@ from pytorch_lightning import LightningModule
 You can install pytorch lightning by running ```pip install pytorch-lightning``` from the terminal.
 ```
 
-We will build a model class with the name ```AnimalModel```;) This is the blueprint of our model class which uses pytorch lightning's ```LightningModule```:
+We will build an ```AnimalModel``` model class. This model class will contain the code for training and validation dataloaders, training and validation steps and finally the optimizer. Below is the blueprint of our model class which uses pytorch lightning's ```LightningModule```:
 
 ```python
 class AnimalModel(LightningModule):
@@ -189,13 +193,13 @@ class AnimalModel(LightningModule):
         super().__init__()
         
     def forward(self, x):
-        # similar to pytorch model's forward function
+        # similar to pytorch forward method
     
     def train_dataloader(self):
-        # put the training dataloader here
+        # put the code for training dataloader here
     
     def val_dataloader(self):
-        # put the validation dataloader here
+        # put the code for validation dataloader here
 
     def configure_optimizers(self):
         # put the optimizer here
@@ -207,7 +211,7 @@ class AnimalModel(LightningModule):
         # everything done during validation goes here
 ```
 
-The ```training_step``` and ```validation_step``` has a 'batch' and 'batch_idx', this is same as the one shown in pure pytorch below:
+The ```training_step``` and ```validation_step``` takes in 'batch' and 'batch_idx' as arguments, this is same as the one shown in pure pytorch below:
 
 ```python
 # training step
@@ -218,7 +222,7 @@ for epoch in range(epochs):
 
 So you get the batch itself as argument in ```training_step``` as well as its index. Similar thing happens for validation also.
 
-Now let's fill in each part of our ```AnimalModel``` one by one. First, let's create our 'resnet34' model for image classification using [timm library](https://github.com/rwightman/pytorch-image-models/). For that we need to first import the library:
+Now let's fill in each part of our ```AnimalModel``` one by one. First, let's create the model ('resnet34') that we will be using for this task. We will use the [timm library](https://github.com/rwightman/pytorch-image-models/) for creating the model. So, let's import the library:
 
 ```python
 import timm
@@ -228,7 +232,7 @@ import timm
 You can install timm by running ```pip install timm``` from your terminal
 ```
 
-Now let's create the model inside ```__init__``` of our ```AnimalModel```:
+Now let's create the model inside ```__init__``` method of our ```AnimalModel```:
 
 ```python
 class AnimalModel(LightningModule):
@@ -246,7 +250,7 @@ class AnimalModel(LightningModule):
         )
 ```
 
-The forward loop of the model is as simple as passing the inputs to the model and returning the output:
+The forward method of the model is as simple as passing the inputs to the model and returning the output:
 
 ```python
 class AnimalModel(LightningModule):
@@ -254,7 +258,7 @@ class AnimalModel(LightningModule):
         return self.model(x)
 ```
 
-We already created our training and evaluation datasets earlier, now let's warp it in a pytorch dataloader and return it:
+We already created our training and evaluation datasets earlier, now let's wrap it in a pytorch dataloader and return it:
 
 ```python
 from torch.utils.data import DataLoader
@@ -269,7 +273,7 @@ class AnimalModel(LightningModule):
         return DataLoader(test_ds, batch_size=self.batch_size, shuffle=False)
 ```
 
-Now let's configure our optimizer, we will 'AdamW' optimizer from pytorch:
+Now let's configure our 'AdamW' optimizer:
 
 ```python
 class AnimalModel(LightningModule):
@@ -278,13 +282,13 @@ class AnimalModel(LightningModule):
         return torch.optim.AdamW(self.model.parameters(), lr=self.learning_rate)
 ```
 
-Now it's time to write the training code. This time, the code for doing common procedures like stepping the optimizer(```opt.step()```), zeroing out the gradients(```opt.zero_grad()```) etc are taken care by pytorch lightning.
+Now it's time to write the training code. This time, the code for doing common procedures like stepping the optimizer(```opt.step()```), zeroing out the gradients(```opt.zero_grad()```), backprop(```loss.backward()```) etc are taken care by pytorch lightning.
 
 These are the things done in the training step:
 
-1. Extract out inputs and labels from 'batch'.
-2. Get model outputs and calculate the loss.
-3. Log the loss(using ```self.log()```) and sets ```prog_bar=True``` to show the training loss along with progress bar.
+1. Get the inputs and labels from 'batch'.
+2. Pass the inputs to the model, get the outputs and calculate the loss.
+3. Log the loss(using ```self.log()```) and set ```prog_bar=True``` to show the training loss along with the progress bar.
 4. Finally, return the training loss.
 
 ```python
@@ -295,12 +299,12 @@ class AnimalModel(LightningModule):
         x, y = batch
         out = self.model(x)
         loss = F.cross_entropy(out, y)
-        
+
         self.log("train_loss", loss, prog_bar=True)
         return loss
 ```
 
-Similarly, we will write the validation/evaluation step:
+Similarly, we will write the validation step:
 
 ```python
 class AnimalModel(LightningModule):
@@ -368,15 +372,15 @@ class AnimalModel(LightningModule):
 
 #### Creating the trainer
 
-Now it's time to meet the real hero - The Trainer. Pytorch lightning's trainer is where all you your favourite flags are passed, which includes:
+Now it's time to meet the real hero - The Trainer. Pytorch lightning's trainer is where all your favourite flags are passed, which includes:
 
 * the learning rate finder
 * over-fitting batches
 * sanity check before running the whole training
-* different types of callback system
-* logging everything to different platforms like wandb, mlflow etc.
+* different types of callbacks
+* logging everything to platforms like wandb, mlflow etc.
 
-You can go get the complete capabilties of trainer [here](https://pytorch-lightning.readthedocs.io/en/stable/common/trainer.html#trainer-flags).
+You can get the complete capabilties of trainer [here](https://pytorch-lightning.readthedocs.io/en/stable/common/trainer.html#trainer-flags).
 
 Let's see how we can use the automatic learning rate finder of the trainer:
 
@@ -385,9 +389,9 @@ from pytorch_lightning import Trainer
 
 trainer = Trainer(
     accelerator='auto', # automatically detects GPUs or other accelerators
-    auto_lr_find=True,  # flag to use the learning rate finder
+    auto_lr_find=True,  # learning rate finder
     max_epochs=10,      # number of epochs to train for
-    devices=1,          # if there are GPUs, this flag uses the available 1 GPU
+    devices=1,          # number of devices to use for training(here it is 1 GPU)
 )
 ```
 
@@ -400,19 +404,23 @@ model = AnimalModel()
 trainer.tune(model)
 ```
 
-This will run the automatic learning rate finder and sets the resulting learning rate for your training. Thus, you don't have to manually set it.
+The ```.tune()``` method will run the automatic learning rate finder and over write existing learning rate value with what we get from learning rate finder. Thus, you don't have to manually set it again.
 
 By default, lightning's trainer looks for ```self.learning_rate``` or ```self.lr``` to store the resulting learning rate. So make sure that you store your learning rate in either of these variables inside your ```AnimalModel```.
 
-Now let's see how we can use the weights and biases callback in pytorch lightning. If you don't have an account in wandb, you can create it [here](https://app.wandb.ai/login?signup=true).
+Now let's see how we can use the weights and biases(wandb) callback in pytorch lightning. If you don't have an account in wandb, you can create it [here](https://app.wandb.ai/login?signup=true).
 
-For now, we will log our pytorch model, the training loss and validation loss onto wandb. If you want to log some additional stuff, you could use pytorch lightning's ```self.log()```. For example, you could log the learning rate by writing the following code inside the ```training_step``` or ```validation_step``` of your ```AnimalModel```:
+```{note}
+Learn more about weights and biases from [here](https://wandb.ai/site).
+```
+
+For now, we will log our pytorch model, the training loss and validation loss onto wandb. If you want to log some additional stuff, you could use pytorch lightning's ```self.log()```. For example, you could log the learning rate by writing the following code inside ```training_step``` or ```validation_step``` of your ```AnimalModel```:
 
 ```python
 self.log("learning_rate", self.learning_rate)
 ```
 
-Now let's import wand callback and pass it to the trainer. Also pass in a project name and run name to differentiate different projects as well as different experiments in the same project:
+Now let's import wand callback and pass it to the trainer. Also pass in a project name and run name to differentiate projects as well as different experiments in the same project:
 
 ```python
 from pytorch_lightning.loggers import WandbLogger
@@ -429,7 +437,7 @@ trainer = Trainer(
 )
 ```
 
-Now let's find the learning rate and fit/train the model(before running the whole training, pytorch lightning automatically does a sanity check to see if there are any bugs in the code):
+Now let's find the learning rate and fit/train the model(before running the whole training, pytorch lightning automatically runs a sanity check to see if there are any bugs in our code):
 
 ```python
 model = AnimalModel()
@@ -443,7 +451,7 @@ Once the training is over, you can head to your wandb dashboard to see the resul
 
 ### Testing the model
 
-Now, let's see how our model predicts on some a sample image from our test set:
+Now, let's see how our model predicts on a sample image from our test set:
 
 ```python
 sample = test_ds[6]
@@ -470,6 +478,6 @@ Output:
 :align: center
 ```
 
-Apart from the image classification task, we have learnt a ton of other stuff too - lightning, weights and biases, timm library...
+Apart from the image classification task, we have learnt a ton of other stuff too - lightning, weights and biases, timm library🏎️
 
-And that brings to the end of this chapter. We will explore other tasks in computer vision in the coming chapters:)
+And that brings to the end of this chapter. We will explore other tasks in computer vision in the coming chapters :)

@@ -461,8 +461,8 @@
 <section id="training-the-model">
 <h2>Training the model<a class="headerlink" href="#training-the-model" title="Permalink to this headline">¶</a></h2>
 <p>Finally, it’s time to load in our model and start the training.</p>
-<p>We did a lot of different tasks like token classification(ner task), summarization etc in our previous chapters, where we used different classes like <code class="docutils literal notranslate"><span class="pre">AutoModelForTokenClassification</span></code>, <code class="docutils literal notranslate"><span class="pre">AutoModelForSeq2SeqLM</span></code> to load in our pretrained model. For this task also, we have a special class called <code class="docutils literal notranslate"><span class="pre">VisionEncoderDecoderModel</span></code> where we can pass the name of the vision model we need for the encoder part as well as the language model we require for the decoder.</p>
-<p>Loading our encoder-decoder model for this task is simple as this(using the <code class="docutils literal notranslate"><span class="pre">encoder_checkpoint</span></code> and <code class="docutils literal notranslate"><span class="pre">decoder_checkpoint</span></code> we created earlier):</p>
+<p>In the previous chapters, we did tasks like named entity recognition and summarization, where we used different classes like <code class="docutils literal notranslate"><span class="pre">AutoModelForTokenClassification</span></code> and <code class="docutils literal notranslate"><span class="pre">AutoModelForSeq2SeqLM</span></code> respectively to load in our pretrained model. For this task also, we have a special class called <code class="docutils literal notranslate"><span class="pre">VisionEncoderDecoderModel</span></code>(you can read more about it <a class="reference external" href="https://huggingface.co/docs/transformers/main/en/model_doc/vision-encoder-decoder#transformers.VisionEncoderDecoderModel">here</a>) where we can pass the name of the vision model and the language model we need for the encoder and the decoder respectively.</p>
+<p>Loading our encoder-decoder model for this task is simple as this:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">transformers</span> <span class="kn">import</span> <span class="n">VisionEncoderDecoderModel</span>
 
 <span class="n">model</span> <span class="o">=</span> <span class="n">VisionEncoderDecoderModel</span><span class="o">.</span><span class="n">from_encoder_decoder_pretrained</span><span class="p">(</span>
@@ -471,12 +471,23 @@
 <span class="p">)</span>
 </pre></div>
 </div>
-<p>After loading the model, we have to set a value for <code class="docutils literal notranslate"><span class="pre">decoder_start_token_id</span></code> and <code class="docutils literal notranslate"><span class="pre">pad_token_id</span></code>(otherwise the training will throw an error as these are required during training process).</p>
+<p>If you don’t set a value for <code class="docutils literal notranslate"><span class="pre">decoder_start_token_id</span></code> and <code class="docutils literal notranslate"><span class="pre">pad_token_id</span></code> in the model config, you will get a similar error like this:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="o">/</span><span class="n">opt</span><span class="o">/</span><span class="n">conda</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="mf">.7</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">transformers</span><span class="o">/</span><span class="n">models</span><span class="o">/</span><span class="n">vision_encoder_decoder</span><span class="o">/</span><span class="n">modeling_vision_encoder_decoder</span><span class="o">.</span><span class="n">py</span> <span class="ow">in</span> <span class="n">shift_tokens_right</span><span class="p">(</span><span class="n">input_ids</span><span class="p">,</span> <span class="n">pad_token_id</span><span class="p">,</span> <span class="n">decoder_start_token_id</span><span class="p">)</span>
+     <span class="mi">40</span>     <span class="n">shifted_input_ids</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">:]</span> <span class="o">=</span> <span class="n">input_ids</span><span class="p">[:,</span> <span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span>
+     <span class="mi">41</span>     <span class="k">if</span> <span class="n">decoder_start_token_id</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+<span class="o">---&gt;</span> <span class="mi">42</span>         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Make sure to set the decoder_start_token_id attribute of the model&#39;s configuration.&quot;</span><span class="p">)</span>
+     <span class="mi">43</span>     <span class="n">shifted_input_ids</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">decoder_start_token_id</span>
+     <span class="mi">44</span> 
+
+<span class="ne">ValueError</span><span class="p">:</span> <span class="n">Make</span> <span class="n">sure</span> <span class="n">to</span> <span class="nb">set</span> <span class="n">the</span> <span class="n">decoder_start_token_id</span> <span class="n">attribute</span> <span class="n">of</span> <span class="n">the</span> <span class="n">model</span><span class="s1">&#39;s configuration.</span>
+</pre></div>
+</div>
+<p>So, before proceeding any further, let’s set those values:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">decoder_start_token_id</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="o">.</span><span class="n">bos_token_id</span>
 <span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">pad_token_id</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="o">.</span><span class="n">pad_token_id</span>
 </pre></div>
 </div>
-<p>Inorder to get good and meaningful captions from the model, we should use beam search instead of greedy search while generating the caption. It’s as easy as this:</p>
+<p>Inorder to get good and meaningful captions from the model, we should use beam search instead of greedy search while generating the caption. For that, we just have to set a value greater than 1 for <code class="docutils literal notranslate"><span class="pre">num_beams</span></code> in model config:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># set number of beams for beam search to 4</span>
 <span class="n">num_beams</span> <span class="o">=</span> <span class="mi">4</span>
 <span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">num_beams</span> <span class="o">=</span> <span class="n">num_beams</span>
@@ -490,7 +501,7 @@
 <li><p><a class="reference external" href="https://towardsdatascience.com/an-intuitive-explanation-of-beam-search-9b1d744e7a0f">Intuitive explanation of beam search</a></p></li>
 <li><p><a class="reference external" href="https://towardsdatascience.com/foundations-of-nlp-explained-visually-beam-search-how-it-works-1586b9849a24">Working of beam search</a></p></li>
 </ol>
-<p>In short, beam search generates more meaningful text compared to greedy search. Also, increasing the number beams for beam search will increase the time taken to generate the text.</p>
+<p>In short, our model will give more meaningful captions while using beam search than greedy search. Also, increasing the number of beams for beam search will increase the time taken to generate the captions during inference.</p>
 </div>
 <p>And, now it’s time to train the model. We will use the <code class="docutils literal notranslate"><span class="pre">Seq2SeqTrainer</span></code> from transformers library for this. Before that we need to pass some arguments to control the training of our model, we will do that first:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">transformers</span> <span class="kn">import</span> <span class="n">Seq2SeqTrainingArguments</span>
@@ -511,7 +522,7 @@
 <span class="p">)</span>
 </pre></div>
 </div>
-<p>Now let’s create the trainer using the above arguments, model, our dataset and start the training:</p>
+<p>Now let’s create the trainer and start the training:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">transformers</span> <span class="kn">import</span> <span class="n">Seq2SeqTrainer</span><span class="p">,</span> <span class="n">default_data_collator</span>
 
 <span class="n">trainer</span> <span class="o">=</span> <span class="n">Seq2SeqTrainer</span><span class="p">(</span>
@@ -529,7 +540,7 @@
 </section>
 <section id="testing-the-model">
 <h2>Testing the model<a class="headerlink" href="#testing-the-model" title="Permalink to this headline">¶</a></h2>
-<p>Now let’s see how good is the captions generated by our model. For the time being, we will use some images from the test set we created:</p>
+<p>Now let’s see how good is the captions generated by our model. For the time being, we will use some images from the test set we created earlier:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">inputs</span> <span class="o">=</span> <span class="n">test_ds</span><span class="p">[</span><span class="mi">65</span><span class="p">][</span><span class="s1">&#39;pixel_values&#39;</span><span class="p">]</span>
 </pre></div>
 </div>
@@ -541,7 +552,7 @@
     <span class="c1"># uncomment the below line if feature extractor is not applied to the image already</span>
     <span class="c1"># inputs = feature_extractor(images=inputs, return_tensors=&#39;pt&#39;).pixel_values</span>
 
-    <span class="c1"># model prediction </span>
+    <span class="c1"># generate caption for the image</span>
     <span class="n">out</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span>
         <span class="n">inputs</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s1">&#39;cuda&#39;</span><span class="p">),</span> <span class="c1"># move inputs to GPU</span>
         <span class="n">num_beams</span><span class="o">=</span><span class="n">num_beams</span><span class="p">,</span> 
