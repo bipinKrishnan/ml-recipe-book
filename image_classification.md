@@ -437,7 +437,7 @@ trainer = Trainer(
 )
 ```
 
-Now let's find the learning rate and fit/train the model(before running the whole training, pytorch lightning automatically runs a sanity check to see if there are any bugs in our code):
+Now let's find the learning rate and fit/train the model(before running the whole training, pytorch lightning automatically runs a sanity check to see if there are any bugs in our code :)
 
 ```python
 model = AnimalModel()
@@ -447,13 +447,21 @@ trainer.tune(model)
 trainer.fit(model)
 ```
 
-Once the training is over, you can head to your wandb dashboard to see the results as well as the trained models. During inference, you can directly fetch your models from wandb and load it as a normal pytorch model.
+Once the training is over, you can head to your [wandb dashboard](https://wandb.ai/home) to see the results as well as the saved models. During inference, you can directly fetch your models from wandb and load it as a normal pytorch model. Here are the results logged in wandb from the current experiment:
+
+```{image} ./assets/img_clf_wandb.png
+:alt: img_clf
+:class: bg-primary mb-1
+:align: center
+```
 
 ### Testing the model
 
 Now, let's see how our model predicts on a sample image from our test set:
 
 ```python
+model.eval()
+
 sample = test_ds[6]
 # model prediction
 pred = model(sample[0].unsqueeze(0))
