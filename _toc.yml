@@ -10,10 +10,11 @@ parts:
     - file: summarization
     - file: causal_language_modeling
 
-  - caption: Miscellaneous
+  - caption: Image & Text
     chapters:
     - file: image_captioning
   
   - caption: Computer vision
     chapters:
     - file: image_classification
+    - file: image_segmentation
