@@ -364,7 +364,47 @@
 </pre></div>
 </div>
 <p>We will now write a simple dataset loading class with pytorch. The class will take in the dataframe we just created and extract the image paths and labels.</p>
-<p>The images are read using python’s ‘PIL’ library and apart from converting the images to tensor format, a <code class="docutils literal notranslate"><span class="pre">RandomResizedCrop</span></code> augmentation is applied to the images. This augmentation crops our image randomly and resizes the resulting image into the specified size.</p>
+<p>These are the steps we will follow while loading our images and its labels:</p>
+<ul class="simple">
+<li><p>Get the path to the image and its label.</p></li>
+</ul>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+
+<span class="n">root_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;../input/animal-images-dataset/animal_images&quot;</span><span class="p">)</span>
+
+<span class="n">sample_img_path</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;Image_File&#39;</span><span class="p">]</span>
+<span class="n">sample_label</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;labels&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>Load the image using python’s ‘PIL’ library.</p></li>
+</ul>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span>
+
+<span class="n">sample_img</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">root_dir</span><span class="o">/</span><span class="n">sample_img_path</span><span class="p">)</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>Now we will randomly crop the image and resize it and finally convert it to a pytorch tensor.</p></li>
+</ul>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torchvision.transforms</span> <span class="kn">import</span> <span class="n">transforms</span>
+
+<span class="n">transforms</span> <span class="o">=</span> <span class="n">transforms</span><span class="o">.</span><span class="n">Compose</span><span class="p">([</span>
+            <span class="n">transforms</span><span class="o">.</span><span class="n">RandomResizedCrop</span><span class="p">((</span><span class="mi">100</span><span class="p">,</span> <span class="mi">100</span><span class="p">)),</span>
+            <span class="n">transforms</span><span class="o">.</span><span class="n">ToTensor</span><span class="p">(),</span>
+        <span class="p">])</span>
+<span class="n">sample_img</span> <span class="o">=</span> <span class="n">transforms</span><span class="p">(</span><span class="n">sample_img</span><span class="p">)</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>Finally we will convert the label to a pytorch tensor.</p></li>
+</ul>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
+
+<span class="n">sample_label</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">sample_label</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">long</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>And that’s it, we will wrap all of the above stuff into our dataset loading class:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="kn">import</span> <span class="n">Dataset</span>
 <span class="kn">from</span> <span class="nn">torchvision.transforms</span> <span class="kn">import</span> <span class="n">transforms</span>

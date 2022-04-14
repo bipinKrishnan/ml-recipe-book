@@ -99,7 +99,48 @@ df['labels'] = df['Animal_Type'].map(label_mapping)
 
 We will now write a simple dataset loading class with pytorch. The class will take in the dataframe we just created and extract the image paths and labels.
 
-The images are read using python's 'PIL' library and apart from converting the images to tensor format, a ```RandomResizedCrop``` augmentation is applied to the images. This augmentation crops our image randomly and resizes the resulting image into the specified size.
+These are the steps we will follow while loading our images and its labels:
+
+* Get the path to the image and its label.
+
+```python
+from pathlib import Path
+
+root_dir = Path("../input/animal-images-dataset/animal_images")
+
+sample_img_path = df.loc[0, 'Image_File']
+sample_label = df.loc[0, 'labels']
+```
+
+* Load the image using python's 'PIL' library.
+
+```python
+from PIL import Image
+
+sample_img = Image.open(root_dir/sample_img_path)
+```
+
+* Now we will randomly crop the image and resize it and finally convert it to a pytorch tensor.
+
+```python
+from torchvision.transforms import transforms
+
+transforms = transforms.Compose([
+            transforms.RandomResizedCrop((100, 100)),
+            transforms.ToTensor(),
+        ])
+sample_img = transforms(sample_img)
+```
+
+* Finally we will convert the label to a pytorch tensor.
+
+```python
+import torch
+
+sample_label = torch.tensor(sample_label, dtype=torch.long)
+```
+
+And that's it, we will wrap all of the above stuff into our dataset loading class:
 
 ```python
 import torch
