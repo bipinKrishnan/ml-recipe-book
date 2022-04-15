@@ -212,3 +212,189 @@ Output:
 
 Wohoo! it's working without any errors.
 
+### Training the model
+
+This time also, as expected, we will use pytorch lightning for our training :) So let's build the our model class using the ```LightningModule``` from pytorch lightning.
+
+For this task, we will use a unet model which is a commonly used one for image segmentation. This model is like an encoder-decoder model, we can replace the encoder part with any of the commonly used convolutional neural networks(vgg, resnet etc). Here we will use 'resnet34' as our encoder or commonly called the backbone. In short, we will use a unet model with 'resnet34' backbone.
+
+So let's load in the unet model from ```segmentation-models-pytorch``` library:
+
+```python
+import segmentation_models_pytorch as smp
+from pytorch_lightning import LightningModule
+
+class SegmentationModel(LightningModule):
+    def __init__(self):
+        super().__init__()
+        self.learning_rate = 1e-3
+        self.batch_size = 32
+        
+        self.model = smp.Unet(
+            'resnet34', 
+            classes=1, 
+            activation=None, 
+            encoder_weights='imagenet'
+        )
+```
+
+```{note}
+You can install segmentation models library by running ```pip install segmentation-models-pytorch``` from your terminal. 
+
+Refer to the [docs](https://smp.readthedocs.io/en/latest/models.html#unet) if you have any doubts regarding the details of any arguments passed to ```segmentation_models_pytorch.Unet()```.
+```
+
+Now let's write our forward function, it's just taking the inputs, passing it to the model and returning the outputs from the model:
+
+```python
+class SegmentationModel(LightningModule):
+    def forward(self, x):
+        return self.model(x)
+```
+
+That's done, now let's put the code for training and validation dataloaders in our model class:
+
+```python
+from torch.utils.data import DataLoader
+
+class SegmentationModel(LightningModule):
+    def train_dataloader(self):
+        return DataLoader(train_ds, batch_size=self.batch_size, shuffle=False)
+    
+    def val_dataloader(self):
+        return DataLoader(eval_ds, batch_size=self.batch_size, shuffle=False)
+```
+
+And for the training and validation steps, we take in the batch, pass it to the model for getting the predictions, calculate the loss, log and return it:
+
+```python
+import torch.nn.functional as F
+
+class SegmentationModel(LightningModule):
+    def training_step(self, batch, batch_idx):
+        x, y = batch
+        out = self.model(x)
+        loss = F.binary_cross_entropy_with_logits(out, y)
+        
+        self.log("train_loss", loss, prog_bar=True)
+        return loss
+    
+    def validation_step(self, batch, batch_idx):
+        x, y = batch
+        out = self.model(x)
+        loss = F.binary_cross_entropy_with_logits(out, y)
+        
+        self.log("val_loss", loss, prog_bar=True)
+        return loss
+```
+
+For the optimizer, we will use ```AdamW```:
+
+```python
+from torch import optim
+
+class SegmentationModel(LightningModule):
+    def configure_optimizers(self):
+        return optim.AdamW(self.model.parameters(), lr=self.learning_rate)
+```
+
+Aaand that's it, here is the complete code for model class we have just written:
+
+```python
+class SegmentationModel(LightningModule):
+    def __init__(self):
+        super().__init__()
+        self.learning_rate = 1e-3
+        self.batch_size = 32
+        
+        self.model = smp.Unet(
+            'resnet34', 
+            classes=1, 
+            activation=None, 
+            encoder_weights='imagenet'
+        )
+        
+    def forward(self, x):
+        return self.model(x)
+        
+    def train_dataloader(self):
+        return DataLoader(train_ds, batch_size=self.batch_size, shuffle=False)
+    
+    def val_dataloader(self):
+        return DataLoader(eval_ds, batch_size=self.batch_size, shuffle=False)
+    
+    def training_step(self, batch, batch_idx):
+        x, y = batch['image'], batch['mask']
+        out = self.model(x)
+        loss = F.binary_cross_entropy_with_logits(out, y)
+        
+        self.log("train_loss", loss, prog_bar=True)
+        return loss
+    
+    def validation_step(self, batch, batch_idx):
+        x, y = batch['image'], batch['mask']
+        out = self.model(x)
+        loss = F.binary_cross_entropy_with_logits(out, y)
+        
+        self.log("val_loss", loss, prog_bar=True)
+        return loss
+    
+    def configure_optimizers(self):
+        return optim.AdamW(self.model.parameters(), lr=self.learning_rate)
+```
+
+All the major parts are done now, the only part remaining is to train our model and that is as simple as passing the model and epochs to our pytorch lightning trainer:
+
+```python
+from pytorch_lightning import Trainer
+
+model = SegmentationModel()
+trainer = Trainer(
+    accelerator='auto',  # automatically select the available accelerator(CPU, GPU, TPU etc)
+    devices=1,           # select the available one device of the accelerator
+    auto_lr_find=True,   # use learning rate finder to set the learning rate
+    max_epochs=5,        # number of epochs to train
+)
+
+trainer.tune(model)      # runs learning rate finder and sets the learning rate
+trainer.fit(model)       # start training
+```
+
+### Testing the model
+
+Now, it's time to test the model and see the segmented outputs. For now, let's take some examples from the evaluation set:
+
+```python
+idx = 24
+img = eval_ds[idx]['image']
+mask = eval_ds[idx]['mask']
+
+# prediction
+model.eval()
+with torch.no_grad():
+    pred_probability = model(img.unsqueeze(0))
+    pred_probability = torch.sigmoid(pred_probability)
+    pred = (pred_probability>0.5).type(torch.int)
+```
+
+Let's visulize the predicted mask and the original one:
+
+```python
+plt.subplot(1, 2, 1)
+plt.imshow(pred.squeeze())
+plt.title('Prediction')
+
+plt.subplot(1, 2, 2)
+plt.imshow(mask.squeeze())
+plt.title("Original");
+```
+Output:
+
+```{image} ./assets/img_seg_output.png
+:alt: image_segmentation
+:class: bg-primary mb-1
+:align: center
+```
+
+It's not that good, but looks okayish. But anyway you could try out different models, schedulers, datasets and build on this to improve the performance. As of now, this is all I could get for you :)
+
