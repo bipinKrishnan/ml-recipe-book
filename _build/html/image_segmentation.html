@@ -245,13 +245,13 @@
   </a>
   <ul class="nav section-nav flex-column">
    <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#prepring-the-dataframe">
-     Prepring the dataframe
+    <a class="reference internal nav-link" href="#preparing-the-dataframe">
+     Preparing the dataframe
     </a>
    </li>
    <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#loading-in-images-and-masks">
-     Loading in images and masks
+    <a class="reference internal nav-link" href="#loading-the-images-and-masks">
+     Loading the images and masks
     </a>
    </li>
   </ul>
@@ -279,12 +279,11 @@
                 
   <section class="tex2jax_ignore mathjax_ignore" id="image-segmentation">
 <h1>Image segmentation<a class="headerlink" href="#image-segmentation" title="Permalink to this headline">¶</a></h1>
-<p>In the last chapter, we trained a model to classify animal images using pytorch lightning as our framework. In this chapter, instead of classifying the images into a category, we will segment roads present in the image as shown below:</p>
+<p>In the last chapter, we trained a model to classify animal images using pytorch lightning as our framework. In this chapter, instead of classifying the images into a category, we will segment roads present in the image as shown below(the the segmented part of road is shown in green color):</p>
 <img alt="image_segmentation" class="bg-primary mb-1 align-center" src="_images/img_seg_pic.png" />
-<p>As you can see the the segmented part of road is shown in green color.</p>
-<p>If we are segmenting roads in an image, what the models is trying to do is categorize whether each pixel in the input image belongs to a road or not:</p>
+<p>If we are segmenting roads in an image, what the models is trying to do is predict whether each pixel in the input image belongs to a road or not:</p>
 <img alt="image_segmentation" class="bg-primary mb-1 align-center" src="_images/img_seg_model.png" />
-<p>As you can see, during prediction, the pixels that belong to the road should be equal to 1 and all other pixels should be equal to 0.</p>
+<p>As you can see, the pixels that belong to the road should be equal to 1 and all other pixels should be equal to 0.</p>
 <section id="dataset">
 <h2>Dataset<a class="headerlink" href="#dataset" title="Permalink to this headline">¶</a></h2>
 <p>The dataset we will be using for road segmentation can be found <a class="reference external" href="https://www.kaggle.com/datasets/sakshaymahna/kittiroadsegmentation">here</a>. This is how the directory structure of our dataset looks like:</p>
@@ -296,15 +295,15 @@
     └── image_2
 </pre></div>
 </div>
-<p>All the data that we will be using for this chapter is inside the ‘training’ folder. The training folder has two sub-folders(apart from <code class="docutils literal notranslate"><span class="pre">calib</span></code> folder), <code class="docutils literal notranslate"><span class="pre">gt_image_2</span></code> and <code class="docutils literal notranslate"><span class="pre">image_2</span></code> which contains our segmentation mask and its corresponding images respectively.</p>
+<p>All the data that we will be using for this chapter is inside the ‘training’ folder. The training folder has two sub-folders, <code class="docutils literal notranslate"><span class="pre">gt_image_2</span></code> and <code class="docutils literal notranslate"><span class="pre">image_2</span></code> which contains our segmentation mask and its corresponding images respectively.</p>
 <p>Here are some sample images and its segmentation masks from the above folders:</p>
 <img alt="image_segmentation" class="bg-primary mb-1 align-center" src="_images/seg_dataset.png" />
-<section id="prepring-the-dataframe">
-<h3>Prepring the dataframe<a class="headerlink" href="#prepring-the-dataframe" title="Permalink to this headline">¶</a></h3>
-<p>Now let’s write some code create a dataframe where each row contains the path to images and its corresponding segmentation masks.</p>
+<section id="preparing-the-dataframe">
+<h3>Preparing the dataframe<a class="headerlink" href="#preparing-the-dataframe" title="Permalink to this headline">¶</a></h3>
+<p>Now let’s write some code to create a dataframe where each row contains the path to image and its corresponding segmentation mask.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>For a file inside <code class="docutils literal notranslate"><span class="pre">image_2</span></code> folder with the name ‘um_000000.png’, its corresponding image mask will have the name ‘um_lane_000000.png’. We will expoit this pattern to extract all image paths and its masks.</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">image_2</span></code> folder has a file named ‘um_000000.png’, its corresponding segmentation mask will have the name ‘um_lane_000000.png’. We will exploit this pattern to extract all image paths and its segmentation mask files.</p>
 </div>
 <p>First let’s retrieve all the image file names from <code class="docutils literal notranslate"><span class="pre">image_2</span></code> folder</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
@@ -336,7 +335,7 @@
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">imgs</span><span class="p">,</span> <span class="n">masks</span> <span class="o">=</span> <span class="n">get_existing_imgs_and_masks</span><span class="p">(</span><span class="n">img_files</span><span class="p">,</span> <span class="n">mask_root_path</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>It’s time to put both <code class="docutils literal notranslate"><span class="pre">imgs</span></code> and <code class="docutils literal notranslate"><span class="pre">masks</span></code> into a dataframe:</p>
+<p>Now let’s put both <code class="docutils literal notranslate"><span class="pre">imgs</span></code> and <code class="docutils literal notranslate"><span class="pre">masks</span></code> into a dataframe:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 
 <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;imgs&#39;</span><span class="p">])</span>
@@ -352,8 +351,8 @@
 </pre></div>
 </div>
 </section>
-<section id="loading-in-images-and-masks">
-<h3>Loading in images and masks<a class="headerlink" href="#loading-in-images-and-masks" title="Permalink to this headline">¶</a></h3>
+<section id="loading-the-images-and-masks">
+<h3>Loading the images and masks<a class="headerlink" href="#loading-the-images-and-masks" title="Permalink to this headline">¶</a></h3>
 <p>Finally, we are ready to write our dataset loading class using pytorch. These are the steps we will follow while loading our images and masks:</p>
 <ul class="simple">
 <li><p>Get the image path and its mask file path</p></li>
@@ -363,7 +362,7 @@
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>Load the image using opencv, convert from BGR to RGB format and normalize the image by dividing it by 255.</p></li>
+<li><p>Load the image using opencv, convert from BGR to RGB format and normalize it by dividing by 255.</p></li>
 </ul>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">cv2</span>
 
@@ -455,8 +454,8 @@
 </section>
 <section id="training-the-model">
 <h2>Training the model<a class="headerlink" href="#training-the-model" title="Permalink to this headline">¶</a></h2>
-<p>This time also, as expected, we will use pytorch lightning for our training :) So let’s build the our model class using the <code class="docutils literal notranslate"><span class="pre">LightningModule</span></code> from pytorch lightning.</p>
-<p>For this task, we will use a unet model which is a commonly used one for image segmentation. This model is like an encoder-decoder model, we can replace the encoder part with any of the commonly used convolutional neural networks(vgg, resnet etc). Here we will use ‘resnet34’ as our encoder or commonly called the backbone. In short, we will use a unet model with ‘resnet34’ backbone.</p>
+<p>This time also, as expected, we will use pytorch lightning for our training :) So let’s build our model class using the <code class="docutils literal notranslate"><span class="pre">LightningModule</span></code> from pytorch lightning.</p>
+<p>For this task, we will use a unet model which is a commonly used one for image segmentation. This model is like an encoder-decoder model, we can replace the encoder part with any of the commonly used convolutional neural networks(vgg, resnet etc). Here we will use ‘resnet34’ as our encoder/backbone. In short, we will use a unet model with ‘resnet34’ backbone.</p>
 <p>So let’s load in the unet model from <code class="docutils literal notranslate"><span class="pre">segmentation-models-pytorch</span></code> library:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">segmentation_models_pytorch</span> <span class="k">as</span> <span class="nn">smp</span>
 <span class="kn">from</span> <span class="nn">pytorch_lightning</span> <span class="kn">import</span> <span class="n">LightningModule</span>
@@ -480,7 +479,7 @@
 <p>You can install segmentation models library by running <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">segmentation-models-pytorch</span></code> from your terminal.</p>
 <p>Refer to the <a class="reference external" href="https://smp.readthedocs.io/en/latest/models.html#unet">docs</a> if you have any doubts regarding the details of any arguments passed to <code class="docutils literal notranslate"><span class="pre">segmentation_models_pytorch.Unet()</span></code>.</p>
 </div>
-<p>Now let’s write our forward function, it’s just taking the inputs, passing it to the model and returning the outputs from the model:</p>
+<p>Now let’s write our forward function. It’s just taking the inputs, passing it to the model and returning the outputs from the model:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">SegmentationModel</span><span class="p">(</span><span class="n">LightningModule</span><span class="p">):</span>
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
@@ -587,7 +586,7 @@
 </section>
 <section id="testing-the-model">
 <h2>Testing the model<a class="headerlink" href="#testing-the-model" title="Permalink to this headline">¶</a></h2>
-<p>Now, it’s time to test the model and see the segmented outputs. For now, let’s take some examples from the evaluation set:</p>
+<p>Now, it’s time to test the model and see the segmented outputs. For now, let’s take some example from the evaluation set:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">idx</span> <span class="o">=</span> <span class="mi">24</span>
 <span class="n">img</span> <span class="o">=</span> <span class="n">eval_ds</span><span class="p">[</span><span class="n">idx</span><span class="p">][</span><span class="s1">&#39;image&#39;</span><span class="p">]</span>
 <span class="n">mask</span> <span class="o">=</span> <span class="n">eval_ds</span><span class="p">[</span><span class="n">idx</span><span class="p">][</span><span class="s1">&#39;mask&#39;</span><span class="p">]</span>

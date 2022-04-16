@@ -1,6 +1,6 @@
 # Image segmentation
 
-In the last chapter, we trained a model to classify animal images using pytorch lightning as our framework. In this chapter, instead of classifying the images into a category, we will segment roads present in the image as shown below:
+In the last chapter, we trained a model to classify animal images using pytorch lightning as our framework. In this chapter, instead of classifying the images into a category, we will segment roads present in the image as shown below(the the segmented part of road is shown in green color):
 
 ```{image} ./assets/img_seg_pic.png
 :alt: image_segmentation
@@ -8,9 +8,7 @@ In the last chapter, we trained a model to classify animal images using pytorch 
 :align: center
 ```
 
-As you can see the the segmented part of road is shown in green color. 
-
-If we are segmenting roads in an image, what the models is trying to do is categorize whether each pixel in the input image belongs to a road or not:
+If we are segmenting roads in an image, what the models is trying to do is predict whether each pixel in the input image belongs to a road or not:
 
 ```{image} ./assets/img_seg_model.png
 :alt: image_segmentation
@@ -18,7 +16,7 @@ If we are segmenting roads in an image, what the models is trying to do is categ
 :align: center
 ```
 
-As you can see, during prediction, the pixels that belong to the road should be equal to 1 and all other pixels should be equal to 0.
+As you can see, the pixels that belong to the road should be equal to 1 and all other pixels should be equal to 0.
 
 ### Dataset
 
@@ -33,7 +31,7 @@ kittiroadsegmentation
     └── image_2
 ```
 
-All the data that we will be using for this chapter is inside the 'training' folder. The training folder has two sub-folders(apart from ```calib``` folder), ```gt_image_2``` and ```image_2``` which contains our segmentation mask and its corresponding images respectively.
+All the data that we will be using for this chapter is inside the 'training' folder. The training folder has two sub-folders, ```gt_image_2``` and ```image_2``` which contains our segmentation mask and its corresponding images respectively.
 
 Here are some sample images and its segmentation masks from the above folders:
 
@@ -43,12 +41,12 @@ Here are some sample images and its segmentation masks from the above folders:
 :align: center
 ```
 
-#### Prepring the dataframe
+#### Preparing the dataframe
 
-Now let's write some code create a dataframe where each row contains the path to images and its corresponding segmentation masks.
+Now let's write some code to create a dataframe where each row contains the path to image and its corresponding segmentation mask.
 
 ```{note}
-For a file inside ```image_2``` folder with the name 'um_000000.png', its corresponding image mask will have the name 'um_lane_000000.png'. We will expoit this pattern to extract all image paths and its masks.
+If ```image_2``` folder has a file named 'um_000000.png', its corresponding segmentation mask will have the name 'um_lane_000000.png'. We will exploit this pattern to extract all image paths and its segmentation mask files.
 ```
 
 First let's retrieve all the image file names from ```image_2``` folder
@@ -86,7 +84,7 @@ Call the function and see if it's working as intended:
 imgs, masks = get_existing_imgs_and_masks(img_files, mask_root_path)
 ```
 
-It's time to put both ```imgs``` and ```masks``` into a dataframe:
+Now let's put both ```imgs``` and ```masks``` into a dataframe:
 
 ```python
 import pandas as pd
@@ -105,7 +103,7 @@ from sklearn.model_selection import train_test_split
 train_df, eval_df = train_test_split(df, test_size=0.1, shuffle=True, random_state=42)
 ```
 
-#### Loading in images and masks
+#### Loading the images and masks
 
 Finally, we are ready to write our dataset loading class using pytorch. These are the steps we will follow while loading our images and masks:
 
@@ -116,7 +114,7 @@ sample_img_path = str(imgs[0])
 sample_mask_path = str(masks[0])
 ```
 
-* Load the image using opencv, convert from BGR to RGB format and normalize the image by dividing it by 255.
+* Load the image using opencv, convert from BGR to RGB format and normalize it by dividing by 255.
 
 ```python
 import cv2
@@ -214,9 +212,9 @@ Wohoo! it's working without any errors.
 
 ### Training the model
 
-This time also, as expected, we will use pytorch lightning for our training :) So let's build the our model class using the ```LightningModule``` from pytorch lightning.
+This time also, as expected, we will use pytorch lightning for our training :) So let's build our model class using the ```LightningModule``` from pytorch lightning.
 
-For this task, we will use a unet model which is a commonly used one for image segmentation. This model is like an encoder-decoder model, we can replace the encoder part with any of the commonly used convolutional neural networks(vgg, resnet etc). Here we will use 'resnet34' as our encoder or commonly called the backbone. In short, we will use a unet model with 'resnet34' backbone.
+For this task, we will use a unet model which is a commonly used one for image segmentation. This model is like an encoder-decoder model, we can replace the encoder part with any of the commonly used convolutional neural networks(vgg, resnet etc). Here we will use 'resnet34' as our encoder/backbone. In short, we will use a unet model with 'resnet34' backbone.
 
 So let's load in the unet model from ```segmentation-models-pytorch``` library:
 
@@ -244,7 +242,7 @@ You can install segmentation models library by running ```pip install segmentati
 Refer to the [docs](https://smp.readthedocs.io/en/latest/models.html#unet) if you have any doubts regarding the details of any arguments passed to ```segmentation_models_pytorch.Unet()```.
 ```
 
-Now let's write our forward function, it's just taking the inputs, passing it to the model and returning the outputs from the model:
+Now let's write our forward function. It's just taking the inputs, passing it to the model and returning the outputs from the model:
 
 ```python
 class SegmentationModel(LightningModule):
@@ -362,7 +360,7 @@ trainer.fit(model)       # start training
 
 ### Testing the model
 
-Now, it's time to test the model and see the segmented outputs. For now, let's take some examples from the evaluation set:
+Now, it's time to test the model and see the segmented outputs. For now, let's take some example from the evaluation set:
 
 ```python
 idx = 24
