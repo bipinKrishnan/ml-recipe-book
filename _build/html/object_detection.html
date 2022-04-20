@@ -102,6 +102,11 @@
 </p>
 <ul class="nav bd-sidenav">
  <li class="toctree-l1">
+  <a class="reference internal" href="nlp_chapter_0.html">
+   Warm up
+  </a>
+ </li>
+ <li class="toctree-l1">
   <a class="reference internal" href="named_entity_recognition.html">
    Named entity recognition
   </a>
@@ -145,6 +150,11 @@
  </span>
 </p>
 <ul class="current nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="cv_chapter_0.html">
+   Warm up
+  </a>
+ </li>
  <li class="toctree-l1">
   <a class="reference internal" href="image_classification.html">
    Image classification
@@ -249,6 +259,23 @@
    Introduction
   </a>
  </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#dataset">
+   Dataset
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#preparing-the-dataframe">
+     Preparing the dataframe
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#loading-the-images-and-bounding-boxes">
+     Loading the images and bounding boxes
+    </a>
+   </li>
+  </ul>
+ </li>
 </ul>
 
             </nav>
@@ -268,10 +295,43 @@
 <img alt="object_detection" class="bg-primary mb-1 align-center" src="_images/object_detect_img.png" />
 <p>For this chapter we will train a model to detect cars in a given image. As shown above, the model should correctly detect all the cars in a given image by predicting the coordinates of the bounding box for the car.</p>
 <img alt="object_detection" class="bg-primary mb-1 align-center" src="_images/object_detect_model.png" />
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>If any part of the image is not clearly visible, you can toggle full screen mode from the top bar and zoom in 200% for better experience.</p>
+</section>
+<section id="dataset">
+<h2>Dataset<a class="headerlink" href="#dataset" title="Permalink to this headline">¶</a></h2>
+<p>The dataset we will be using for training a car detecting model can be found <a class="reference external" href="https://www.kaggle.com/datasets/sshikamaru/car-object-detection">here</a>. All the images for our training set is under <code class="docutils literal notranslate"><span class="pre">training_images</span></code> folder and its bounding box coordinates can be found in <code class="docutils literal notranslate"><span class="pre">train_solution_bounding_boxes</span> <span class="pre">(1).csv</span></code>. This is how the csv containing bounding box coordinates look like:</p>
+<img alt="object_detection" class="bg-primary mb-1 align-center" src="_images/obj_detect_ds.png" />
+<p>The first column represents the name of the image and the remaining 4 columns represent the coordinates of the bounding box for that image. The columns <code class="docutils literal notranslate"><span class="pre">xmin</span></code>, <code class="docutils literal notranslate"><span class="pre">ymin</span></code>, <code class="docutils literal notranslate"><span class="pre">xmax</span></code>, <code class="docutils literal notranslate"><span class="pre">ymax</span></code> represents <code class="docutils literal notranslate"><span class="pre">x1</span></code>, <code class="docutils literal notranslate"><span class="pre">y1</span></code>, <code class="docutils literal notranslate"><span class="pre">x2</span></code>, <code class="docutils literal notranslate"><span class="pre">y2</span></code> coordinates resepctively.</p>
+<section id="preparing-the-dataframe">
+<h3>Preparing the dataframe<a class="headerlink" href="#preparing-the-dataframe" title="Permalink to this headline">¶</a></h3>
+<p>First let’s read the csv file:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+
+<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">&quot;../input/car-object-detection/data/train_solution_bounding_boxes (1).csv&quot;</span><span class="p">)</span>
+</pre></div>
 </div>
+<p>In the above dataframe, there are multiple rows with the same image name as shown below:</p>
+<img alt="object_detection" class="bg-primary mb-1 align-center" src="_images/obj_detect_multi_row.png" />
+<p>This means that there are certain images that has multiple bounding boxes(for multuple cars), here is an image which has multiple rows in the dataframe:</p>
+<img alt="object_detection" class="bg-primary mb-1 align-center" src="_images/obj_detect_multi_img.png" />
+<p>Let’s create a column that contains the area of the bounding boxes, for that we need the height and width of the bounding boxes:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;bbox_width&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;xmax&#39;</span><span class="p">]</span><span class="o">-</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;xmin&#39;</span><span class="p">]</span>
+<span class="n">df</span><span class="p">[</span><span class="s1">&#39;bbox_height&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;ymax&#39;</span><span class="p">]</span><span class="o">-</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;ymin&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>Now let’s calculate the area and store it in a new column:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;area&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;bbox_width&#39;</span><span class="p">]</span><span class="o">*</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;bbox_height&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>We will group all rows with the same image name together, thus, we will get all the bounding boxes for an image from a single row:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># group by similar image names</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s1">&#39;image&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">agg</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
+<span class="n">df</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="loading-the-images-and-bounding-boxes">
+<h3>Loading the images and bounding boxes<a class="headerlink" href="#loading-the-images-and-bounding-boxes" title="Permalink to this headline">¶</a></h3>
+</section>
 </section>
 </section>
 
