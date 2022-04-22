@@ -276,6 +276,11 @@
    </li>
   </ul>
  </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#training-the-model">
+   Training the model
+  </a>
+ </li>
 </ul>
 
             </nav>
@@ -328,10 +333,205 @@
 <span class="n">df</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
+<p>Since the dataframe is ready, let’s split it into training and validation sets:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="kn">import</span> <span class="n">train_test_split</span>
+
+<span class="n">train_df</span><span class="p">,</span> <span class="n">val_df</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">train_df</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">val_df</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
 </section>
 <section id="loading-the-images-and-bounding-boxes">
 <h3>Loading the images and bounding boxes<a class="headerlink" href="#loading-the-images-and-bounding-boxes" title="Permalink to this headline">¶</a></h3>
+<p>Now we will write a data set loading class with pytorch. We will pass the dataframe(either training or validation), root path where the images are present and some augmentations/transforms to apply to the image.</p>
+<p>Before writing the whole dataset loading class, let’s take a sample image and it’s bounding boxes from the dataframe to see what is really happening after each step in the data loading class.</p>
+<ul class="simple">
+<li><p>First let’s take a sample image containing multiple bounding boxes:</p></li>
+</ul>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">sample</span> <span class="o">=</span> <span class="n">train_df</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">215</span><span class="p">]</span>
+<span class="n">img_name</span> <span class="o">=</span> <span class="n">sample</span><span class="p">[</span><span class="s1">&#39;image&#39;</span><span class="p">]</span>
+<span class="n">bboxes</span> <span class="o">=</span> <span class="n">sample</span><span class="p">[[</span><span class="s1">&#39;xmin&#39;</span><span class="p">,</span> <span class="s1">&#39;ymin&#39;</span><span class="p">,</span> <span class="s1">&#39;xmax&#39;</span><span class="p">,</span> <span class="s1">&#39;ymax&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">values</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>We will read the image using opencv, convert it to RGB format and normalize it:</p></li>
+</ul>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">cv2</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+
+<span class="c1"># root path where images are present</span>
+<span class="n">img_root_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;../input/car-object-detection/data/training_images&quot;</span><span class="p">)</span>
+
+<span class="n">img</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">imread</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">img_root_path</span><span class="o">/</span><span class="n">img_name</span><span class="p">))</span>
+<span class="n">img</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">cvtColor</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">cv2</span><span class="o">.</span><span class="n">COLOR_BGR2RGB</span><span class="p">)</span><span class="o">/</span><span class="mf">255.0</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>Since our bounding box coordinates are in a list format, let’s convert all of them into pytorch tensor and store it in tuple format:</p></li>
+</ul>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
+
+<span class="n">bboxes</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">,</span> <span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="n">bboxes</span><span class="p">)))</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">bboxes</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Output:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="p">(</span><span class="n">tensor</span><span class="p">([</span>  <span class="mf">0.0000</span><span class="p">,</span> <span class="mf">194.8600</span><span class="p">,</span>  <span class="mf">42.5557</span><span class="p">,</span> <span class="mf">232.5177</span><span class="p">]),</span>
+ <span class="n">tensor</span><span class="p">([</span> <span class="mf">34.7294</span><span class="p">,</span> <span class="mf">191.4366</span><span class="p">,</span>  <span class="mf">84.6223</span><span class="p">,</span> <span class="mf">226.6490</span><span class="p">]),</span>
+ <span class="n">tensor</span><span class="p">([</span><span class="mf">179.5166</span><span class="p">,</span> <span class="mf">202.6850</span><span class="p">,</span> <span class="mf">252.8886</span><span class="p">,</span> <span class="mf">230.5614</span><span class="p">]),</span>
+ <span class="n">tensor</span><span class="p">([</span><span class="mf">197.1259</span><span class="p">,</span> <span class="mf">192.9038</span><span class="p">,</span> <span class="mf">319.9016</span><span class="p">,</span> <span class="mf">233.9849</span><span class="p">]),</span>
+ <span class="n">tensor</span><span class="p">([</span><span class="mf">364.4139</span><span class="p">,</span> <span class="mf">181.6554</span><span class="p">,</span> <span class="mf">454.4168</span><span class="p">,</span> <span class="mf">219.8021</span><span class="p">]),</span>
+ <span class="n">tensor</span><span class="p">([</span><span class="mf">473.4935</span><span class="p">,</span> <span class="mf">185.5679</span><span class="p">,</span> <span class="mf">573.2793</span><span class="p">,</span> <span class="mf">227.1380</span><span class="p">]),</span>
+ <span class="n">tensor</span><span class="p">([</span><span class="mf">563.4964</span><span class="p">,</span> <span class="mf">177.2539</span><span class="p">,</span> <span class="mf">652.5210</span><span class="p">,</span> <span class="mf">213.9334</span><span class="p">]))</span>
+</pre></div>
+</div>
+<p>Each tensor represents the xmin, ymin, xmax and ymax of a bounding box. So here we have 7 bounding boxes in total.</p>
+<ul class="simple">
+<li><p>Now we will stack all the above tensors to form a single tensor of shape (7, 4):</p></li>
+</ul>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">bboxes</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">bboxes</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">bboxes</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Output:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">tensor</span><span class="p">([[</span>  <span class="mf">0.0000</span><span class="p">,</span> <span class="mf">194.8600</span><span class="p">,</span>  <span class="mf">42.5557</span><span class="p">,</span> <span class="mf">232.5177</span><span class="p">],</span>
+        <span class="p">[</span> <span class="mf">34.7294</span><span class="p">,</span> <span class="mf">191.4366</span><span class="p">,</span>  <span class="mf">84.6223</span><span class="p">,</span> <span class="mf">226.6490</span><span class="p">],</span>
+        <span class="p">[</span><span class="mf">179.5166</span><span class="p">,</span> <span class="mf">202.6850</span><span class="p">,</span> <span class="mf">252.8886</span><span class="p">,</span> <span class="mf">230.5614</span><span class="p">],</span>
+        <span class="p">[</span><span class="mf">197.1259</span><span class="p">,</span> <span class="mf">192.9038</span><span class="p">,</span> <span class="mf">319.9016</span><span class="p">,</span> <span class="mf">233.9849</span><span class="p">],</span>
+        <span class="p">[</span><span class="mf">364.4139</span><span class="p">,</span> <span class="mf">181.6554</span><span class="p">,</span> <span class="mf">454.4168</span><span class="p">,</span> <span class="mf">219.8021</span><span class="p">],</span>
+        <span class="p">[</span><span class="mf">473.4935</span><span class="p">,</span> <span class="mf">185.5679</span><span class="p">,</span> <span class="mf">573.2793</span><span class="p">,</span> <span class="mf">227.1380</span><span class="p">],</span>
+        <span class="p">[</span><span class="mf">563.4964</span><span class="p">,</span> <span class="mf">177.2539</span><span class="p">,</span> <span class="mf">652.5210</span><span class="p">,</span> <span class="mf">213.9334</span><span class="p">]])</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>Similar to classification models, the object detection model we are going to use(faster rcnn with resnet50 backbone) requires the class/label to which each bounding box belongs to. So corresponding to each bounding box in our image, we should provide a label. In our case we only have bounding boxes for car, so we only have one label. The label 0 is reserved for background, so we will use 1 as the label for car.</p></li>
+</ul>
+<p>Let’s create a tensor containing 1s(car label) that has the same length as the number of bounding boxes in the image:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">labels</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">bboxes</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>So, let’s define the transforms/augmentations that we wish to apply to the image. We will use the ‘albumentations’ library for this. We will resize the image and convert it to tensors.</p></li>
+</ul>
+<p>Since this is an object detection task, we cannot simply resize the image without resizing the bounding boxes. But albumentations will automatically take care of this if we pass the <code class="docutils literal notranslate"><span class="pre">bbox</span></code> parameter. We should pass the bounding box format we are using as well as the key to store the labels.</p>
+<p>The bounding format we are using is <code class="docutils literal notranslate"><span class="pre">(xmin,</span> <span class="pre">ymin,</span> <span class="pre">xmax,</span> <span class="pre">ymax)</span></code> which is the pascal voc format.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">albumentations</span> <span class="k">as</span> <span class="nn">A</span>
+<span class="kn">from</span> <span class="nn">albumentations.pytorch.transforms</span> <span class="kn">import</span> <span class="n">ToTensorV2</span>
+
+<span class="n">transforms</span> <span class="o">=</span> <span class="n">A</span><span class="o">.</span><span class="n">Compose</span><span class="p">([</span>
+    <span class="n">A</span><span class="o">.</span><span class="n">Resize</span><span class="p">(</span><span class="mi">256</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mf">1.0</span><span class="p">),</span>  <span class="c1"># resize the image</span>
+    <span class="n">ToTensorV2</span><span class="p">(</span><span class="n">p</span><span class="o">=</span><span class="mf">1.0</span><span class="p">),</span>
+<span class="p">],</span> <span class="n">bbox_params</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;format&#39;</span><span class="p">:</span> <span class="s1">&#39;pascal_voc&#39;</span><span class="p">,</span> <span class="s1">&#39;label_fields&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;labels&#39;</span><span class="p">]})</span>  <span class="c1"># bounding box parameters</span>
+</pre></div>
+</div>
+<p>Let’s apply the transforms to our data:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">augmented</span> <span class="o">=</span> <span class="n">transforms</span><span class="p">(</span><span class="n">image</span><span class="o">=</span><span class="n">img</span><span class="p">,</span> <span class="n">bboxes</span><span class="o">=</span><span class="n">bboxes</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="n">labels</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The output will be a dictionary containing labels, augmented image and bounding boxes.</p>
+<ul class="simple">
+<li><p>After augmentation, the bounding boxes are stores in a list as tuples. But our model expects them as stacked tensors as we did earlier(before augmentation). So, we have to again make the bounding boxes in that format.</p></li>
+</ul>
+<p>For that we need to convert each bounding box coordinate list to tensors, store them in a tuple abd then stack them to a single tensor:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># convert to tensor</span>
+<span class="n">bboxes</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">,</span> <span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="n">augmented</span><span class="p">[</span><span class="s1">&#39;bboxes&#39;</span><span class="p">]))</span>
+<span class="c1"># store as tuples</span>
+<span class="n">bboxes</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">bboxes</span><span class="p">)</span>
+<span class="c1"># stack into a single tensor</span>
+<span class="n">bboxes</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">bboxes</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>Now let’s convert the data types to the format as required by the model(otherwise we will get errors while training):</p></li>
+</ul>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">img</span> <span class="o">=</span> <span class="n">augmented</span><span class="p">[</span><span class="s1">&#39;image&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">type</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+<span class="n">bboxes</span> <span class="o">=</span> <span class="n">bboxes</span><span class="o">.</span><span class="n">permute</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">type</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>Our image and the bounding boxes are ready. Our model expects some more elements apart from the bounding boxes as the targets, which includes, ‘labels’, ‘area’ and ‘iscrowd’.</p></li>
+</ul>
+<p>We are familiar with ‘labels’ and ‘area’(area of the bounding box). But what is this ‘is crowd’ element?</p>
+<p>Similar to ‘labels’, we should have a value for ‘iscrowd’ corresponding to each bounding box. If ‘iscrowd’ is 1, that bounding box is not considered by the model. But we want the model to consider all bounding boxes. So we will put the value 0 corresponding to each bounding box:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">iscrowd</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">bboxes</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">int</span><span class="p">)</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>Since everything is ready lets create a dictionary and store all the target data there:</p></li>
+</ul>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">area</span> <span class="o">=</span> <span class="n">sample</span><span class="p">[</span><span class="s1">&#39;area&#39;</span><span class="p">]</span>
+
+<span class="n">target</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="n">target</span><span class="p">[</span><span class="s1">&#39;boxes&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">bboxes</span>
+<span class="n">target</span><span class="p">[</span><span class="s1">&#39;labels&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">labels</span>
+<span class="n">target</span><span class="p">[</span><span class="s1">&#39;area&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span><span class="n">area</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+<span class="n">target</span><span class="p">[</span><span class="s1">&#39;iscrowd&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">iscrowd</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Make sure that the keys of the target dictionary has the same name as above, because the model expects it that way.</p>
+</div>
+<p>Now let’s wrap everything into our data set loading class:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="kn">import</span> <span class="n">Dataset</span>
+
+<span class="k">class</span> <span class="nc">LoadDataset</span><span class="p">(</span><span class="n">Dataset</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">,</span> <span class="n">img_dir</span><span class="p">,</span> <span class="n">transforms</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">df</span> <span class="o">=</span> <span class="n">df</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">img_dir</span> <span class="o">=</span> <span class="n">img_dir</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">transforms</span> <span class="o">=</span> <span class="n">transforms</span>
+        
+    <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">)</span>
+    
+    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">):</span>
+        <span class="c1"># read &amp; process the image</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="s1">&#39;image&#39;</span><span class="p">]</span>
+        <span class="n">img</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">imread</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">img_dir</span><span class="o">/</span><span class="n">filename</span><span class="p">))</span>
+        <span class="n">img</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">cvtColor</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">cv2</span><span class="o">.</span><span class="n">COLOR_BGR2RGB</span><span class="p">)</span><span class="o">/</span><span class="mf">255.0</span>
+        
+        <span class="c1"># get the bboxes</span>
+        <span class="n">bboxes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;xmin&#39;</span><span class="p">,</span> <span class="s1">&#39;ymin&#39;</span><span class="p">,</span> <span class="s1">&#39;xmax&#39;</span><span class="p">,</span> <span class="s1">&#39;ymax&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">values</span>
+        <span class="n">bboxes</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">,</span> <span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="n">bboxes</span><span class="p">)))</span>
+        <span class="n">bboxes</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">bboxes</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        
+        <span class="c1"># create labels</span>
+        <span class="n">labels</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">bboxes</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
+        <span class="c1"># apply augmentations</span>
+        <span class="n">augmented</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">transforms</span><span class="p">(</span><span class="n">image</span><span class="o">=</span><span class="n">img</span><span class="p">,</span> <span class="n">bboxes</span><span class="o">=</span><span class="n">bboxes</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="n">labels</span><span class="p">)</span>
+        
+        <span class="c1"># convert bbox list to tensors again</span>
+        <span class="n">bboxes</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">,</span> <span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="n">augmented</span><span class="p">[</span><span class="s1">&#39;bboxes&#39;</span><span class="p">]))</span>
+        <span class="n">bboxes</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">bboxes</span><span class="p">)</span>
+        <span class="n">bboxes</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">bboxes</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        
+        <span class="n">img</span> <span class="o">=</span> <span class="n">augmented</span><span class="p">[</span><span class="s1">&#39;image&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">type</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        <span class="n">bboxes</span> <span class="o">=</span> <span class="n">bboxes</span><span class="o">.</span><span class="n">permute</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">type</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        <span class="n">iscrowd</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">bboxes</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">int</span><span class="p">)</span>
+        
+        <span class="c1"># bbox area</span>
+        <span class="n">area</span> <span class="o">=</span> <span class="n">sample</span><span class="p">[</span><span class="s1">&#39;area&#39;</span><span class="p">]</span>
+        <span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span><span class="n">area</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+
+        <span class="n">target</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">target</span><span class="p">[</span><span class="s1">&#39;boxes&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">bboxes</span>
+        <span class="n">target</span><span class="p">[</span><span class="s1">&#39;labels&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">labels</span>
+        <span class="n">target</span><span class="p">[</span><span class="s1">&#39;area&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">area</span>
+        <span class="n">target</span><span class="p">[</span><span class="s1">&#39;iscrowd&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">iscrowd</span>
+        
+        <span class="k">return</span> <span class="n">img</span><span class="p">,</span> <span class="n">target</span>
+</pre></div>
+</div>
+<p>Finally, let’s load the training and validation dataset:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">train_ds</span> <span class="o">=</span> <span class="n">LoadDataset</span><span class="p">(</span><span class="n">train_df</span><span class="p">,</span> <span class="n">img_root_path</span><span class="p">,</span> <span class="n">transforms</span><span class="p">)</span>
+<span class="n">val_ds</span> <span class="o">=</span> <span class="n">LoadDataset</span><span class="p">(</span><span class="n">val_df</span><span class="p">,</span> <span class="n">img_root_path</span><span class="p">,</span> <span class="n">transforms</span><span class="p">)</span>
+</pre></div>
+</div>
 </section>
+</section>
+<section id="training-the-model">
+<h2>Training the model<a class="headerlink" href="#training-the-model" title="Permalink to this headline">¶</a></h2>
 </section>
 </section>
 
