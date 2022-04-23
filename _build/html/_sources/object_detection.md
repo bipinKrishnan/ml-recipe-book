@@ -270,7 +270,7 @@ class LoadDataset(Dataset):
         iscrowd = torch.zeros(len(bboxes), dtype=torch.int)
         
         # bbox area
-        area = sample['area']
+        area = self.df.loc[idx, 'area']
         torch.as_tensor(area, dtype=torch.float32)
 
         target = {}
@@ -291,4 +291,288 @@ val_ds = LoadDataset(val_df, img_root_path, transforms)
 
 ### Training the model
 
+It's time to build our model class using pytorch lightning :) It's almost similar to what we did in the earlier chapters. The only difference is the model creation. We will use a pretrained faster rcnn model with resnet50 backbone by modifying the number of classes in the predictor. In our case, we only have two classes, 0(background) and 1(car):
+
+```python
+from torchvision.models.detection import fasterrcnn_resnet50_fpn
+from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
+
+# load pretrained model
+model = fasterrcnn_resnet50_fpn(pretrained=True)
+
+# get input features of prediction layer
+in_features = model.roi_heads.box_predictor.cls_score.in_features
+
+# modify the predictor layer with number of classes
+model.roi_heads.box_predictor = FastRCNNPredictor(in_features, num_classes=2)
+```
+The ```FastRCNNPredictor``` of ```box_predictor``` layer is modified to make predictions for only 2 classes.
+
+Now let's build the model class.
+
+* As usual we will write our ```__init__``` method, which includes the batch size, learning rate and model. For model creation, we will use a method called ```create_model()``` which will contain the code for model creation.
+
+```python
+from pytorch_lightning import LightningModule
+
+class ObjectDetector(LightningModule):
+    def __init__(self):
+        super().__init__()
+        self.lr = 1e-3
+        self.batch_size = 16
+        self.model = self.create_model()
+        
+    def create_model(self):
+        model = fasterrcnn_resnet50_fpn(pretrained=True)
+        in_features = model.roi_heads.box_predictor.cls_score.in_features
+        model.roi_heads.box_predictor = FastRCNNPredictor(in_features, num_classes=2)
+        return model
+```
+
+* The forward method just takes the input, passes it to the model and returns the model outputs:
+
+```python
+class ObjectDetector(LightningModule):
+    def forward(self, x):
+        return self.model(x)
+```
+
+* Since the number of bounding boxes may be different for each image, we will need a ```collate_fn``` to pass to our dataloaders. It's just converting our batches to tuples.
+
+```python
+from torch.utils.data import DataLoader
+
+class ObjectDetector(LightningModule):
+    def collate_fn(self, batch):
+        return tuple(zip(*batch))
+
+    def train_dataloader(self):
+        return DataLoader(
+            train_ds, 
+            batch_size=self.batch_size, 
+            shuffle=True, 
+            collate_fn=self.collate_fn
+        )
+
+    def val_dataloader(self):
+        return DataLoader(
+            val_ds, 
+            batch_size=self.batch_size, 
+            shuffle=False, 
+            collate_fn=self.collate_fn
+        )
+```
+
+* Let's configure our ```AdamW``` optimizer now:
+
+```python
+class ObjectDetector(LightningModule):
+    def configure_optimizers(self):
+        return torch.optim.AdamW(self.model.parameters(), lr=self.lr)
+```
+
+* Now it's time to write our training step. In this case, instaed of giving only the predictions, the model outputs a bunch of loss values as shown below:
+
+```python
+{'loss_classifier': tensor(0.5703, grad_fn=<NllLossBackward>),
+ 'loss_box_reg': tensor(0.1132, grad_fn=<DivBackward0>),
+ 'loss_objectness': tensor(0.0085, grad_fn=<BinaryCrossEntropyWithLogitsBackward>),
+ 'loss_rpn_box_reg': tensor(0.0079, grad_fn=<DivBackward0>)}
+```
+
+So, we should sum all these losses together and return it in training step for backward propagation. Thus, the code for training will look like this:
+
+```python
+class ObjectDetector(LightningModule):
+    def training_step(self, batch, batch_idx):
+        inputs, targets = batch
+        loss_dict = self.model(inputs, targets)
+        complete_loss = sum(loss for loss in loss_dict.values())
+        
+        self.log("train_loss", complete_loss, prog_bar=True)
+        return {'loss': complete_loss}
+```
+
+* During validation, pytorch lightning automatically calls ```model.eval()``` for us. While doing this, the behaviour of the model will change again. The model will output the bounding box prediction and probabilites for each label instead of the losses. So we need to take this into account while implementing the validation step.
+
+So, during validation, we take the predicted bounding box coordinates and the target bounding boxes to calculate [intersection over union](https://en.wikipedia.org/wiki/File:Intersection_over_Union_-_visual_equation.png)(IOU) which is a commonly used metric for object detection. We will be using [box_iou](https://pytorch.org/vision/main/generated/torchvision.ops.box_iou.html) function from torchvision for calculating IOU. 
+
+IOU varies from 0 to 1, values closer to 0 are bad predictions whereas the ones closer to 1 are good predictions.
+
+In the validation step, we will calculate the IOU for each batch and return the mean IOU for that batch:
+
+```python
+from torchvision.ops import box_iou
+
+class ObjectDetector(LightningModule):
+    def validation_step(self, batch, batch_idx):
+            inputs, targets = batch
+            outputs = self.model(inputs)
+            # calculate IOU and return the mean IOU
+            iou = torch.stack(
+                [box_iou(target['boxes'], output['boxes']).diag().mean() for target, output in zip(targets, outputs)]
+            ).mean()
+            
+            return {"val_iou": iou}
+```
+
+* In pytorch lightning, there is a ```validation_epoch_end()```, which takes as input the list containing all the values returned by ```validation_step()```. In pure pytorch, it will be something like this:
+
+```python
+for batch_idx, batch in val_dataloader:
+    batch_out = validation_step(batch, batch_idx)
+    val_out_list.append(batch_out)
+
+validation_epoch_end(val_out_list)
+```
+
+So, from ```validation_step()``` we will get the IOU for each batch, this is appended to a list and passed to ```validation_epoch_end()```. So, the only task remaining is to calculate the mean IOU from the list passed to ```validation_epoch_end()``` and log it:
+
+```python
+class ObjectDetector(LightningModule):
+    def validation_epoch_end(self, val_out):
+        # calculate overall IOU across batch
+        val_iou = torch.stack([o['val_iou'] for o in val_out]).mean()
+        self.log("val_iou", val_iou, prog_bar=True)
+        return val_iou
+```
+
+That was a whole lot of code, but we are done with the model class now. If you need the complete code, its here:
+
+```python
+class ObjectDetector(LightningModule):
+    def __init__(self):
+        super().__init__()
+        self.lr = 1e-3
+        self.batch_size = 16
+        self.model = self.create_model()
+        
+    def create_model(self):
+        model = fasterrcnn_resnet50_fpn(pretrained=True)
+        in_features = model.roi_heads.box_predictor.cls_score.in_features
+        model.roi_heads.box_predictor = FastRCNNPredictor(in_features, num_classes=2)
+        return model
+
+    def forward(self, x):
+        return self.model(x)
+
+    def collate_fn(self, batch):
+        return tuple(zip(*batch))
+
+    def train_dataloader(self):
+        return DataLoader(
+            train_ds, 
+            batch_size=self.batch_size, 
+            shuffle=True, 
+            collate_fn=self.collate_fn
+        )
+
+    def val_dataloader(self):
+        return DataLoader(
+            val_ds, 
+            batch_size=self.batch_size, 
+            shuffle=False, 
+            collate_fn=self.collate_fn
+        )
+
+    def configure_optimizers(self):
+        return torch.optim.AdamW(self.model.parameters(), lr=self.lr)
+
+    def training_step(self, batch, batch_idx):
+        inputs, targets = batch
+        loss_dict = self.model(inputs, targets)
+        complete_loss = sum(loss for loss in loss_dict.values())
+        
+        self.log("train_loss", complete_loss, prog_bar=True)
+        return {'loss': complete_loss}
+
+    def validation_step(self, batch, batch_idx):
+            inputs, targets = batch
+            outputs = self.model(inputs)
+            # calculate IOU and return the mean IOU
+            iou = torch.stack(
+                [box_iou(target['boxes'], output['boxes']).diag().mean() for target, output in zip(targets, outputs)]
+            ).mean()
+            
+            return {"val_iou": iou}
+
+    def validation_epoch_end(self, val_out):
+        # calculate overall IOU across batch
+        val_iou = torch.stack([o['val_iou'] for o in val_out]).mean()
+        self.log("val_iou", val_iou, prog_bar=True)
+        return val_iou
+```
+
+Now it's time to train the model using the lightning trainer:
+
+```python
+from pytorch_lightning import Trainer
+
+detector_model = ObjectDetector()
+trainer = Trainer(
+    accelerator='auto',
+    devices=1,
+    auto_lr_find=True,
+    max_epochs=5,
+)
+
+trainer.tune(detector_model)
+trainer.fit(detector_model)
+```
+
+### Testing the model
+
+Let's take a sample image from the validation set and visualize the bounding boxes predicted by the model:
+
+```python
+import matplotlib.pyplot as plt
+
+sample = val_ds[14]
+img = sample[0]
+
+detector_model.eval()
+with torch.no_grad():
+    out = detector_model([img])
+    
+# convert to numpy for opencv to draw bboxes
+img = img.permute(1, 2, 0).numpy()
+```
+
+Get the bounding boxes and its labels:
+
+```python
+# predicted bounding boxes    
+pred_bbox = out[0]['boxes'].numpy().astype(int)
+pred_label = out[0]['scores']
+```
+
+Draw the predicted bounding boxes on the image:
+
+```python
+# draw bounding boxes on the image
+for bbox, label in zip(pred_bbox, pred_label):
+    # check if the predicted label is for car
+    if label>=0.5:
+        cv2.rectangle(
+            img,
+            (bbox[0], bbox[1]),
+            (bbox[2], bbox[3]),
+            (255, 0, 0), thickness=2,
+        )
+```
+
+Now let's visualize the bounding boxes:
+
+```python
+plt.figure(figsize=(16, 6))
+plt.imshow(img)
+```
+Output:
+```{image} ./assets/object_detect_inference.png
+:alt: object_detection
+:class: bg-primary mb-1
+:align: center
+```
+
+Wohoooo, our model is working🥳.
 
