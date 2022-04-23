@@ -2,7 +2,7 @@
 
 ### Introduction
 
-In this chapter we will talk about another task involving images as inputs, we will train a model to detect all objects in a given image, as shown in the below image:
+In this chapter we will train a model to detect cars present in an image. For each car present in the image, the model should predict the bounding box that encloses the car as shown below:
 
 ```{image} ./assets/object_detect_img.png
 :alt: object_detection
@@ -10,7 +10,7 @@ In this chapter we will talk about another task involving images as inputs, we w
 :align: center
 ```
 
-For this chapter we will train a model to detect cars in a given image. As shown above, the model should correctly detect all the cars in a given image by predicting the coordinates of the bounding box for the car.
+For each bounding box, the model should predict 4 numbers/coordinates(```xmin, ymin, xmax, ymax```). As you can see from the detailed figure below, ```xmin``` and ```ymin``` represents the top left coordinate of the bounding box, where as, ```xmax``` and ```ymax``` represents the bottom right coordinates of the bounding box:
 
 ```{image} ./assets/object_detect_model.png
 :alt: object_detection
@@ -20,7 +20,7 @@ For this chapter we will train a model to detect cars in a given image. As shown
 
 ### Dataset
 
-The dataset we will be using for training a car detecting model can be found [here](https://www.kaggle.com/datasets/sshikamaru/car-object-detection). All the images for our training set is under ```training_images``` folder and its bounding box coordinates can be found in ```train_solution_bounding_boxes (1).csv```. This is how the csv containing bounding box coordinates look like:
+The dataset we will be using for training can be found [here](https://www.kaggle.com/datasets/sshikamaru/car-object-detection). All the images for our training set is under ```training_images``` folder and its bounding box coordinates can be found in ```train_solution_bounding_boxes (1).csv```. This is how the csv looks like:
 
 ```{image} ./assets/obj_detect_ds.png
 :alt: object_detection
@@ -28,7 +28,7 @@ The dataset we will be using for training a car detecting model can be found [he
 :align: center
 ```
 
-The first column represents the name of the image and the remaining 4 columns represent the coordinates of the bounding box for that image. The columns ```xmin```, ```ymin```, ```xmax```, ```ymax``` represents ```x1```, ```y1```, ```x2```, ```y2``` coordinates resepctively. 
+The first column represents the name of the image and the remaining 4 columns represent the coordinates of the bounding box for that image. 
 
 #### Preparing the dataframe
 
@@ -56,7 +56,7 @@ This means that there are certain images that has multiple bounding boxes(for mu
 :align: center
 ```
 
-Let's create a column that contains the area of the bounding boxes, for that we need the height and width of the bounding boxes:
+We will combine all those bounding boxes together, but, before that let's create a column that contains the area of the bounding boxes, for that we need the height and width of the bounding boxes:
 
 ```python
 df['bbox_width'] = df['xmax']-df['xmin']
@@ -69,7 +69,7 @@ Now let's calculate the area and store it in a new column:
 df['area'] = df['bbox_width']*df['bbox_height']
 ```
 
-We will group all rows with the same image name together, thus, we will get all the bounding boxes for an image from a single row:
+Now we will group and put all bounding boxes of same image in a single row instead of multiple rows:
 
 ```python
 # group by similar image names
@@ -89,9 +89,9 @@ val_df.reset_index(inplace=True)
 
 #### Loading the images and bounding boxes
 
-Now we will write a data set loading class with pytorch. We will pass the dataframe(either training or validation), root path where the images are present and some augmentations/transforms to apply to the image.
+Now we will write a data set loading class with pytorch. This class will take the dataframe(either training or validation), root path where the images are present and some augmentations/transforms to apply to the image.
 
-Before writing the whole dataset loading class, let's take a sample image and it's bounding boxes from the dataframe to see what is really happening after each step in the data loading class.
+Before writing the whole dataset loading class, let's take a sample image and it's bounding boxes from the dataframe to see what is really happening while loading our data.
 
 * First let's take a sample image containing multiple bounding boxes:
 
@@ -133,9 +133,9 @@ Output:
  tensor([563.4964, 177.2539, 652.5210, 213.9334]))
 ```
 
-Each tensor represents the xmin, ymin, xmax and ymax of a bounding box. So here we have 7 bounding boxes in total.
+Each tensor represents the ```xmin, ymin, xmax``` and ```ymax``` of a bounding box. Having 7 tensors means that we have 7 bounding boxes in total.
 
-* Now we will stack all the above tensors to form a single tensor of shape (7, 4):
+* Now we will stack all the above tensors into a single tensor of shape (7, 4):
 
 ```python
 bboxes = torch.stack(bboxes, dim=0)
@@ -152,19 +152,19 @@ tensor([[  0.0000, 194.8600,  42.5557, 232.5177],
         [563.4964, 177.2539, 652.5210, 213.9334]])
 ```
 
-* Similar to classification models, the object detection model we are going to use(faster rcnn with resnet50 backbone) requires the class/label to which each bounding box belongs to. So corresponding to each bounding box in our image, we should provide a label. In our case we only have bounding boxes for car, so we only have one label. The label 0 is reserved for background, so we will use 1 as the label for car. 
+* We will be using a faster rcnn model for our object detection task. This model requires the class/label corresponding to each bounding box. Thus, corresponding to each bounding box in an image, we should provide a label. In our case we only have bounding boxes for car, so we only have one label. The label 0 is reserved for background, so we will use 1 as the label for car. 
 
-Let's create a tensor containing 1s(car label) that has the same length as the number of bounding boxes in the image:
+So, let's create a tensor containing 1s that has the same length as the number of bounding boxes in the image:
 
 ```python
 labels = torch.ones(len(bboxes), dtype=torch.int64)
 ```
 
-* So, let's define the transforms/augmentations that we wish to apply to the image. We will use the 'albumentations' library for this. We will resize the image and convert it to tensors. 
+* Now, let's define the transforms/augmentations that we wish to apply to the image. We will use the 'albumentations' library for this. We will resize the image and convert it to tensors. 
 
-Since this is an object detection task, we cannot simply resize the image without resizing the bounding boxes. But albumentations will automatically take care of this if we pass the ```bbox``` parameter. We should pass the bounding box format we are using as well as the key to store the labels.
+Since this is an object detection task, we cannot simply resize the image without resizing the bounding boxes. But albumentations will automatically take care of this if we pass the ```bbox``` parameter to our transforms, it requires the bounding box format we are using as well as the key to store the labels.
 
-The bounding format we are using is ```(xmin, ymin, xmax, ymax)``` which is the pascal voc format. 
+**Note**: The bounding box format we are using is ```(xmin, ymin, xmax, ymax)``` which is the 'pascal voc' format. 
 
 ```python
 import albumentations as A
@@ -184,9 +184,9 @@ augmented = transforms(image=img, bboxes=bboxes, labels=labels)
 
 The output will be a dictionary containing labels, augmented image and bounding boxes. 
 
-* After augmentation, the bounding boxes are stores in a list as tuples. But our model expects them as stacked tensors as we did earlier(before augmentation). So, we have to again make the bounding boxes in that format.
+* After augmentation, the bounding boxes are stores in a list as tuples. But our model expects them as stacked tensors. So, we have to convert the bounding boxes to that format.
 
-For that we need to convert each bounding box coordinate list to tensors, store them in a tuple abd then stack them to a single tensor:
+We will convert each bounding box to tensor format, store them in a tuple and then stack them to a single tensor as we did earlier:
 
 ```python
 # convert to tensor
@@ -204,25 +204,30 @@ img = augmented['image'].type(torch.float32)
 bboxes = bboxes.permute(1, 0).type(torch.float32)
 ```
 
-* Our image and the bounding boxes are ready. Our model expects some more elements apart from the bounding boxes as the targets, which includes, 'labels', 'area' and 'iscrowd'.
+* Our image, bounding boxes and its labels are ready. But the model expects some more elements apart from these, which includes 'area' and 'iscrowd'.
 
-We are familiar with 'labels' and 'area'(area of the bounding box). But what is this 'is crowd' element?
+The term 'area' is nothing but the area of the bounding box. We have already calculated it earlier, so let's just take it and convert to a pytorch tensor:
 
-Similar to 'labels', we should have a value for 'iscrowd' corresponding to each bounding box. If 'iscrowd' is 1, that bounding box is not considered by the model. But we want the model to consider all bounding boxes. So we will put the value 0 corresponding to each bounding box:
+```python
+area = sample['area']
+area = torch.as_tensor(area, dtype=torch.float32)
+```
+
+But what is this 'iscrowd' element? This element is helpful if we want our model to exclude certain bounding boxes.
+
+If 'iscrowd' is 1, that bounding box is not considered by the model. But we want the model to consider all bounding boxes. So we will put the value 0 for 'iscrowd' corresponding to each bounding box:
 
 ```python
 iscrowd = torch.zeros(len(bboxes), dtype=torch.int)
 ```
 
-* Since everything is ready lets create a dictionary and store all the target data there:
+* Since everything is ready, lets create a dictionary and store all the target data there:
 
 ```python
-area = sample['area']
-
 target = {}
 target['boxes'] = bboxes
 target['labels'] = labels
-target['area'] = torch.as_tensor(area, dtype=torch.float32)
+target['area'] = area
 target['iscrowd'] = iscrowd
 ```
 
@@ -282,7 +287,7 @@ class LoadDataset(Dataset):
         return img, target
 ```
 
-Finally, let's load the training and validation dataset:
+Finally, let's load the training and validation datasets:
 
 ```python
 train_ds = LoadDataset(train_df, img_root_path, transforms)
@@ -291,7 +296,7 @@ val_ds = LoadDataset(val_df, img_root_path, transforms)
 
 ### Training the model
 
-It's time to build our model class using pytorch lightning :) It's almost similar to what we did in the earlier chapters. The only difference is the model creation. We will use a pretrained faster rcnn model with resnet50 backbone by modifying the number of classes in the predictor. In our case, we only have two classes, 0(background) and 1(car):
+It's time to build our model class using pytorch lightning :) This is almost similar to what we did in the earlier chapters. For the model, we will use a pretrained faster rcnn model with ```resnet50``` backbone. In our case, we only have two classes, 0 for background and 1 for car, thus, we will slightly modify the number of units in the last layer as shown below:
 
 ```python
 from torchvision.models.detection import fasterrcnn_resnet50_fpn
@@ -303,14 +308,13 @@ model = fasterrcnn_resnet50_fpn(pretrained=True)
 # get input features of prediction layer
 in_features = model.roi_heads.box_predictor.cls_score.in_features
 
-# modify the predictor layer with number of classes
+# modify the prediction layer with required number of classes
 model.roi_heads.box_predictor = FastRCNNPredictor(in_features, num_classes=2)
 ```
-The ```FastRCNNPredictor``` of ```box_predictor``` layer is modified to make predictions for only 2 classes.
 
 Now let's build the model class.
 
-* As usual we will write our ```__init__``` method, which includes the batch size, learning rate and model. For model creation, we will use a method called ```create_model()``` which will contain the code for model creation.
+* As usual we will write our ```__init__``` method, which includes the batch size, learning rate and the model. For model creation, we will use a method called ```create_model()``` which will contain the code we've written above.
 
 ```python
 from pytorch_lightning import LightningModule
@@ -337,7 +341,7 @@ class ObjectDetector(LightningModule):
         return self.model(x)
 ```
 
-* Since the number of bounding boxes may be different for each image, we will need a ```collate_fn``` to pass to our dataloaders. It's just converting our batches to tuples.
+* The number of bounding boxes may be different for each image, so, we will need a ```collate_fn``` to pass to our dataloaders.
 
 ```python
 from torch.utils.data import DataLoader
@@ -363,7 +367,7 @@ class ObjectDetector(LightningModule):
         )
 ```
 
-* Let's configure our ```AdamW``` optimizer now:
+* Now we will configure our ```AdamW``` optimizer.
 
 ```python
 class ObjectDetector(LightningModule):
@@ -371,7 +375,7 @@ class ObjectDetector(LightningModule):
         return torch.optim.AdamW(self.model.parameters(), lr=self.lr)
 ```
 
-* Now it's time to write our training step. In this case, instaed of giving only the predictions, the model outputs a bunch of loss values as shown below:
+* Finally, it's time to write our training step. But here, instead of giving only the predictions, the model outputs a bunch of loss values as shown below:
 
 ```python
 {'loss_classifier': tensor(0.5703, grad_fn=<NllLossBackward>),
@@ -393,11 +397,11 @@ class ObjectDetector(LightningModule):
         return {'loss': complete_loss}
 ```
 
-* During validation, pytorch lightning automatically calls ```model.eval()``` for us. While doing this, the behaviour of the model will change again. The model will output the bounding box prediction and probabilites for each label instead of the losses. So we need to take this into account while implementing the validation step.
+* During validation, pytorch lightning automatically calls ```model.eval()``` for us. While doing this, the behaviour of the model will change again. This time, the model will output the bounding box prediction and probabilites of our label(car). So we need to take this into account while implementing the validation step.
 
-So, during validation, we take the predicted bounding box coordinates and the target bounding boxes to calculate [intersection over union](https://en.wikipedia.org/wiki/File:Intersection_over_Union_-_visual_equation.png)(IOU) which is a commonly used metric for object detection. We will be using [box_iou](https://pytorch.org/vision/main/generated/torchvision.ops.box_iou.html) function from torchvision for calculating IOU. 
+So, during validation, we take the predicted bounding box coordinates and the target bounding boxes to calculate [intersection over union(IOU)](https://en.wikipedia.org/wiki/File:Intersection_over_Union_-_visual_equation.png) which is a commonly used metric for object detection. We will be using [box_iou](https://pytorch.org/vision/main/generated/torchvision.ops.box_iou.html) function from torchvision for calculating IOU. 
 
-IOU varies from 0 to 1, values closer to 0 are bad predictions whereas the ones closer to 1 are good predictions.
+IOU varies from 0 to 1, values closer to 0 are considered bad whereas the ones closer to 1 are considered good predictions.
 
 In the validation step, we will calculate the IOU for each batch and return the mean IOU for that batch:
 
@@ -416,7 +420,7 @@ class ObjectDetector(LightningModule):
             return {"val_iou": iou}
 ```
 
-* In pytorch lightning, there is a ```validation_epoch_end()```, which takes as input the list containing all the values returned by ```validation_step()```. In pure pytorch, it will be something like this:
+* Similar to ```validation_step()```, lightning also provides a ```validation_epoch_end()``` method, which takes as input the list containing all the values returned by ```validation_step()```. In pure pytorch, these two methods will be as shown below:
 
 ```python
 for batch_idx, batch in val_dataloader:
@@ -538,11 +542,12 @@ with torch.no_grad():
 img = img.permute(1, 2, 0).numpy()
 ```
 
-Get the bounding boxes and its labels:
+Get the predicted bounding boxes and labels:
 
 ```python
 # predicted bounding boxes    
 pred_bbox = out[0]['boxes'].numpy().astype(int)
+# predicted labels
 pred_label = out[0]['scores']
 ```
 
@@ -551,7 +556,7 @@ Draw the predicted bounding boxes on the image:
 ```python
 # draw bounding boxes on the image
 for bbox, label in zip(pred_bbox, pred_label):
-    # check if the predicted label is for car
+    # check if the label corresponding to bbox is for car
     if label>=0.5:
         cv2.rectangle(
             img,
@@ -561,7 +566,7 @@ for bbox, label in zip(pred_bbox, pred_label):
         )
 ```
 
-Now let's visualize the bounding boxes:
+Now let's visualize the image along with the predicted bounding boxes:
 
 ```python
 plt.figure(figsize=(16, 6))
@@ -574,5 +579,5 @@ Output:
 :align: center
 ```
 
-Wohoooo, our model is working🥳.
+Wohoooo, the model detected both cars, its working🥳.
 

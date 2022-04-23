@@ -301,16 +301,16 @@
 <h1>Object detection<a class="headerlink" href="#object-detection" title="Permalink to this headline">¶</a></h1>
 <section id="introduction">
 <h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
-<p>In this chapter we will talk about another task involving images as inputs, we will train a model to detect all objects in a given image, as shown in the below image:</p>
+<p>In this chapter we will train a model to detect cars present in an image. For each car present in the image, the model should predict the bounding box that encloses the car as shown below:</p>
 <img alt="object_detection" class="bg-primary mb-1 align-center" src="_images/object_detect_img.png" />
-<p>For this chapter we will train a model to detect cars in a given image. As shown above, the model should correctly detect all the cars in a given image by predicting the coordinates of the bounding box for the car.</p>
+<p>For each bounding box, the model should predict 4 numbers/coordinates(<code class="docutils literal notranslate"><span class="pre">xmin,</span> <span class="pre">ymin,</span> <span class="pre">xmax,</span> <span class="pre">ymax</span></code>). As you can see from the detailed figure below, <code class="docutils literal notranslate"><span class="pre">xmin</span></code> and <code class="docutils literal notranslate"><span class="pre">ymin</span></code> represents the top left coordinate of the bounding box, where as, <code class="docutils literal notranslate"><span class="pre">xmax</span></code> and <code class="docutils literal notranslate"><span class="pre">ymax</span></code> represents the bottom right coordinates of the bounding box:</p>
 <img alt="object_detection" class="bg-primary mb-1 align-center" src="_images/object_detect_model.png" />
 </section>
 <section id="dataset">
 <h2>Dataset<a class="headerlink" href="#dataset" title="Permalink to this headline">¶</a></h2>
-<p>The dataset we will be using for training a car detecting model can be found <a class="reference external" href="https://www.kaggle.com/datasets/sshikamaru/car-object-detection">here</a>. All the images for our training set is under <code class="docutils literal notranslate"><span class="pre">training_images</span></code> folder and its bounding box coordinates can be found in <code class="docutils literal notranslate"><span class="pre">train_solution_bounding_boxes</span> <span class="pre">(1).csv</span></code>. This is how the csv containing bounding box coordinates look like:</p>
+<p>The dataset we will be using for training can be found <a class="reference external" href="https://www.kaggle.com/datasets/sshikamaru/car-object-detection">here</a>. All the images for our training set is under <code class="docutils literal notranslate"><span class="pre">training_images</span></code> folder and its bounding box coordinates can be found in <code class="docutils literal notranslate"><span class="pre">train_solution_bounding_boxes</span> <span class="pre">(1).csv</span></code>. This is how the csv looks like:</p>
 <img alt="object_detection" class="bg-primary mb-1 align-center" src="_images/obj_detect_ds.png" />
-<p>The first column represents the name of the image and the remaining 4 columns represent the coordinates of the bounding box for that image. The columns <code class="docutils literal notranslate"><span class="pre">xmin</span></code>, <code class="docutils literal notranslate"><span class="pre">ymin</span></code>, <code class="docutils literal notranslate"><span class="pre">xmax</span></code>, <code class="docutils literal notranslate"><span class="pre">ymax</span></code> represents <code class="docutils literal notranslate"><span class="pre">x1</span></code>, <code class="docutils literal notranslate"><span class="pre">y1</span></code>, <code class="docutils literal notranslate"><span class="pre">x2</span></code>, <code class="docutils literal notranslate"><span class="pre">y2</span></code> coordinates resepctively.</p>
+<p>The first column represents the name of the image and the remaining 4 columns represent the coordinates of the bounding box for that image.</p>
 <section id="preparing-the-dataframe">
 <h3>Preparing the dataframe<a class="headerlink" href="#preparing-the-dataframe" title="Permalink to this headline">¶</a></h3>
 <p>First let’s read the csv file:</p>
@@ -323,7 +323,7 @@
 <img alt="object_detection" class="bg-primary mb-1 align-center" src="_images/obj_detect_multi_row.png" />
 <p>This means that there are certain images that has multiple bounding boxes(for multuple cars), here is an image which has multiple rows in the dataframe:</p>
 <img alt="object_detection" class="bg-primary mb-1 align-center" src="_images/obj_detect_multi_img.png" />
-<p>Let’s create a column that contains the area of the bounding boxes, for that we need the height and width of the bounding boxes:</p>
+<p>We will combine all those bounding boxes together, but, before that let’s create a column that contains the area of the bounding boxes, for that we need the height and width of the bounding boxes:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;bbox_width&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;xmax&#39;</span><span class="p">]</span><span class="o">-</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;xmin&#39;</span><span class="p">]</span>
 <span class="n">df</span><span class="p">[</span><span class="s1">&#39;bbox_height&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;ymax&#39;</span><span class="p">]</span><span class="o">-</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;ymin&#39;</span><span class="p">]</span>
 </pre></div>
@@ -332,7 +332,7 @@
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;area&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;bbox_width&#39;</span><span class="p">]</span><span class="o">*</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;bbox_height&#39;</span><span class="p">]</span>
 </pre></div>
 </div>
-<p>We will group all rows with the same image name together, thus, we will get all the bounding boxes for an image from a single row:</p>
+<p>Now we will group and put all bounding boxes of same image in a single row instead of multiple rows:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># group by similar image names</span>
 <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s1">&#39;image&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">agg</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
 <span class="n">df</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -349,8 +349,8 @@
 </section>
 <section id="loading-the-images-and-bounding-boxes">
 <h3>Loading the images and bounding boxes<a class="headerlink" href="#loading-the-images-and-bounding-boxes" title="Permalink to this headline">¶</a></h3>
-<p>Now we will write a data set loading class with pytorch. We will pass the dataframe(either training or validation), root path where the images are present and some augmentations/transforms to apply to the image.</p>
-<p>Before writing the whole dataset loading class, let’s take a sample image and it’s bounding boxes from the dataframe to see what is really happening after each step in the data loading class.</p>
+<p>Now we will write a data set loading class with pytorch. This class will take the dataframe(either training or validation), root path where the images are present and some augmentations/transforms to apply to the image.</p>
+<p>Before writing the whole dataset loading class, let’s take a sample image and it’s bounding boxes from the dataframe to see what is really happening while loading our data.</p>
 <ul class="simple">
 <li><p>First let’s take a sample image containing multiple bounding boxes:</p></li>
 </ul>
@@ -391,9 +391,9 @@
  <span class="n">tensor</span><span class="p">([</span><span class="mf">563.4964</span><span class="p">,</span> <span class="mf">177.2539</span><span class="p">,</span> <span class="mf">652.5210</span><span class="p">,</span> <span class="mf">213.9334</span><span class="p">]))</span>
 </pre></div>
 </div>
-<p>Each tensor represents the xmin, ymin, xmax and ymax of a bounding box. So here we have 7 bounding boxes in total.</p>
+<p>Each tensor represents the <code class="docutils literal notranslate"><span class="pre">xmin,</span> <span class="pre">ymin,</span> <span class="pre">xmax</span></code> and <code class="docutils literal notranslate"><span class="pre">ymax</span></code> of a bounding box. Having 7 tensors means that we have 7 bounding boxes in total.</p>
 <ul class="simple">
-<li><p>Now we will stack all the above tensors to form a single tensor of shape (7, 4):</p></li>
+<li><p>Now we will stack all the above tensors into a single tensor of shape (7, 4):</p></li>
 </ul>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">bboxes</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">bboxes</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">bboxes</span><span class="p">)</span>
@@ -410,17 +410,17 @@
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>Similar to classification models, the object detection model we are going to use(faster rcnn with resnet50 backbone) requires the class/label to which each bounding box belongs to. So corresponding to each bounding box in our image, we should provide a label. In our case we only have bounding boxes for car, so we only have one label. The label 0 is reserved for background, so we will use 1 as the label for car.</p></li>
+<li><p>We will be using a faster rcnn model for our object detection task. This model requires the class/label corresponding to each bounding box. Thus, corresponding to each bounding box in an image, we should provide a label. In our case we only have bounding boxes for car, so we only have one label. The label 0 is reserved for background, so we will use 1 as the label for car.</p></li>
 </ul>
-<p>Let’s create a tensor containing 1s(car label) that has the same length as the number of bounding boxes in the image:</p>
+<p>So, let’s create a tensor containing 1s that has the same length as the number of bounding boxes in the image:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">labels</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">bboxes</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>So, let’s define the transforms/augmentations that we wish to apply to the image. We will use the ‘albumentations’ library for this. We will resize the image and convert it to tensors.</p></li>
+<li><p>Now, let’s define the transforms/augmentations that we wish to apply to the image. We will use the ‘albumentations’ library for this. We will resize the image and convert it to tensors.</p></li>
 </ul>
-<p>Since this is an object detection task, we cannot simply resize the image without resizing the bounding boxes. But albumentations will automatically take care of this if we pass the <code class="docutils literal notranslate"><span class="pre">bbox</span></code> parameter. We should pass the bounding box format we are using as well as the key to store the labels.</p>
-<p>The bounding format we are using is <code class="docutils literal notranslate"><span class="pre">(xmin,</span> <span class="pre">ymin,</span> <span class="pre">xmax,</span> <span class="pre">ymax)</span></code> which is the pascal voc format.</p>
+<p>Since this is an object detection task, we cannot simply resize the image without resizing the bounding boxes. But albumentations will automatically take care of this if we pass the <code class="docutils literal notranslate"><span class="pre">bbox</span></code> parameter to our transforms, it requires the bounding box format we are using as well as the key to store the labels.</p>
+<p><strong>Note</strong>: The bounding box format we are using is <code class="docutils literal notranslate"><span class="pre">(xmin,</span> <span class="pre">ymin,</span> <span class="pre">xmax,</span> <span class="pre">ymax)</span></code> which is the ‘pascal voc’ format.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">albumentations</span> <span class="k">as</span> <span class="nn">A</span>
 <span class="kn">from</span> <span class="nn">albumentations.pytorch.transforms</span> <span class="kn">import</span> <span class="n">ToTensorV2</span>
 
@@ -436,9 +436,9 @@
 </div>
 <p>The output will be a dictionary containing labels, augmented image and bounding boxes.</p>
 <ul class="simple">
-<li><p>After augmentation, the bounding boxes are stores in a list as tuples. But our model expects them as stacked tensors as we did earlier(before augmentation). So, we have to again make the bounding boxes in that format.</p></li>
+<li><p>After augmentation, the bounding boxes are stores in a list as tuples. But our model expects them as stacked tensors. So, we have to convert the bounding boxes to that format.</p></li>
 </ul>
-<p>For that we need to convert each bounding box coordinate list to tensors, store them in a tuple abd then stack them to a single tensor:</p>
+<p>We will convert each bounding box to tensor format, store them in a tuple and then stack them to a single tensor as we did earlier:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># convert to tensor</span>
 <span class="n">bboxes</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">,</span> <span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="n">augmented</span><span class="p">[</span><span class="s1">&#39;bboxes&#39;</span><span class="p">]))</span>
 <span class="c1"># store as tuples</span>
@@ -455,22 +455,25 @@
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>Our image and the bounding boxes are ready. Our model expects some more elements apart from the bounding boxes as the targets, which includes, ‘labels’, ‘area’ and ‘iscrowd’.</p></li>
+<li><p>Our image, bounding boxes and its labels are ready. But the model expects some more elements apart from these, which includes ‘area’ and ‘iscrowd’.</p></li>
 </ul>
-<p>We are familiar with ‘labels’ and ‘area’(area of the bounding box). But what is this ‘is crowd’ element?</p>
-<p>Similar to ‘labels’, we should have a value for ‘iscrowd’ corresponding to each bounding box. If ‘iscrowd’ is 1, that bounding box is not considered by the model. But we want the model to consider all bounding boxes. So we will put the value 0 corresponding to each bounding box:</p>
+<p>The term ‘area’ is nothing but the area of the bounding box. We have already calculated it earlier, so let’s just take it and convert to a pytorch tensor:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">area</span> <span class="o">=</span> <span class="n">sample</span><span class="p">[</span><span class="s1">&#39;area&#39;</span><span class="p">]</span>
+<span class="n">area</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span><span class="n">area</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>But what is this ‘iscrowd’ element? This element is helpful if we want our model to exclude certain bounding boxes.</p>
+<p>If ‘iscrowd’ is 1, that bounding box is not considered by the model. But we want the model to consider all bounding boxes. So we will put the value 0 for ‘iscrowd’ corresponding to each bounding box:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">iscrowd</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">bboxes</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">int</span><span class="p">)</span>
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>Since everything is ready lets create a dictionary and store all the target data there:</p></li>
+<li><p>Since everything is ready, lets create a dictionary and store all the target data there:</p></li>
 </ul>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">area</span> <span class="o">=</span> <span class="n">sample</span><span class="p">[</span><span class="s1">&#39;area&#39;</span><span class="p">]</span>
-
-<span class="n">target</span> <span class="o">=</span> <span class="p">{}</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">target</span> <span class="o">=</span> <span class="p">{}</span>
 <span class="n">target</span><span class="p">[</span><span class="s1">&#39;boxes&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">bboxes</span>
 <span class="n">target</span><span class="p">[</span><span class="s1">&#39;labels&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">labels</span>
-<span class="n">target</span><span class="p">[</span><span class="s1">&#39;area&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span><span class="n">area</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+<span class="n">target</span><span class="p">[</span><span class="s1">&#39;area&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">area</span>
 <span class="n">target</span><span class="p">[</span><span class="s1">&#39;iscrowd&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">iscrowd</span>
 </pre></div>
 </div>
@@ -528,7 +531,7 @@
         <span class="k">return</span> <span class="n">img</span><span class="p">,</span> <span class="n">target</span>
 </pre></div>
 </div>
-<p>Finally, let’s load the training and validation dataset:</p>
+<p>Finally, let’s load the training and validation datasets:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">train_ds</span> <span class="o">=</span> <span class="n">LoadDataset</span><span class="p">(</span><span class="n">train_df</span><span class="p">,</span> <span class="n">img_root_path</span><span class="p">,</span> <span class="n">transforms</span><span class="p">)</span>
 <span class="n">val_ds</span> <span class="o">=</span> <span class="n">LoadDataset</span><span class="p">(</span><span class="n">val_df</span><span class="p">,</span> <span class="n">img_root_path</span><span class="p">,</span> <span class="n">transforms</span><span class="p">)</span>
 </pre></div>
@@ -537,7 +540,7 @@
 </section>
 <section id="training-the-model">
 <h2>Training the model<a class="headerlink" href="#training-the-model" title="Permalink to this headline">¶</a></h2>
-<p>It’s time to build our model class using pytorch lightning :) It’s almost similar to what we did in the earlier chapters. The only difference is the model creation. We will use a pretrained faster rcnn model with resnet50 backbone by modifying the number of classes in the predictor. In our case, we only have two classes, 0(background) and 1(car):</p>
+<p>It’s time to build our model class using pytorch lightning :) This is almost similar to what we did in the earlier chapters. For the model, we will use a pretrained faster rcnn model with <code class="docutils literal notranslate"><span class="pre">resnet50</span></code> backbone. In our case, we only have two classes, 0 for background and 1 for car, thus, we will slightly modify the number of units in the last layer as shown below:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torchvision.models.detection</span> <span class="kn">import</span> <span class="n">fasterrcnn_resnet50_fpn</span>
 <span class="kn">from</span> <span class="nn">torchvision.models.detection.faster_rcnn</span> <span class="kn">import</span> <span class="n">FastRCNNPredictor</span>
 
@@ -547,14 +550,13 @@
 <span class="c1"># get input features of prediction layer</span>
 <span class="n">in_features</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">roi_heads</span><span class="o">.</span><span class="n">box_predictor</span><span class="o">.</span><span class="n">cls_score</span><span class="o">.</span><span class="n">in_features</span>
 
-<span class="c1"># modify the predictor layer with number of classes</span>
+<span class="c1"># modify the prediction layer with required number of classes</span>
 <span class="n">model</span><span class="o">.</span><span class="n">roi_heads</span><span class="o">.</span><span class="n">box_predictor</span> <span class="o">=</span> <span class="n">FastRCNNPredictor</span><span class="p">(</span><span class="n">in_features</span><span class="p">,</span> <span class="n">num_classes</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>The <code class="docutils literal notranslate"><span class="pre">FastRCNNPredictor</span></code> of <code class="docutils literal notranslate"><span class="pre">box_predictor</span></code> layer is modified to make predictions for only 2 classes.</p>
 <p>Now let’s build the model class.</p>
 <ul class="simple">
-<li><p>As usual we will write our <code class="docutils literal notranslate"><span class="pre">__init__</span></code> method, which includes the batch size, learning rate and model. For model creation, we will use a method called <code class="docutils literal notranslate"><span class="pre">create_model()</span></code> which will contain the code for model creation.</p></li>
+<li><p>As usual we will write our <code class="docutils literal notranslate"><span class="pre">__init__</span></code> method, which includes the batch size, learning rate and the model. For model creation, we will use a method called <code class="docutils literal notranslate"><span class="pre">create_model()</span></code> which will contain the code we’ve written above.</p></li>
 </ul>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pytorch_lightning</span> <span class="kn">import</span> <span class="n">LightningModule</span>
 
@@ -581,7 +583,7 @@
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>Since the number of bounding boxes may be different for each image, we will need a <code class="docutils literal notranslate"><span class="pre">collate_fn</span></code> to pass to our dataloaders. It’s just converting our batches to tuples.</p></li>
+<li><p>The number of bounding boxes may be different for each image, so, we will need a <code class="docutils literal notranslate"><span class="pre">collate_fn</span></code> to pass to our dataloaders.</p></li>
 </ul>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="kn">import</span> <span class="n">DataLoader</span>
 
@@ -607,7 +609,7 @@
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>Let’s configure our <code class="docutils literal notranslate"><span class="pre">AdamW</span></code> optimizer now:</p></li>
+<li><p>Now we will configure our <code class="docutils literal notranslate"><span class="pre">AdamW</span></code> optimizer.</p></li>
 </ul>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">ObjectDetector</span><span class="p">(</span><span class="n">LightningModule</span><span class="p">):</span>
     <span class="k">def</span> <span class="nf">configure_optimizers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -615,7 +617,7 @@
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>Now it’s time to write our training step. In this case, instaed of giving only the predictions, the model outputs a bunch of loss values as shown below:</p></li>
+<li><p>Finally, it’s time to write our training step. But here, instead of giving only the predictions, the model outputs a bunch of loss values as shown below:</p></li>
 </ul>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s1">&#39;loss_classifier&#39;</span><span class="p">:</span> <span class="n">tensor</span><span class="p">(</span><span class="mf">0.5703</span><span class="p">,</span> <span class="n">grad_fn</span><span class="o">=&lt;</span><span class="n">NllLossBackward</span><span class="o">&gt;</span><span class="p">),</span>
  <span class="s1">&#39;loss_box_reg&#39;</span><span class="p">:</span> <span class="n">tensor</span><span class="p">(</span><span class="mf">0.1132</span><span class="p">,</span> <span class="n">grad_fn</span><span class="o">=&lt;</span><span class="n">DivBackward0</span><span class="o">&gt;</span><span class="p">),</span>
@@ -635,10 +637,10 @@
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>During validation, pytorch lightning automatically calls <code class="docutils literal notranslate"><span class="pre">model.eval()</span></code> for us. While doing this, the behaviour of the model will change again. The model will output the bounding box prediction and probabilites for each label instead of the losses. So we need to take this into account while implementing the validation step.</p></li>
+<li><p>During validation, pytorch lightning automatically calls <code class="docutils literal notranslate"><span class="pre">model.eval()</span></code> for us. While doing this, the behaviour of the model will change again. This time, the model will output the bounding box prediction and probabilites of our label(car). So we need to take this into account while implementing the validation step.</p></li>
 </ul>
-<p>So, during validation, we take the predicted bounding box coordinates and the target bounding boxes to calculate <a class="reference external" href="https://en.wikipedia.org/wiki/File:Intersection_over_Union_-_visual_equation.png">intersection over union</a>(IOU) which is a commonly used metric for object detection. We will be using <a class="reference external" href="https://pytorch.org/vision/main/generated/torchvision.ops.box_iou.html">box_iou</a> function from torchvision for calculating IOU.</p>
-<p>IOU varies from 0 to 1, values closer to 0 are bad predictions whereas the ones closer to 1 are good predictions.</p>
+<p>So, during validation, we take the predicted bounding box coordinates and the target bounding boxes to calculate <a class="reference external" href="https://en.wikipedia.org/wiki/File:Intersection_over_Union_-_visual_equation.png">intersection over union(IOU)</a> which is a commonly used metric for object detection. We will be using <a class="reference external" href="https://pytorch.org/vision/main/generated/torchvision.ops.box_iou.html">box_iou</a> function from torchvision for calculating IOU.</p>
+<p>IOU varies from 0 to 1, values closer to 0 are considered bad whereas the ones closer to 1 are considered good predictions.</p>
 <p>In the validation step, we will calculate the IOU for each batch and return the mean IOU for that batch:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torchvision.ops</span> <span class="kn">import</span> <span class="n">box_iou</span>
 
@@ -655,7 +657,7 @@
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>In pytorch lightning, there is a <code class="docutils literal notranslate"><span class="pre">validation_epoch_end()</span></code>, which takes as input the list containing all the values returned by <code class="docutils literal notranslate"><span class="pre">validation_step()</span></code>. In pure pytorch, it will be something like this:</p></li>
+<li><p>Similar to <code class="docutils literal notranslate"><span class="pre">validation_step()</span></code>, lightning also provides a <code class="docutils literal notranslate"><span class="pre">validation_epoch_end()</span></code> method, which takes as input the list containing all the values returned by <code class="docutils literal notranslate"><span class="pre">validation_step()</span></code>. In pure pytorch, these two methods will be as shown below:</p></li>
 </ul>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">batch_idx</span><span class="p">,</span> <span class="n">batch</span> <span class="ow">in</span> <span class="n">val_dataloader</span><span class="p">:</span>
     <span class="n">batch_out</span> <span class="o">=</span> <span class="n">validation_step</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">batch_idx</span><span class="p">)</span>
@@ -769,16 +771,17 @@
 <span class="n">img</span> <span class="o">=</span> <span class="n">img</span><span class="o">.</span><span class="n">permute</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
 </pre></div>
 </div>
-<p>Get the bounding boxes and its labels:</p>
+<p>Get the predicted bounding boxes and labels:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># predicted bounding boxes    </span>
 <span class="n">pred_bbox</span> <span class="o">=</span> <span class="n">out</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;boxes&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+<span class="c1"># predicted labels</span>
 <span class="n">pred_label</span> <span class="o">=</span> <span class="n">out</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;scores&#39;</span><span class="p">]</span>
 </pre></div>
 </div>
 <p>Draw the predicted bounding boxes on the image:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># draw bounding boxes on the image</span>
 <span class="k">for</span> <span class="n">bbox</span><span class="p">,</span> <span class="n">label</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">pred_bbox</span><span class="p">,</span> <span class="n">pred_label</span><span class="p">):</span>
-    <span class="c1"># check if the predicted label is for car</span>
+    <span class="c1"># check if the label corresponding to bbox is for car</span>
     <span class="k">if</span> <span class="n">label</span><span class="o">&gt;=</span><span class="mf">0.5</span><span class="p">:</span>
         <span class="n">cv2</span><span class="o">.</span><span class="n">rectangle</span><span class="p">(</span>
             <span class="n">img</span><span class="p">,</span>
@@ -788,14 +791,14 @@
         <span class="p">)</span>
 </pre></div>
 </div>
-<p>Now let’s visualize the bounding boxes:</p>
+<p>Now let’s visualize the image along with the predicted bounding boxes:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Output:</p>
 <img alt="object_detection" class="bg-primary mb-1 align-center" src="_images/object_detect_inference.png" />
-<p>Wohoooo, our model is working🥳.</p>
+<p>Wohoooo, the model detected both cars, its working🥳.</p>
 </section>
 </section>
 
