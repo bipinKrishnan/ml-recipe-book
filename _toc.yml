@@ -1,10 +1,9 @@
 format: jb-book
-root: index
+root: about
 
 parts:
   - caption: Natural language processing
     chapters:
-    - file: nlp_chapter_0
     - file: named_entity_recognition
     - file: masked_language_modeling
     - file: translation
@@ -17,7 +16,6 @@ parts:
   
   - caption: Computer vision
     chapters:
-    - file: cv_chapter_0
     - file: image_classification
     - file: image_segmentation
     - file: object_detection
