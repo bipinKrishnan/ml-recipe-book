@@ -32,6 +32,8 @@ The final section contains a chapter that trains a model to generate a caption g
 
 ```{note}
 Some chapters may point to topics that are described in the previous chapters. So, it is good to go through each chapter in order(as displayed in the sidebar of the book).
+
+Notebooks containing code for each chapter can be found [here](https://github.com/bipinKrishnan/ml-powered-apps/tree/main/notebooks).
 ```
 
 ### Why this book was written
@@ -44,7 +46,7 @@ This book can be useful in the following two ways:
 
 ### Feedback and support
 
-Everything in the book is discussed in the most simplest language possible. If you feel something is missing or can be improved, please reach out to me personally or raise an issue in the [github repo](https://github.com/bipinKrishnan/ml-powered-apps/issues).
+Everything in the book is discussed in the most simplest language possible. If you feel something is missing or can be improved, please reach out to me personally(via [twitter](https://twitter.com/bkrish_)/[linkedin](https://www.linkedin.com/in/bipin-krishnan)) or raise an issue in the [github repo](https://github.com/bipinKrishnan/ml-powered-apps/issues).
 
 If you like what I'm doing, star🌟 the [repo](https://github.com/bipinKrishnan/ml-powered-apps) and show some love❤️. 
 
