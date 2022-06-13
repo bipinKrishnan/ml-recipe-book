@@ -26,7 +26,7 @@ The book has the following contents:
     * Masked language modelling
     * Machine translation
     * Summarization
-    * Causal language modelling
+    * Causal language modeling
 
 2. **Image & Text**
 
