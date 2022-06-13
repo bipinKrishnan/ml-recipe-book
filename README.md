@@ -20,7 +20,7 @@ You can read the book right from your browser by going [here](#contents).
 
 The book has the following contents:
 
-1. Natural language processing
+1. **Natural language processing**
 
     * Named entity recognition
     * Masked language modelling
@@ -28,11 +28,11 @@ The book has the following contents:
     * Summarization
     * Causal language modelling
 
-2. Image & Text
+2. **Image & Text**
 
     * Image captioning
 
-3. Computer vision
+3. **Computer vision**
 
     * Image classification
     * Image segmentation
