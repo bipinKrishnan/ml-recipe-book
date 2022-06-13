@@ -23,7 +23,7 @@ The book has the following contents:
 1. **Natural language processing**
 
     * Named entity recognition
-    * Masked language modelling
+    * Masked language modeling
     * Machine translation
     * Summarization
     * Causal language modeling
