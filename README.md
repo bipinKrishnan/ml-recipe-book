@@ -2,7 +2,7 @@
 
 <img src="logo.png" width="400px">
    
-**A book containing step by step instructions to train deep learning models for common tasks**
+**A book containing step by step instructions to train deep learning models for a variety of tasks**
 
 <p align="center">
    <a href="#read-the-book">Read the book</a> |
