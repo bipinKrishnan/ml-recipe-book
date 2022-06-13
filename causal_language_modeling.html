@@ -302,7 +302,7 @@
 <span class="n">tokenizer</span> <span class="o">=</span> <span class="n">AutoTokenizer</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="s2">&quot;huggingface-course/code-search-net-tokenizer&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>We will write a function to tokenize our dataset. If we truncate our dataset, we will loose a lot of information. Instead, we will combine the rows in our dataset and divide it into chunks of length 128(as we did in the masked language modelling chapter).</p>
+<p>We will write a function to tokenize our dataset. If we truncate our dataset, we will loose a lot of information. Instead, we will combine the rows in our dataset and divide it into chunks of length 128(as we did in the masked language modeling chapter).</p>
 <p>After preprocessing the dataset, each row will have a length of 128.</p>
 <p>Let’s tokenize a single example and see the outputs:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">sample</span> <span class="o">=</span> <span class="n">raw_datasets</span><span class="p">[</span><span class="s1">&#39;train&#39;</span><span class="p">][</span><span class="s1">&#39;content&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
@@ -375,7 +375,7 @@
 </pre></div>
 </div>
 <p>We haven’t set any value for the <code class="docutils literal notranslate"><span class="pre">pad_token</span></code> in our tokenizer(data collator will throw an error otherwise). We will set the <code class="docutils literal notranslate"><span class="pre">eos_token</span></code> as our <code class="docutils literal notranslate"><span class="pre">pad_token</span></code>.</p>
-<p>We will also load the data collator for language modelling,</p>
+<p>We will also load the data collator for language modeling,</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">transformers</span> <span class="kn">import</span> <span class="n">DataCollatorForLanguageModeling</span>
 
 <span class="n">tokenizer</span><span class="o">.</span><span class="n">pad_token</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="o">.</span><span class="n">eos_token</span>

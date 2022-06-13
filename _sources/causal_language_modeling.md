@@ -44,7 +44,7 @@ from transformers import AutoTokenizer
 tokenizer = AutoTokenizer.from_pretrained("huggingface-course/code-search-net-tokenizer")
 ```
 
-We will write a function to tokenize our dataset. If we truncate our dataset, we will loose a lot of information. Instead, we will combine the rows in our dataset and divide it into chunks of length 128(as we did in the masked language modelling chapter).
+We will write a function to tokenize our dataset. If we truncate our dataset, we will loose a lot of information. Instead, we will combine the rows in our dataset and divide it into chunks of length 128(as we did in the masked language modeling chapter).
 
 After preprocessing the dataset, each row will have a length of 128.
 
@@ -135,7 +135,7 @@ model = GPT2LMHeadModel(config)
 ```
 We haven't set any value for the ```pad_token``` in our tokenizer(data collator will throw an error otherwise). We will set the ```eos_token``` as our ```pad_token```.
 
-We will also load the data collator for language modelling,
+We will also load the data collator for language modeling,
 
 ```python
 from transformers import DataCollatorForLanguageModeling
