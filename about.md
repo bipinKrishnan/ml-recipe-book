@@ -31,9 +31,11 @@ The computer vision section covers the most common tasks under this domain. The 
 The final section contains a chapter that trains a model to generate a caption given an image. It will have a vision transformer as the encoder and gpt-2 model as the decoder. 
 
 ```{note}
-Some chapters may point to topics that are described in the previous chapters. So, it is good to go through each chapter in order(as displayed in the sidebar of the book).
+1. Some chapters may point to topics that are described in the previous chapters. So, it is good to go through each chapter in order(as displayed in the sidebar of the book).
 
-Notebooks containing code for each chapter can be found [here](https://github.com/bipinKrishnan/ml-powered-apps/tree/main/notebooks).
+2. Notebooks containing code for each chapter can be found [here](https://github.com/bipinKrishnan/ml-powered-apps/tree/main/notebooks).
+
+3. If you face any version issue with the libraries discussed in the book, you can refer to this [requirements file](https://github.com/bipinKrishnan/ml-powered-apps/blob/main/ml_book_final_requirements.txt) to get the list of libraries and corresponding versions used while writing this book.
 ```
 
 ### Why this book was written
