@@ -1,0 +1,924 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>LRFinder</title>
+    
+  <link href="../_static/css/theme.css" rel="stylesheet">
+  <link href="../_static/css/index.ff1ffe594081f20da1ef19478df9384b.css" rel="stylesheet">
+
+    
+  <link rel="stylesheet"
+    href="../_static/vendor/fontawesome/5.13.0/css/all.min.css">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+
+    
+      
+
+    
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-book-theme.css?digest=c3fdc42140077d1ad13ad2f1588a4309" />
+    <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-thebe.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/panels-variables.06eb56fa6e07937060861dad626602ad.css" />
+    
+  <link rel="preload" as="script" href="../_static/js/index.be7d3bbb2ef33a8344ce.js">
+
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/togglebutton.js"></script>
+    <script src="../_static/clipboard.min.js"></script>
+    <script src="../_static/copybutton.js"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
+    <script src="../_static/sphinx-book-theme.12a9622fbb08dcb3a2a40b2c02b83a57.js"></script>
+    <script async="async" src="https://unpkg.com/thebe@0.5.1/lib/index.js"></script>
+    <script>
+        const thebe_selector = ".thebe"
+        const thebe_selector_input = "pre"
+        const thebe_selector_output = ".output"
+    </script>
+    <script async="async" src="../_static/sphinx-thebe.js"></script>
+    <link rel="canonical" href="https://github.com/notebooks/summarization.html" />
+    <link rel="author" title="About these documents" href="../about.html" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="docsearch:language" content="None">
+    
+
+    <!-- Google Analytics -->
+    
+  </head>
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="80">
+    
+    <div class="container-fluid" id="banner"></div>
+
+    
+
+    <div class="container-xl">
+      <div class="row">
+          
+<div class="col-12 col-md-3 bd-sidebar site-navigation show" id="site-navigation">
+    
+        <div class="navbar-brand-box">
+    <a class="navbar-brand text-wrap" href="../index.html">
+      
+        <!-- `logo` is deprecated in Sphinx 4.0, so remove this when we stop supporting 3 -->
+        
+      
+      
+      <img src="../_static/logo.png" class="logo" alt="logo">
+      
+      
+    </a>
+</div><form class="bd-search d-flex align-items-center" action="../search.html" method="get">
+  <i class="icon fas fa-search"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search this book..." aria-label="Search this book..." autocomplete="off" >
+</form><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item active">
+        <ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../about.html">
+   About this book
+  </a>
+ </li>
+</ul>
+<p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
+  Natural language processing
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../named_entity_recognition.html">
+   Named entity recognition
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../masked_language_modeling.html">
+   Masked language modelling
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../translation.html">
+   Machine translation
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../summarization.html">
+   Summarization
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../causal_language_modeling.html">
+   Causal language modeling
+  </a>
+ </li>
+</ul>
+<p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
+  Image &amp; Text
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../image_captioning.html">
+   Image captioning
+  </a>
+ </li>
+</ul>
+<p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
+  Computer vision
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../image_classification.html">
+   Image classification
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../image_segmentation.html">
+   Image segmentation
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../object_detection.html">
+   Object detection
+  </a>
+ </li>
+</ul>
+
+    </div>
+</nav> <!-- To handle the deprecated key -->
+
+<div class="navbar_extra_footer">
+  Powered by <a href="https://jupyterbook.org">Jupyter Book</a>
+</div>
+
+</div>
+
+
+          
+
+
+          
+<main class="col py-md-3 pl-md-4 bd-content overflow-auto" role="main">
+    
+    <div class="topbar container-xl fixed-top">
+    <div class="topbar-contents row">
+        <div class="col-12 col-md-3 bd-topbar-whitespace site-navigation show"></div>
+        <div class="col pl-md-4 topbar-main">
+            
+            <button id="navbar-toggler" class="navbar-toggler ml-0" type="button" data-toggle="collapse"
+                data-toggle="tooltip" data-placement="bottom" data-target=".site-navigation" aria-controls="navbar-menu"
+                aria-expanded="true" aria-label="Toggle navigation" aria-controls="site-navigation"
+                title="Toggle navigation" data-toggle="tooltip" data-placement="left">
+                <i class="fas fa-bars"></i>
+                <i class="fas fa-arrow-left"></i>
+                <i class="fas fa-arrow-up"></i>
+            </button>
+            
+            
+<div class="dropdown-buttons-trigger">
+    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn" aria-label="Download this page"><i
+            class="fas fa-download"></i></button>
+
+    <div class="dropdown-buttons">
+        <!-- ipynb file if we had a myst markdown file -->
+        
+        <!-- Download raw file -->
+        <a class="dropdown-buttons" href="../_sources/notebooks/summarization.ipynb"><button type="button"
+                class="btn btn-secondary topbarbtn" title="Download source file" data-toggle="tooltip"
+                data-placement="left">.ipynb</button></a>
+        <!-- Download PDF via print -->
+        <button type="button" id="download-print" class="btn btn-secondary topbarbtn" title="Print to PDF"
+            onClick="window.print()" data-toggle="tooltip" data-placement="left">.pdf</button>
+    </div>
+</div>
+
+            <!-- Source interaction buttons -->
+
+<div class="dropdown-buttons-trigger">
+    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn"
+        aria-label="Connect with source repository"><i class="fab fa-github"></i></button>
+    <div class="dropdown-buttons sourcebuttons">
+        <a class="repository-button"
+            href="https://github.com/bipinkrishnan/ml-powered-apps"><button type="button" class="btn btn-secondary topbarbtn"
+                data-toggle="tooltip" data-placement="left" title="Source repository"><i
+                    class="fab fa-github"></i>repository</button></a>
+        
+        
+    </div>
+</div>
+
+            <!-- Full screen (wrap in <a> to have style consistency -->
+
+<a class="full-screen-button"><button type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip"
+        data-placement="bottom" onclick="toggleFullScreen()" aria-label="Fullscreen mode"
+        title="Fullscreen mode"><i
+            class="fas fa-expand"></i></button></a>
+
+            <!-- Launch buttons -->
+
+<div class="dropdown-buttons-trigger">
+    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn"
+        aria-label="Launch interactive content"><i class="fas fa-rocket"></i></button>
+    <div class="dropdown-buttons">
+        
+        <a class="binder-button" href="https://mybinder.org/v2/gh/bipinkrishnan/ml-powered-apps/master?urlpath=tree/notebooks/summarization.ipynb"><button type="button"
+                class="btn btn-secondary topbarbtn" title="Launch Binder" data-toggle="tooltip"
+                data-placement="left"><img class="binder-button-logo"
+                    src="../_static/images/logo_binder.svg"
+                    alt="Interact on binder">Binder</button></a>
+        
+        
+        
+        
+    </div>
+</div>
+
+        </div>
+
+        <!-- Table of contents -->
+        <div class="d-none d-md-block col-md-2 bd-toc show">
+            
+        </div>
+    </div>
+</div>
+    <div id="main-content" class="row">
+        <div class="col-12 col-md-9 pl-md-3 pr-md-0">
+        
+              <div>
+                
+  <div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span>pip install -q datasets accelerate wandb rouge_score
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">datasets</span> <span class="kn">import</span> <span class="n">load_dataset</span><span class="p">,</span> <span class="n">DatasetDict</span><span class="p">,</span> <span class="n">concatenate_datasets</span><span class="p">,</span> <span class="n">load_metric</span>
+<span class="kn">from</span> <span class="nn">transformers</span> <span class="kn">import</span> <span class="n">AutoTokenizer</span><span class="p">,</span> <span class="n">DataCollatorForSeq2Seq</span><span class="p">,</span> <span class="n">AutoModelForSeq2SeqLM</span>
+
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="kn">import</span> <span class="n">DataLoader</span>
+
+<span class="kn">from</span> <span class="nn">accelerate</span> <span class="kn">import</span> <span class="n">Accelerator</span>
+<span class="kn">import</span> <span class="nn">nltk</span>
+<span class="kn">import</span> <span class="nn">wandb</span>
+<span class="kn">from</span> <span class="nn">tqdm.auto</span> <span class="kn">import</span> <span class="n">tqdm</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">english_dataset</span> <span class="o">=</span> <span class="n">load_dataset</span><span class="p">(</span><span class="s2">&quot;amazon_reviews_multi&quot;</span><span class="p">,</span> <span class="s2">&quot;en&quot;</span><span class="p">)</span>
+<span class="n">french_dataset</span> <span class="o">=</span> <span class="n">load_dataset</span><span class="p">(</span><span class="s2">&quot;amazon_reviews_multi&quot;</span><span class="p">,</span> <span class="s2">&quot;fr&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">english_dataset</span><span class="o">.</span><span class="n">set_format</span><span class="p">(</span><span class="s1">&#39;pandas&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">english_dataset</span><span class="p">[</span><span class="s1">&#39;train&#39;</span><span class="p">][:][</span><span class="s1">&#39;product_category&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">english_dataset</span><span class="o">.</span><span class="n">reset_format</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">filter_reviews</span><span class="p">(</span><span class="n">examples</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">examples</span><span class="p">[</span><span class="s1">&#39;product_category&#39;</span><span class="p">]</span><span class="o">==</span><span class="s1">&#39;kitchen&#39;</span>
+
+<span class="n">english_dataset</span> <span class="o">=</span> <span class="n">english_dataset</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">filter_reviews</span><span class="p">)</span>
+<span class="n">french_dataset</span> <span class="o">=</span> <span class="n">french_dataset</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">filter_reviews</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">english_dataset</span><span class="p">[</span><span class="s1">&#39;train&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">shuffle</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="mi">42</span><span class="p">)[:</span><span class="mi">3</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">checkpoint</span> <span class="o">=</span> <span class="s2">&quot;google/mt5-small&quot;</span>
+
+<span class="n">tokenizer</span> <span class="o">=</span> <span class="n">AutoTokenizer</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="n">checkpoint</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">final_dataset</span> <span class="o">=</span> <span class="n">DatasetDict</span><span class="p">()</span>
+
+<span class="k">for</span> <span class="n">split</span> <span class="ow">in</span> <span class="n">english_dataset</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+    <span class="n">final_dataset</span><span class="p">[</span><span class="n">split</span><span class="p">]</span> <span class="o">=</span> <span class="n">concatenate_datasets</span><span class="p">([</span><span class="n">english_dataset</span><span class="p">[</span><span class="n">split</span><span class="p">],</span> <span class="n">french_dataset</span><span class="p">[</span><span class="n">split</span><span class="p">]])</span>
+    <span class="n">final_dataset</span><span class="p">[</span><span class="n">split</span><span class="p">]</span> <span class="o">=</span> <span class="n">final_dataset</span><span class="p">[</span><span class="n">split</span><span class="p">]</span><span class="o">.</span><span class="n">shuffle</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">final_dataset</span><span class="p">[</span><span class="s1">&#39;train&#39;</span><span class="p">][:</span><span class="mi">3</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">final_dataset</span> <span class="o">=</span> <span class="n">final_dataset</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="s1">&#39;review_title&#39;</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mi">3</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">max_input_length</span> <span class="o">=</span> <span class="mi">512</span>
+<span class="n">max_output_length</span> <span class="o">=</span> <span class="mi">30</span>
+
+<span class="k">def</span> <span class="nf">tokenize</span><span class="p">(</span><span class="n">examples</span><span class="p">):</span>
+    <span class="n">inputs</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="p">(</span><span class="n">examples</span><span class="p">[</span><span class="s1">&#39;review_body&#39;</span><span class="p">],</span> <span class="n">truncation</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">max_length</span><span class="o">=</span><span class="n">max_input_length</span><span class="p">)</span>
+    
+    <span class="k">with</span> <span class="n">tokenizer</span><span class="o">.</span><span class="n">as_target_tokenizer</span><span class="p">():</span>
+        <span class="n">labels</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="p">(</span><span class="n">examples</span><span class="p">[</span><span class="s1">&#39;review_title&#39;</span><span class="p">],</span> <span class="n">truncation</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">max_length</span><span class="o">=</span><span class="n">max_output_length</span><span class="p">)</span>
+        
+    <span class="n">inputs</span><span class="p">[</span><span class="s1">&#39;labels&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">labels</span><span class="p">[</span><span class="s1">&#39;input_ids&#39;</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">inputs</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">tokenized_datasets</span> <span class="o">=</span> <span class="n">final_dataset</span><span class="o">.</span><span class="n">map</span><span class="p">(</span>
+    <span class="n">tokenize</span><span class="p">,</span> 
+    <span class="n">batched</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> 
+    <span class="n">remove_columns</span><span class="o">=</span><span class="n">final_dataset</span><span class="p">[</span><span class="s1">&#39;train&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">column_names</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">bs</span> <span class="o">=</span> <span class="mi">8</span>
+
+<span class="n">model</span> <span class="o">=</span> <span class="n">AutoModelForSeq2SeqLM</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="n">checkpoint</span><span class="p">)</span>
+<span class="n">collate_fn</span> <span class="o">=</span> <span class="n">DataCollatorForSeq2Seq</span><span class="p">(</span><span class="n">tokenizer</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">)</span>
+
+<span class="n">train_dl</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span>
+    <span class="n">tokenized_datasets</span><span class="p">[</span><span class="s1">&#39;train&#39;</span><span class="p">],</span> 
+    <span class="n">batch_size</span><span class="o">=</span><span class="n">bs</span><span class="p">,</span> 
+    <span class="n">shuffle</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">collate_fn</span><span class="o">=</span><span class="n">collate_fn</span>
+<span class="p">)</span>
+<span class="n">val_dl</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span>
+    <span class="n">tokenized_datasets</span><span class="p">[</span><span class="s1">&#39;validation&#39;</span><span class="p">],</span> 
+    <span class="n">batch_size</span><span class="o">=</span><span class="n">bs</span><span class="p">,</span> 
+    <span class="n">shuffle</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> 
+    <span class="n">collate_fn</span><span class="o">=</span><span class="n">collate_fn</span>
+<span class="p">)</span>
+<span class="n">test_dl</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span>
+    <span class="n">tokenized_datasets</span><span class="p">[</span><span class="s1">&#39;test&#39;</span><span class="p">],</span> 
+    <span class="n">batch_size</span><span class="o">=</span><span class="n">bs</span><span class="p">,</span> 
+    <span class="n">shuffle</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> 
+    <span class="n">collate_fn</span><span class="o">=</span><span class="n">collate_fn</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">opt</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">AdamW</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="mf">1e-2</span><span class="p">)</span>
+<span class="n">metric</span> <span class="o">=</span> <span class="n">load_metric</span><span class="p">(</span><span class="s1">&#39;rouge&#39;</span><span class="p">)</span>
+
+<span class="n">accelerator</span> <span class="o">=</span> <span class="n">Accelerator</span><span class="p">()</span>
+<span class="n">train_dl</span><span class="p">,</span> <span class="n">val_dl</span><span class="p">,</span> <span class="n">test_dl</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">opt</span> <span class="o">=</span> <span class="n">accelerator</span><span class="o">.</span><span class="n">prepare</span><span class="p">(</span>
+    <span class="n">train_dl</span><span class="p">,</span> <span class="n">val_dl</span><span class="p">,</span> <span class="n">test_dl</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">opt</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">generated_summary</span> <span class="o">=</span> <span class="s2">&quot;I absolutely loved reading the Hunger Games.</span><span class="se">\n</span><span class="s2"> I absolutely loved reading the Hunger Games&quot;</span>
+<span class="n">reference_summary</span> <span class="o">=</span> <span class="s2">&quot;I loved reading the Hunger Games.</span><span class="se">\n</span><span class="s2"> I loved reading the Hunger Games&quot;</span>
+
+<span class="n">scores</span> <span class="o">=</span> <span class="n">metric</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span>
+    <span class="n">predictions</span><span class="o">=</span><span class="p">[</span><span class="n">generated_summary</span><span class="p">],</span> <span class="n">references</span><span class="o">=</span><span class="p">[</span><span class="n">reference_summary</span><span class="p">]</span>
+<span class="p">)</span>
+<span class="n">scores</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">process_preds_and_labels</span><span class="p">(</span><span class="n">preds</span><span class="p">,</span> <span class="n">labels</span><span class="p">):</span>
+    <span class="n">preds</span> <span class="o">=</span> <span class="n">preds</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span>
+    <span class="n">labels</span> <span class="o">=</span> <span class="n">labels</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span>
+    <span class="c1"># replace all -100 with the token id of &lt;pad&gt;</span>
+    <span class="n">labels</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">labels</span><span class="o">==-</span><span class="mi">100</span><span class="p">,</span> <span class="n">tokenizer</span><span class="o">.</span><span class="n">pad_token_id</span><span class="p">,</span> <span class="n">labels</span><span class="p">)</span>
+    
+    <span class="c1"># decode all token ids to its string/text format</span>
+    <span class="n">decoded_preds</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="o">.</span><span class="n">batch_decode</span><span class="p">(</span><span class="n">preds</span><span class="p">,</span> <span class="n">skip_special_tokens</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">decoded_labels</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="o">.</span><span class="n">batch_decode</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">skip_special_tokens</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    
+    <span class="n">decoded_preds</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">nltk</span><span class="o">.</span><span class="n">sent_tokenize</span><span class="p">(</span><span class="n">pred</span><span class="o">.</span><span class="n">strip</span><span class="p">()))</span> <span class="k">for</span> <span class="n">pred</span> <span class="ow">in</span> <span class="n">decoded_preds</span><span class="p">]</span>
+    <span class="n">decoded_labels</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">nltk</span><span class="o">.</span><span class="n">sent_tokenize</span><span class="p">(</span><span class="n">label</span><span class="o">.</span><span class="n">strip</span><span class="p">()))</span> <span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="n">decoded_labels</span><span class="p">]</span>
+    
+    <span class="k">return</span> <span class="n">decoded_preds</span><span class="p">,</span> <span class="n">decoded_labels</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">run_training</span><span class="p">(</span><span class="n">train_dl</span><span class="p">):</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">batch</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">train_dl</span><span class="p">,</span> <span class="n">total</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">train_dl</span><span class="p">)):</span>
+        <span class="n">opt</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="o">**</span><span class="n">batch</span><span class="p">)</span>
+        <span class="n">accelerator</span><span class="o">.</span><span class="n">backward</span><span class="p">(</span><span class="n">out</span><span class="o">.</span><span class="n">loss</span><span class="p">)</span>
+        <span class="n">opt</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+        
+<span class="k">def</span> <span class="nf">run_evaluation</span><span class="p">(</span><span class="n">test_dl</span><span class="p">):</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+    <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+        <span class="k">for</span> <span class="n">batch</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">test_dl</span><span class="p">,</span> <span class="n">total</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">test_dl</span><span class="p">)):</span>
+            <span class="c1"># generate predictions one by one</span>
+            <span class="n">preds</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span>
+                <span class="n">input_ids</span><span class="o">=</span><span class="n">batch</span><span class="p">[</span><span class="s1">&#39;input_ids&#39;</span><span class="p">],</span>
+                <span class="n">attention_mask</span><span class="o">=</span><span class="n">batch</span><span class="p">[</span><span class="s1">&#39;attention_mask&#39;</span><span class="p">],</span>
+                <span class="n">max_length</span><span class="o">=</span><span class="n">max_output_length</span><span class="p">,</span>
+            <span class="p">)</span>
+            
+            <span class="c1"># convert target labels and predictions to string format for computing ROUGE score</span>
+            <span class="n">preds</span><span class="p">,</span> <span class="n">labels</span> <span class="o">=</span> <span class="n">process_preds_and_labels</span><span class="p">(</span><span class="n">preds</span><span class="p">,</span> <span class="n">batch</span><span class="p">[</span><span class="s1">&#39;labels&#39;</span><span class="p">])</span>
+            <span class="c1"># add the target labels and predictions of this batch to metrics</span>
+            <span class="n">metric</span><span class="o">.</span><span class="n">add_batch</span><span class="p">(</span><span class="n">predictions</span><span class="o">=</span><span class="n">preds</span><span class="p">,</span> <span class="n">references</span><span class="o">=</span><span class="n">labels</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">save_model</span><span class="p">(</span><span class="n">epoch</span><span class="p">):</span>
+    <span class="n">model_path</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;model-v</span><span class="si">{</span><span class="n">epoch</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s2">.pt&quot;</span>
+    <span class="n">torch</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">state_dict</span><span class="p">(),</span> <span class="n">model_path</span><span class="p">)</span>
+    <span class="n">artifact</span> <span class="o">=</span> <span class="n">wandb</span><span class="o">.</span><span class="n">Artifact</span><span class="p">(</span><span class="s2">&quot;model&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;model&quot;</span><span class="p">)</span>
+    <span class="n">artifact</span><span class="o">.</span><span class="n">add_file</span><span class="p">(</span><span class="n">model_path</span><span class="p">)</span>
+    <span class="n">run</span><span class="o">.</span><span class="n">log_artifact</span><span class="p">(</span><span class="n">artifact</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">epochs</span> <span class="o">=</span> <span class="mi">10</span>
+
+<span class="n">run</span> <span class="o">=</span> <span class="n">wandb</span><span class="o">.</span><span class="n">init</span><span class="p">(</span>
+    <span class="n">project</span><span class="o">=</span><span class="s2">&quot;summarization&quot;</span><span class="p">,</span> 
+    <span class="n">group</span><span class="o">=</span><span class="s1">&#39;training&#39;</span><span class="p">,</span> 
+    <span class="n">entity</span><span class="o">=</span><span class="s2">&quot;bipin&quot;</span><span class="p">,</span> 
+    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;run-lr-1e-2-rerun&quot;</span><span class="p">,</span> 
+    <span class="n">reinit</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
+
+<span class="k">with</span> <span class="n">run</span><span class="p">:</span>
+    <span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">epochs</span><span class="p">):</span>
+        <span class="n">run_training</span><span class="p">(</span><span class="n">train_dl</span><span class="p">)</span>
+        
+        <span class="n">run_evaluation</span><span class="p">(</span><span class="n">test_dl</span><span class="p">)</span>
+        <span class="c1"># calculate ROUGE score on test set</span>
+        <span class="n">test_acc</span> <span class="o">=</span> <span class="n">metric</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;epoch: </span><span class="si">{</span><span class="n">epoch</span><span class="si">}</span><span class="s2"> test_acc: </span><span class="si">{</span><span class="n">test_acc</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    
+        <span class="n">save_model</span><span class="p">(</span><span class="n">epoch</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<section id="lrfinder">
+<h1>LRFinder<a class="headerlink" href="#lrfinder" title="Permalink to this headline">¶</a></h1>
+<p>Learning rate finder(<a class="reference external" href="https://github.com/davidtvs/pytorch-lr-finder">https://github.com/davidtvs/pytorch-lr-finder</a>) with slight modifications to work for transformers library</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">tqdm.autonotebook</span> <span class="kn">import</span> <span class="n">tqdm</span>
+<span class="kn">from</span> <span class="nn">torch.optim.lr_scheduler</span> <span class="kn">import</span> <span class="n">_LRScheduler</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">LRFinder</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">model</span><span class="p">,</span>
+        <span class="n">optimizer</span><span class="p">,</span>
+        <span class="n">criterion</span><span class="p">,</span>
+        <span class="n">device</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="c1"># Check if the optimizer is already attached to a scheduler</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span> <span class="o">=</span> <span class="n">optimizer</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_for_scheduler</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">model</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">criterion</span> <span class="o">=</span> <span class="n">criterion</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">history</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;lr&quot;</span><span class="p">:</span> <span class="p">[],</span> <span class="s2">&quot;loss&quot;</span><span class="p">:</span> <span class="p">[]}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">best_loss</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># If device is None, use the same as the model</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">accelerator</span> <span class="o">=</span> <span class="n">Accelerator</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">device</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">accelerator</span><span class="o">.</span><span class="n">device</span>
+
+    <span class="k">def</span> <span class="nf">range_test</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">train_iter</span><span class="p">,</span>
+        <span class="n">val_iter</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">start_lr</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">end_lr</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+        <span class="n">num_iter</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+        <span class="n">step_mode</span><span class="o">=</span><span class="s2">&quot;exp&quot;</span><span class="p">,</span>
+        <span class="n">smooth_f</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span>
+        <span class="n">diverge_th</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+        <span class="n">accumulation_steps</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">non_blocking_transfer</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="c1"># Reset test results</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">history</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;lr&quot;</span><span class="p">:</span> <span class="p">[],</span> <span class="s2">&quot;loss&quot;</span><span class="p">:</span> <span class="p">[]}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">best_loss</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># Move the model to the proper device</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+
+        <span class="c1"># Check if the optimizer is already attached to a scheduler</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_for_scheduler</span><span class="p">()</span>
+
+        <span class="c1"># Set the starting learning rate</span>
+        <span class="k">if</span> <span class="n">start_lr</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_set_learning_rate</span><span class="p">(</span><span class="n">start_lr</span><span class="p">)</span>
+
+        <span class="c1"># Initialize the proper learning rate policy</span>
+        <span class="k">if</span> <span class="n">step_mode</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;exp&quot;</span><span class="p">:</span>
+            <span class="n">lr_schedule</span> <span class="o">=</span> <span class="n">ExponentialLR</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="p">,</span> <span class="n">end_lr</span><span class="p">,</span> <span class="n">num_iter</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">step_mode</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;linear&quot;</span><span class="p">:</span>
+            <span class="n">lr_schedule</span> <span class="o">=</span> <span class="n">LinearLR</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="p">,</span> <span class="n">end_lr</span><span class="p">,</span> <span class="n">num_iter</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;expected one of (exp, linear), got </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">step_mode</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="n">smooth_f</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">smooth_f</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;smooth_f is outside the range [0, 1[&quot;</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">iteration</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">num_iter</span><span class="p">)):</span>
+            <span class="c1"># Train on batch and retrieve loss</span>
+            <span class="n">loss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_train_batch</span><span class="p">(</span>
+                <span class="n">train_iter</span><span class="p">,</span>
+                <span class="n">accumulation_steps</span><span class="p">,</span>
+                <span class="n">non_blocking_transfer</span><span class="o">=</span><span class="n">non_blocking_transfer</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">val_iter</span><span class="p">:</span>
+                <span class="n">loss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_validate</span><span class="p">(</span>
+                    <span class="n">val_iter</span><span class="p">,</span> <span class="n">non_blocking_transfer</span><span class="o">=</span><span class="n">non_blocking_transfer</span>
+                <span class="p">)</span>
+
+            <span class="c1"># Update the learning rate</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">[</span><span class="s2">&quot;lr&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">lr_schedule</span><span class="o">.</span><span class="n">get_lr</span><span class="p">()[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">lr_schedule</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+
+            <span class="c1"># Track the best loss and smooth it if smooth_f is specified</span>
+            <span class="k">if</span> <span class="n">iteration</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">best_loss</span> <span class="o">=</span> <span class="n">loss</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">smooth_f</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">loss</span> <span class="o">=</span> <span class="n">smooth_f</span> <span class="o">*</span> <span class="n">loss</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">smooth_f</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">[</span><span class="s2">&quot;loss&quot;</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">loss</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">best_loss</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">best_loss</span> <span class="o">=</span> <span class="n">loss</span>
+
+            <span class="c1"># Check if the loss has diverged; if it has, stop the test</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">[</span><span class="s2">&quot;loss&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">loss</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">loss</span> <span class="o">&gt;</span> <span class="n">diverge_th</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">best_loss</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Stopping early, the loss has diverged&quot;</span><span class="p">)</span>
+                <span class="k">break</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Learning rate search finished. See the graph with </span><span class="si">{finder_name}</span><span class="s2">.plot()&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_set_learning_rate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_lrs</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">new_lrs</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="n">new_lrs</span> <span class="o">=</span> <span class="p">[</span><span class="n">new_lrs</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">param_groups</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">new_lrs</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">param_groups</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Length of `new_lrs` is not equal to the number of parameter groups &quot;</span>
+                <span class="o">+</span> <span class="s2">&quot;in the given optimizer&quot;</span>
+            <span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">param_group</span><span class="p">,</span> <span class="n">new_lr</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">param_groups</span><span class="p">,</span> <span class="n">new_lrs</span><span class="p">):</span>
+            <span class="n">param_group</span><span class="p">[</span><span class="s2">&quot;lr&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_lr</span>
+
+    <span class="k">def</span> <span class="nf">_check_for_scheduler</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">param_group</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">param_groups</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s2">&quot;initial_lr&quot;</span> <span class="ow">in</span> <span class="n">param_group</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Optimizer already has a scheduler attached to it&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_train_batch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">train_iter</span><span class="p">,</span> <span class="n">accumulation_steps</span><span class="p">,</span> <span class="n">non_blocking_transfer</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>
+        <span class="n">total_loss</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># for late initialization</span>
+        <span class="n">train_iter</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">accelerator</span><span class="o">.</span><span class="n">prepare</span><span class="p">(</span><span class="n">train_iter</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">accumulation_steps</span><span class="p">):</span>
+            <span class="n">train_iter</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="n">train_iter</span><span class="p">))</span>
+            <span class="n">inputs</span> <span class="o">=</span> <span class="n">train_iter</span>
+
+            <span class="c1"># Forward pass</span>
+            <span class="n">model_outputs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">(</span><span class="o">**</span><span class="n">inputs</span><span class="p">)</span>
+            <span class="n">loss</span><span class="p">,</span> <span class="n">outputs</span> <span class="o">=</span> <span class="n">model_outputs</span><span class="o">.</span><span class="n">loss</span><span class="p">,</span> <span class="n">model_outputs</span><span class="o">.</span><span class="n">logits</span>
+
+            <span class="c1"># Loss should be averaged in each step</span>
+            <span class="n">loss</span> <span class="o">/=</span> <span class="n">accumulation_steps</span>
+
+            <span class="c1"># Backward pass</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">accelerator</span><span class="o">.</span><span class="n">backward</span><span class="p">(</span><span class="n">loss</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">total_loss</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">total_loss</span> <span class="o">=</span> <span class="n">loss</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">total_loss</span> <span class="o">+=</span> <span class="n">loss</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">total_loss</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_move_to_device</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">non_blocking</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="k">def</span> <span class="nf">move</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">device</span><span class="p">,</span> <span class="n">non_blocking</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s2">&quot;to&quot;</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">obj</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">,</span> <span class="n">non_blocking</span><span class="o">=</span><span class="n">non_blocking</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+                <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">move</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="n">device</span><span class="p">,</span> <span class="n">non_blocking</span><span class="p">)</span> <span class="k">for</span> <span class="n">o</span> <span class="ow">in</span> <span class="n">obj</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                <span class="k">return</span> <span class="p">[</span><span class="n">move</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="n">device</span><span class="p">,</span> <span class="n">non_blocking</span><span class="p">)</span> <span class="k">for</span> <span class="n">o</span> <span class="ow">in</span> <span class="n">obj</span><span class="p">]</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                <span class="k">return</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">move</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="n">device</span><span class="p">,</span> <span class="n">non_blocking</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">o</span> <span class="ow">in</span> <span class="n">obj</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">obj</span>
+
+        <span class="n">inputs</span> <span class="o">=</span> <span class="n">move</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">,</span> <span class="n">non_blocking</span><span class="o">=</span><span class="n">non_blocking</span><span class="p">)</span>
+        <span class="n">labels</span> <span class="o">=</span> <span class="n">move</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">,</span> <span class="n">non_blocking</span><span class="o">=</span><span class="n">non_blocking</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">labels</span>
+
+    <span class="k">def</span> <span class="nf">_validate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val_iter</span><span class="p">,</span> <span class="n">non_blocking_transfer</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="c1"># Set model to evaluation mode and disable gradient computation</span>
+        <span class="n">running_loss</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+        <span class="n">val_iter</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">accelerator</span><span class="o">.</span><span class="n">prepare</span><span class="p">(</span><span class="n">val_iter</span><span class="p">)</span>
+        
+        <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">batch</span> <span class="ow">in</span> <span class="n">val_iter</span><span class="p">:</span>
+                <span class="c1"># Move data to the correct device</span>
+                <span class="n">inputs</span><span class="p">,</span> <span class="n">labels</span> <span class="o">=</span> <span class="n">batch</span><span class="p">,</span> <span class="n">batch</span><span class="p">[</span><span class="s1">&#39;labels&#39;</span><span class="p">]</span>
+
+                <span class="c1"># Forward pass and loss computation</span>
+                <span class="n">model_outputs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">(</span><span class="o">**</span><span class="n">inputs</span><span class="p">)</span>
+                <span class="n">loss</span><span class="p">,</span> <span class="n">outputs</span> <span class="o">=</span> <span class="n">model_outputs</span><span class="o">.</span><span class="n">loss</span><span class="p">,</span> <span class="n">model_outputs</span><span class="o">.</span><span class="n">logits</span>
+                <span class="n">running_loss</span> <span class="o">+=</span> <span class="n">loss</span><span class="o">.</span><span class="n">item</span><span class="p">()</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">labels</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">running_loss</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">val_iter</span><span class="o">.</span><span class="n">dataset</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">plot</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">skip_start</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+        <span class="n">skip_end</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+        <span class="n">log_lr</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">show_lr</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">ax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">suggest_lr</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Plots the learning rate range test.</span>
+<span class="sd">        Arguments:</span>
+<span class="sd">            skip_start (int, optional): number of batches to trim from the start.</span>
+<span class="sd">                Default: 10.</span>
+<span class="sd">            skip_end (int, optional): number of batches to trim from the start.</span>
+<span class="sd">                Default: 5.</span>
+<span class="sd">            log_lr (bool, optional): True to plot the learning rate in a logarithmic</span>
+<span class="sd">                scale; otherwise, plotted in a linear scale. Default: True.</span>
+<span class="sd">            show_lr (float, optional): if set, adds a vertical line to visualize the</span>
+<span class="sd">                specified learning rate. Default: None.</span>
+<span class="sd">            ax (matplotlib.axes.Axes, optional): the plot is created in the specified</span>
+<span class="sd">                matplotlib axes object and the figure is not be shown. If `None`, then</span>
+<span class="sd">                the figure and axes object are created in this method and the figure is</span>
+<span class="sd">                shown . Default: None.</span>
+<span class="sd">            suggest_lr (bool, optional): suggest a learning rate by</span>
+<span class="sd">                - &#39;steepest&#39;: the point with steepest gradient (minimal gradient)</span>
+<span class="sd">                you can use that point as a first guess for an LR. Default: True.</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            The matplotlib.axes.Axes object that contains the plot,</span>
+<span class="sd">            and the suggested learning rate (if set suggest_lr=True).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">skip_start</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;skip_start cannot be negative&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">skip_end</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;skip_end cannot be negative&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">show_lr</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">show_lr</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;show_lr must be float&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Get the data to plot from the history dictionary. Also, handle skip_end=0</span>
+        <span class="c1"># properly so the behaviour is the expected</span>
+        <span class="n">lrs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">[</span><span class="s2">&quot;lr&quot;</span><span class="p">]</span>
+        <span class="n">losses</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">[</span><span class="s2">&quot;loss&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">skip_end</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">lrs</span> <span class="o">=</span> <span class="n">lrs</span><span class="p">[</span><span class="n">skip_start</span><span class="p">:]</span>
+            <span class="n">losses</span> <span class="o">=</span> <span class="n">losses</span><span class="p">[</span><span class="n">skip_start</span><span class="p">:]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">lrs</span> <span class="o">=</span> <span class="n">lrs</span><span class="p">[</span><span class="n">skip_start</span><span class="p">:</span><span class="o">-</span><span class="n">skip_end</span><span class="p">]</span>
+            <span class="n">losses</span> <span class="o">=</span> <span class="n">losses</span><span class="p">[</span><span class="n">skip_start</span><span class="p">:</span><span class="o">-</span><span class="n">skip_end</span><span class="p">]</span>
+
+        <span class="c1"># Create the figure and axes object if axes was not already given</span>
+        <span class="n">fig</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">ax</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
+
+        <span class="c1"># Plot loss as a function of the learning rate</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">lrs</span><span class="p">,</span> <span class="n">losses</span><span class="p">)</span>
+
+        <span class="c1"># Plot the suggested LR</span>
+        <span class="k">if</span> <span class="n">suggest_lr</span><span class="p">:</span>
+            <span class="c1"># &#39;steepest&#39;: the point with steepest gradient (minimal gradient)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;LR suggestion: steepest gradient&quot;</span><span class="p">)</span>
+            <span class="n">min_grad_idx</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">min_grad_idx</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">gradient</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">losses</span><span class="p">)))</span><span class="o">.</span><span class="n">argmin</span><span class="p">()</span>
+            <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span>
+                    <span class="s2">&quot;Failed to compute the gradients, there might not be enough points.&quot;</span>
+                <span class="p">)</span>
+            <span class="k">if</span> <span class="n">min_grad_idx</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Suggested LR: </span><span class="si">{:.2E}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">lrs</span><span class="p">[</span><span class="n">min_grad_idx</span><span class="p">]))</span>
+                <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span>
+                    <span class="n">lrs</span><span class="p">[</span><span class="n">min_grad_idx</span><span class="p">],</span>
+                    <span class="n">losses</span><span class="p">[</span><span class="n">min_grad_idx</span><span class="p">],</span>
+                    <span class="n">s</span><span class="o">=</span><span class="mi">75</span><span class="p">,</span>
+                    <span class="n">marker</span><span class="o">=</span><span class="s2">&quot;o&quot;</span><span class="p">,</span>
+                    <span class="n">color</span><span class="o">=</span><span class="s2">&quot;red&quot;</span><span class="p">,</span>
+                    <span class="n">zorder</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+                    <span class="n">label</span><span class="o">=</span><span class="s2">&quot;steepest gradient&quot;</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">log_lr</span><span class="p">:</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">set_xscale</span><span class="p">(</span><span class="s2">&quot;log&quot;</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;Learning rate&quot;</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Loss&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">show_lr</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">show_lr</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;red&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Show only if the figure was created internally</span>
+        <span class="k">if</span> <span class="n">fig</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">suggest_lr</span> <span class="ow">and</span> <span class="n">min_grad_idx</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">ax</span><span class="p">,</span> <span class="n">lrs</span><span class="p">[</span><span class="n">min_grad_idx</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">ax</span>
+        
+<span class="k">class</span> <span class="nc">ExponentialLR</span><span class="p">(</span><span class="n">_LRScheduler</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">,</span> <span class="n">end_lr</span><span class="p">,</span> <span class="n">num_iter</span><span class="p">,</span> <span class="n">last_epoch</span><span class="o">=-</span><span class="mi">1</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">end_lr</span> <span class="o">=</span> <span class="n">end_lr</span>
+
+        <span class="k">if</span> <span class="n">num_iter</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;`num_iter` must be larger than 1&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_iter</span> <span class="o">=</span> <span class="n">num_iter</span>
+
+        <span class="nb">super</span><span class="p">(</span><span class="n">ExponentialLR</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">optimizer</span><span class="p">,</span> <span class="n">last_epoch</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">get_lr</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># In earlier Pytorch versions last_epoch starts at -1, while in recent versions</span>
+        <span class="c1"># it starts at 0. We need to adjust the math a bit to handle this. See</span>
+        <span class="c1"># discussion at: https://github.com/davidtvs/pytorch-lr-finder/pull/42</span>
+<span class="c1">#         if PYTORCH_VERSION &lt; version.parse(&quot;1.1.0&quot;):</span>
+<span class="c1">#             curr_iter = self.last_epoch + 1</span>
+<span class="c1">#             r = curr_iter / (self.num_iter - 1)</span>
+<span class="c1">#         else:</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">last_epoch</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_iter</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="p">[</span><span class="n">base_lr</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">end_lr</span> <span class="o">/</span> <span class="n">base_lr</span><span class="p">)</span> <span class="o">**</span> <span class="n">r</span> <span class="k">for</span> <span class="n">base_lr</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">base_lrs</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">MyModel</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">out</span> <span class="o">=</span> <span class="n">AutoModelForSeq2SeqLM</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="n">checkpoint</span><span class="p">)</span>
+        
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">x</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">out</span><span class="p">(</span><span class="o">**</span><span class="n">x</span><span class="p">,</span> <span class="n">return_dict</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    
+<span class="n">model</span> <span class="o">=</span> <span class="n">MyModel</span><span class="p">()</span>
+<span class="n">criterion</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">NLLLoss</span><span class="p">()</span>
+<span class="n">optimizer</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">AdamW</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="mf">1e-7</span><span class="p">)</span>
+<span class="n">lr_finder</span> <span class="o">=</span> <span class="n">LRFinder</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">,</span> <span class="n">criterion</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">&quot;cuda&quot;</span><span class="p">)</span>
+<span class="n">lr_finder</span><span class="o">.</span><span class="n">range_test</span><span class="p">(</span><span class="n">train_dl</span><span class="p">,</span> <span class="n">end_lr</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">num_iter</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+<span class="n">lr_finder</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            kernelName: "python3",
+            path: "./notebooks"
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+              </div>
+              
+        
+            <!-- Previous / next buttons -->
+<div class='prev-next-area'>
+</div>
+        
+        </div>
+    </div>
+    <footer class="footer">
+    <div class="container">
+      <p>
+        
+          By Bipin Krishnan P<br/>
+        
+            &copy; Copyright 2021.<br/>
+      </p>
+    </div>
+  </footer>
+</main>
+
+
+      </div>
+    </div>
+  
+  <script src="../_static/js/index.be7d3bbb2ef33a8344ce.js"></script>
+
+  </body>
+</html>

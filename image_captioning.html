@@ -1,0 +1,646 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Image captioning</title>
+    
+  <link href="_static/css/theme.css" rel="stylesheet">
+  <link href="_static/css/index.ff1ffe594081f20da1ef19478df9384b.css" rel="stylesheet">
+
+    
+  <link rel="stylesheet"
+    href="_static/vendor/fontawesome/5.13.0/css/all.min.css">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+
+    
+      
+
+    
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-book-theme.css?digest=c3fdc42140077d1ad13ad2f1588a4309" />
+    <link rel="stylesheet" type="text/css" href="_static/togglebutton.css" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="_static/mystnb.css" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-thebe.css" />
+    <link rel="stylesheet" type="text/css" href="_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" />
+    <link rel="stylesheet" type="text/css" href="_static/panels-variables.06eb56fa6e07937060861dad626602ad.css" />
+    
+  <link rel="preload" as="script" href="_static/js/index.be7d3bbb2ef33a8344ce.js">
+
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/togglebutton.js"></script>
+    <script src="_static/clipboard.min.js"></script>
+    <script src="_static/copybutton.js"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
+    <script src="_static/sphinx-book-theme.12a9622fbb08dcb3a2a40b2c02b83a57.js"></script>
+    <script async="async" src="https://unpkg.com/thebe@0.5.1/lib/index.js"></script>
+    <script>
+        const thebe_selector = ".thebe"
+        const thebe_selector_input = "pre"
+        const thebe_selector_output = ".output"
+    </script>
+    <script async="async" src="_static/sphinx-thebe.js"></script>
+    <link rel="canonical" href="https://github.com/image_captioning.html" />
+    <link rel="author" title="About these documents" href="about.html" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Image classification" href="image_classification.html" />
+    <link rel="prev" title="Causal language modeling" href="causal_language_modeling.html" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="docsearch:language" content="None">
+    
+
+    <!-- Google Analytics -->
+    
+  </head>
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="80">
+    
+    <div class="container-fluid" id="banner"></div>
+
+    
+
+    <div class="container-xl">
+      <div class="row">
+          
+<div class="col-12 col-md-3 bd-sidebar site-navigation show" id="site-navigation">
+    
+        <div class="navbar-brand-box">
+    <a class="navbar-brand text-wrap" href="index.html">
+      
+        <!-- `logo` is deprecated in Sphinx 4.0, so remove this when we stop supporting 3 -->
+        
+      
+      
+      <img src="_static/logo.png" class="logo" alt="logo">
+      
+      
+    </a>
+</div><form class="bd-search d-flex align-items-center" action="search.html" method="get">
+  <i class="icon fas fa-search"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search this book..." aria-label="Search this book..." autocomplete="off" >
+</form><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item active">
+        <ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="about.html">
+   About this book
+  </a>
+ </li>
+</ul>
+<p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
+  Natural language processing
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="named_entity_recognition.html">
+   Named entity recognition
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="masked_language_modeling.html">
+   Masked language modelling
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="translation.html">
+   Machine translation
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="summarization.html">
+   Summarization
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="causal_language_modeling.html">
+   Causal language modeling
+  </a>
+ </li>
+</ul>
+<p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
+  Image &amp; Text
+ </span>
+</p>
+<ul class="current nav bd-sidenav">
+ <li class="toctree-l1 current active">
+  <a class="current reference internal" href="#">
+   Image captioning
+  </a>
+ </li>
+</ul>
+<p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
+  Computer vision
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="image_classification.html">
+   Image classification
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="image_segmentation.html">
+   Image segmentation
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="object_detection.html">
+   Object detection
+  </a>
+ </li>
+</ul>
+
+    </div>
+</nav> <!-- To handle the deprecated key -->
+
+<div class="navbar_extra_footer">
+  Powered by <a href="https://jupyterbook.org">Jupyter Book</a>
+</div>
+
+</div>
+
+
+          
+
+
+          
+<main class="col py-md-3 pl-md-4 bd-content overflow-auto" role="main">
+    
+    <div class="topbar container-xl fixed-top">
+    <div class="topbar-contents row">
+        <div class="col-12 col-md-3 bd-topbar-whitespace site-navigation show"></div>
+        <div class="col pl-md-4 topbar-main">
+            
+            <button id="navbar-toggler" class="navbar-toggler ml-0" type="button" data-toggle="collapse"
+                data-toggle="tooltip" data-placement="bottom" data-target=".site-navigation" aria-controls="navbar-menu"
+                aria-expanded="true" aria-label="Toggle navigation" aria-controls="site-navigation"
+                title="Toggle navigation" data-toggle="tooltip" data-placement="left">
+                <i class="fas fa-bars"></i>
+                <i class="fas fa-arrow-left"></i>
+                <i class="fas fa-arrow-up"></i>
+            </button>
+            
+            
+<div class="dropdown-buttons-trigger">
+    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn" aria-label="Download this page"><i
+            class="fas fa-download"></i></button>
+
+    <div class="dropdown-buttons">
+        <!-- ipynb file if we had a myst markdown file -->
+        
+        <!-- Download raw file -->
+        <a class="dropdown-buttons" href="_sources/image_captioning.md"><button type="button"
+                class="btn btn-secondary topbarbtn" title="Download source file" data-toggle="tooltip"
+                data-placement="left">.md</button></a>
+        <!-- Download PDF via print -->
+        <button type="button" id="download-print" class="btn btn-secondary topbarbtn" title="Print to PDF"
+            onClick="window.print()" data-toggle="tooltip" data-placement="left">.pdf</button>
+    </div>
+</div>
+
+            <!-- Source interaction buttons -->
+
+<div class="dropdown-buttons-trigger">
+    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn"
+        aria-label="Connect with source repository"><i class="fab fa-github"></i></button>
+    <div class="dropdown-buttons sourcebuttons">
+        <a class="repository-button"
+            href="https://github.com/bipinkrishnan/ml-powered-apps"><button type="button" class="btn btn-secondary topbarbtn"
+                data-toggle="tooltip" data-placement="left" title="Source repository"><i
+                    class="fab fa-github"></i>repository</button></a>
+        
+        
+    </div>
+</div>
+
+            <!-- Full screen (wrap in <a> to have style consistency -->
+
+<a class="full-screen-button"><button type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip"
+        data-placement="bottom" onclick="toggleFullScreen()" aria-label="Fullscreen mode"
+        title="Fullscreen mode"><i
+            class="fas fa-expand"></i></button></a>
+
+            <!-- Launch buttons -->
+
+        </div>
+
+        <!-- Table of contents -->
+        <div class="d-none d-md-block col-md-2 bd-toc show">
+            
+            <div class="tocsection onthispage pt-5 pb-3">
+                <i class="fas fa-list"></i> Contents
+            </div>
+            <nav id="bd-toc-nav" aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#dataset">
+   Dataset
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#preparing-the-data">
+     Preparing the data
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#training-the-model">
+   Training the model
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#testing-the-model">
+   Testing the model
+  </a>
+ </li>
+</ul>
+
+            </nav>
+        </div>
+    </div>
+</div>
+    <div id="main-content" class="row">
+        <div class="col-12 col-md-9 pl-md-3 pr-md-0">
+        
+              <div>
+                
+  <section id="image-captioning">
+<h1>Image captioning<a class="headerlink" href="#image-captioning" title="Permalink to this headline">¶</a></h1>
+<p>This will be bit more interesting than the previous chapters because we will deal with images as well as text. The model we are going to built will be able generate a caption given an image as input,</p>
+<img alt="image_captioning" class="bg-primary mb-1 align-center" src="_images/image_caption_model.png" />
+<section id="dataset">
+<h2>Dataset<a class="headerlink" href="#dataset" title="Permalink to this headline">¶</a></h2>
+<p>We will be using the <a class="reference external" href="https://www.kaggle.com/datasets/nunenuh/flickr8k?select=images">flickr8k image captioning dataset</a> which contain images as well as 5 captions corresponding to a single image. The raw dataset has an <code class="docutils literal notranslate"><span class="pre">images</span></code> folder which contain all the images and a <code class="docutils literal notranslate"><span class="pre">captions.txt</span></code> file which has the captions corresponding to each image in the <code class="docutils literal notranslate"><span class="pre">images</span></code> folder. Here is a sample from <code class="docutils literal notranslate"><span class="pre">captions.txt</span></code>:</p>
+<img alt="image_captioning" class="bg-primary mb-1 align-center" src="_images/caption_data.png" />
+<p>As you can see, we have the image name, caption number and the caption(each of them separated by ‘|’ symbol). Since each image has more than one caption, the ‘caption_number’ will indicate the number of the caption. From the above captions, we will use the captions with ‘caption_number’ equal to 1.</p>
+<section id="preparing-the-data">
+<h3>Preparing the data<a class="headerlink" href="#preparing-the-data" title="Permalink to this headline">¶</a></h3>
+<p>First let’s write some code to create a dataframe which will contain a column for images and another column for captions, as shown below:</p>
+<img alt="image_captioning" class="bg-primary mb-1 align-center" src="_images/image_caption_data.png" />
+<p>Let’s create an empty dataframe and two lists to store our image paths and captions:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+
+<span class="c1"># create an empty dataframe with &#39;imgs&#39; column</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;imgs&#39;</span><span class="p">])</span>
+<span class="c1"># we will store the image files and captions here before putting it into dataframe</span>
+<span class="n">imgs</span><span class="p">,</span> <span class="n">captions</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
+<span class="c1"># directory where the dataset is present</span>
+<span class="n">root_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;../input/flickr8k&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Now let’s read the contents of <code class="docutils literal notranslate"><span class="pre">captions.txt</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># get the contents of &#39;captions.txt&#39; file</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">root_dir</span><span class="o">/</span><span class="s2">&quot;captions.txt&quot;</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">content</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">readlines</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Finally, we will loop through each line in <code class="docutils literal notranslate"><span class="pre">captions.txt</span></code> and extract the image path and the caption with ‘caption_number’ equal to 1:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">content</span><span class="p">:</span>
+    <span class="n">line</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;|&quot;</span><span class="p">)</span>
+
+    <span class="c1"># extract the required informations</span>
+    <span class="n">img_path</span> <span class="o">=</span> <span class="n">line</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">caption_number</span> <span class="o">=</span> <span class="n">line</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">caption</span> <span class="o">=</span> <span class="n">line</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="c1"># check if the caption_number is equal to 1</span>
+    <span class="k">if</span> <span class="n">caption_number</span><span class="o">==</span><span class="s1">&#39;1&#39;</span><span class="p">:</span>
+        <span class="c1"># store the image path</span>
+        <span class="n">imgs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">root_dir</span><span class="o">/</span><span class="s2">&quot;images&quot;</span><span class="o">/</span><span class="n">img_path</span><span class="p">)</span>
+        <span class="c1"># store the caption</span>
+        <span class="n">captions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">caption</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Now, let’s store our image paths and captions on to the dataframe we created:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s1">&#39;imgs&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">imgs</span>
+<span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s1">&#39;captions&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">captions</span>
+</pre></div>
+</div>
+<p>In our previous chapters, we used encoder-decoder type models to solve text-to-text problems like summarization and translation. Here also we will use encoder-decoder type model, but the problem is that, here, both the inputs and outputs are not text. The input is an image and output is text. So, we cannot use the tokenizer to process both the inputs and outputs.</p>
+<p>As we had <code class="docutils literal notranslate"><span class="pre">AutoTokenizer</span></code> to deal the text data, the transformers library also has something called <code class="docutils literal notranslate"><span class="pre">AutoFeatureExtractor</span></code> to deal with image data.</p>
+<p>The tokenizer we load using <code class="docutils literal notranslate"><span class="pre">AutoTokenizer</span></code> will process the text and prepare it in a format which can be directly fed to the model. Similarly, the feature extractor loaded using <code class="docutils literal notranslate"><span class="pre">AutoFeatureExtractor</span></code> will process the image and prepare it in a format which can be directly fed into the vision model.</p>
+<p>We will load the feature extractor from <a class="reference external" href="https://huggingface.co/google/vit-base-patch16-224-in21k">vision transformer checkpoint</a> and tokenizer from <a class="reference external" href="https://huggingface.co/gpt2">gpt2 checkpoint</a>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">transformers</span> <span class="kn">import</span> <span class="n">AutoFeatureExtractor</span><span class="p">,</span> <span class="n">AutoTokenizer</span>
+
+<span class="n">encoder_checkpoint</span> <span class="o">=</span> <span class="s2">&quot;google/vit-base-patch16-224-in21k&quot;</span>
+<span class="n">decoder_checkpoint</span> <span class="o">=</span> <span class="s2">&quot;gpt2&quot;</span>
+
+<span class="n">feature_extractor</span> <span class="o">=</span> <span class="n">AutoFeatureExtractor</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="n">encoder_checkpoint</span><span class="p">)</span>
+<span class="n">tokenizer</span> <span class="o">=</span> <span class="n">AutoTokenizer</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="n">decoder_checkpoint</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>For the tokenizer, we will set the maximum length to 128, which means, the tokenizer will truncate captions longer than 128 and add padding to captions shorter than 128. So we need to set a token id for padding, otherwise we will get an error:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">tokenizer</span><span class="o">.</span><span class="n">pad_token</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="o">.</span><span class="n">eos_token</span>
+</pre></div>
+</div>
+<p>Let’s take an example image and a caption to see the outputs after applying <code class="docutils literal notranslate"><span class="pre">feature_extractor</span></code> and <code class="docutils literal notranslate"><span class="pre">tokenizer</span></code> respectively:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span>
+
+<span class="c1"># maximum length for the captions</span>
+<span class="n">max_length</span> <span class="o">=</span> <span class="mi">128</span>
+<span class="n">sample</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+<span class="c1"># sample image</span>
+<span class="n">image</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">sample</span><span class="p">[</span><span class="s1">&#39;imgs&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="s1">&#39;RGB&#39;</span><span class="p">)</span>
+<span class="c1"># sample caption</span>
+<span class="n">caption</span> <span class="o">=</span> <span class="n">sample</span><span class="p">[</span><span class="s1">&#39;captions&#39;</span><span class="p">]</span>
+
+<span class="c1"># apply feature extractor on the sample image</span>
+<span class="n">inputs</span> <span class="o">=</span> <span class="n">feature_extractor</span><span class="p">(</span><span class="n">images</span><span class="o">=</span><span class="n">image</span><span class="p">,</span> <span class="n">return_tensors</span><span class="o">=</span><span class="s1">&#39;pt&#39;</span><span class="p">)</span>
+<span class="c1"># apply tokenizer</span>
+<span class="n">outputs</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="p">(</span>
+            <span class="n">caption</span><span class="p">,</span> 
+            <span class="n">max_length</span><span class="o">=</span><span class="n">max_length</span><span class="p">,</span> 
+            <span class="n">truncation</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> 
+            <span class="n">padding</span><span class="o">=</span><span class="s1">&#39;max_length&#39;</span><span class="p">,</span>
+            <span class="n">return_tensors</span><span class="o">=</span><span class="s1">&#39;pt&#39;</span><span class="p">,</span>
+        <span class="p">)</span>
+</pre></div>
+</div>
+<p>On printing <code class="docutils literal notranslate"><span class="pre">inputs</span></code> and <code class="docutils literal notranslate"><span class="pre">outputs</span></code>, we get this:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">Inputs</span><span class="p">:</span>
+<span class="p">{</span><span class="s1">&#39;pixel_values&#39;</span><span class="p">:</span> <span class="n">tensor</span><span class="p">([[[[</span><span class="o">-</span><span class="mf">0.3569</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.1294</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.0902</span><span class="p">,</span>  <span class="o">...</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.9686</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.9529</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.9529</span><span class="p">],</span>
+          <span class="p">[</span><span class="o">-</span><span class="mf">0.3804</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.1137</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.0667</span><span class="p">,</span>  <span class="o">...</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.9373</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.9451</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.9059</span><span class="p">],</span>
+          <span class="p">[</span><span class="o">-</span><span class="mf">0.3961</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.0824</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.0510</span><span class="p">,</span>  <span class="o">...</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.9373</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.9451</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.9216</span><span class="p">],</span>
+          <span class="o">...</span><span class="p">,</span>
+          <span class="p">[</span> <span class="mf">0.4588</span><span class="p">,</span>  <span class="mf">0.1765</span><span class="p">,</span>  <span class="mf">0.3412</span><span class="p">,</span>  <span class="o">...</span><span class="p">,</span>  <span class="mf">0.6627</span><span class="p">,</span>  <span class="mf">0.2941</span><span class="p">,</span>  <span class="mf">0.2941</span><span class="p">],</span>
+          <span class="p">[</span> <span class="mf">0.3804</span><span class="p">,</span>  <span class="mf">0.3882</span><span class="p">,</span>  <span class="mf">0.7255</span><span class="p">,</span>  <span class="o">...</span><span class="p">,</span>  <span class="mf">0.6471</span><span class="p">,</span>  <span class="mf">0.3176</span><span class="p">,</span>  <span class="mf">0.3176</span><span class="p">],</span>
+          <span class="p">[</span> <span class="mf">0.6235</span><span class="p">,</span>  <span class="mf">0.6392</span><span class="p">,</span>  <span class="mf">0.4667</span><span class="p">,</span>  <span class="o">...</span><span class="p">,</span>  <span class="mf">0.6078</span><span class="p">,</span>  <span class="mf">0.3098</span><span class="p">,</span>  <span class="mf">0.3255</span><span class="p">]],</span>
+
+         <span class="p">[[</span><span class="o">-</span><span class="mf">0.3176</span><span class="p">,</span>  <span class="mf">0.0039</span><span class="p">,</span>  <span class="mf">0.0510</span><span class="p">,</span>  <span class="o">...</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.9765</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.9529</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.9373</span><span class="p">],</span>
+          <span class="p">[</span><span class="o">-</span><span class="mf">0.3412</span><span class="p">,</span>  <span class="mf">0.0118</span><span class="p">,</span>  <span class="mf">0.0824</span><span class="p">,</span>  <span class="o">...</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.9294</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.9216</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.8353</span><span class="p">],</span>
+          <span class="p">[</span><span class="o">-</span><span class="mf">0.3804</span><span class="p">,</span>  <span class="mf">0.0353</span><span class="p">,</span>  <span class="mf">0.1059</span><span class="p">,</span>  <span class="o">...</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.9294</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.8980</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.8275</span><span class="p">],</span>
+          <span class="o">...</span><span class="p">,</span>
+          <span class="p">[</span><span class="o">-</span><span class="mf">0.1529</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.3725</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.0431</span><span class="p">,</span>  <span class="o">...</span><span class="p">,</span>  <span class="mf">0.7333</span><span class="p">,</span>  <span class="mf">0.4510</span><span class="p">,</span>  <span class="mf">0.4431</span><span class="p">],</span>
+          <span class="p">[</span><span class="o">-</span><span class="mf">0.2471</span><span class="p">,</span>  <span class="mf">0.0118</span><span class="p">,</span>  <span class="mf">0.3255</span><span class="p">,</span>  <span class="o">...</span><span class="p">,</span>  <span class="mf">0.7098</span><span class="p">,</span>  <span class="mf">0.4431</span><span class="p">,</span>  <span class="mf">0.4431</span><span class="p">],</span>
+          <span class="p">[</span><span class="o">-</span><span class="mf">0.0118</span><span class="p">,</span>  <span class="mf">0.1608</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.0431</span><span class="p">,</span>  <span class="o">...</span><span class="p">,</span>  <span class="mf">0.6784</span><span class="p">,</span>  <span class="mf">0.4431</span><span class="p">,</span>  <span class="mf">0.4431</span><span class="p">]],</span>
+
+         <span class="p">[[</span><span class="o">-</span><span class="mf">0.2392</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.0196</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.0039</span><span class="p">,</span>  <span class="o">...</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.9765</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.9686</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.9608</span><span class="p">],</span>
+          <span class="p">[</span><span class="o">-</span><span class="mf">0.2784</span><span class="p">,</span>  <span class="mf">0.0118</span><span class="p">,</span>  <span class="mf">0.0353</span><span class="p">,</span>  <span class="o">...</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.9451</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.9529</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.9529</span><span class="p">],</span>
+          <span class="p">[</span><span class="o">-</span><span class="mf">0.2706</span><span class="p">,</span>  <span class="mf">0.0510</span><span class="p">,</span>  <span class="mf">0.0667</span><span class="p">,</span>  <span class="o">...</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.9608</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.9529</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.9451</span><span class="p">],</span>
+          <span class="o">...</span><span class="p">,</span>
+          <span class="p">[</span><span class="o">-</span><span class="mf">0.7569</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.7804</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.4902</span><span class="p">,</span>  <span class="o">...</span><span class="p">,</span>  <span class="mf">0.8353</span><span class="p">,</span>  <span class="mf">0.6471</span><span class="p">,</span>  <span class="mf">0.5922</span><span class="p">],</span>
+          <span class="p">[</span><span class="o">-</span><span class="mf">0.8431</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.6392</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.4196</span><span class="p">,</span>  <span class="o">...</span><span class="p">,</span>  <span class="mf">0.8275</span><span class="p">,</span>  <span class="mf">0.6235</span><span class="p">,</span>  <span class="mf">0.5686</span><span class="p">],</span>
+          <span class="p">[</span><span class="o">-</span><span class="mf">0.6314</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.4824</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.4353</span><span class="p">,</span>  <span class="o">...</span><span class="p">,</span>  <span class="mf">0.8353</span><span class="p">,</span>  <span class="mf">0.6078</span><span class="p">,</span>  <span class="mf">0.5373</span><span class="p">]]]])}</span>
+<span class="n">Outputs</span><span class="p">:</span>
+<span class="p">{</span><span class="s1">&#39;input_ids&#39;</span><span class="p">:</span> <span class="n">tensor</span><span class="p">([[</span>   <span class="mi">32</span><span class="p">,</span>  <span class="mi">2576</span><span class="p">,</span>  <span class="mi">1016</span><span class="p">,</span>   <span class="mi">656</span><span class="p">,</span>   <span class="mi">257</span><span class="p">,</span> <span class="mi">13510</span><span class="p">,</span>  <span class="mi">2615</span><span class="p">,</span>   <span class="mi">764</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span>
+         <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span>
+         <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span>
+         <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span>
+         <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span>
+         <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span>
+         <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span>
+         <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span>
+         <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span>
+         <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span>
+         <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span>
+         <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span>
+         <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">,</span> <span class="mi">50256</span><span class="p">]]),</span> <span class="s1">&#39;attention_mask&#39;</span><span class="p">:</span> <span class="n">tensor</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span>
+         <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span>
+         <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span>
+         <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span>
+         <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span>
+         <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]])}</span>
+</pre></div>
+</div>
+<p>As you can see, for the ‘Outputs’, since the caption is smaller than 128, padding token id(<code class="docutils literal notranslate"><span class="pre">50256</span></code>) is added to make the length equal to 128.</p>
+<p>Now, let’s write a normal dataset loading class as we usually do in pytorch. We will pass the dataframe we just created and extract the images and captions. Then for each each image and caption we apply the <code class="docutils literal notranslate"><span class="pre">feature_extractor</span></code> and <code class="docutils literal notranslate"><span class="pre">tokenizer</span></code>. Finally, we return the processed inputs and outputs.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="kn">import</span> <span class="n">Dataset</span>
+
+<span class="k">class</span> <span class="nc">LoadDataset</span><span class="p">(</span><span class="n">Dataset</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">images</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;imgs&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">captions</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;captions&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+    
+    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">):</span>
+        <span class="c1"># everything to return is stored inside this dict</span>
+        <span class="n">inputs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+
+        <span class="c1"># load the image and apply feature_extractor</span>
+        <span class="n">image_path</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">images</span><span class="p">[</span><span class="n">idx</span><span class="p">])</span>
+        <span class="n">image</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">image_path</span><span class="p">)</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="s2">&quot;RGB&quot;</span><span class="p">)</span>
+        <span class="n">image</span> <span class="o">=</span> <span class="n">feature_extractor</span><span class="p">(</span><span class="n">images</span><span class="o">=</span><span class="n">image</span><span class="p">,</span> <span class="n">return_tensors</span><span class="o">=</span><span class="s1">&#39;pt&#39;</span><span class="p">)</span>
+
+        <span class="c1"># load the caption and apply tokenizer</span>
+        <span class="n">caption</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">captions</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+        <span class="n">labels</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="p">(</span>
+            <span class="n">caption</span><span class="p">,</span> 
+            <span class="n">max_length</span><span class="o">=</span><span class="n">max_length</span><span class="p">,</span> 
+            <span class="n">truncation</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> 
+            <span class="n">padding</span><span class="o">=</span><span class="s1">&#39;max_length&#39;</span><span class="p">,</span>
+            <span class="n">return_tensors</span><span class="o">=</span><span class="s1">&#39;pt&#39;</span><span class="p">,</span>
+        <span class="p">)[</span><span class="s1">&#39;input_ids&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        
+        <span class="c1"># store the inputs(pixel_values) and labels(input_ids) in the dict we created</span>
+        <span class="n">inputs</span><span class="p">[</span><span class="s1">&#39;pixel_values&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">image</span><span class="p">[</span><span class="s1">&#39;pixel_values&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>   
+        <span class="n">inputs</span><span class="p">[</span><span class="s1">&#39;labels&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">labels</span>
+        <span class="k">return</span> <span class="n">inputs</span>
+    
+    <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">images</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Let’s split our dataframe into training and testing set:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="kn">import</span> <span class="n">train_test_split</span>
+
+<span class="n">train_df</span><span class="p">,</span> <span class="n">test_df</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Now we will load each image and caption of our dataset using the <code class="docutils literal notranslate"><span class="pre">LoadDataset</span></code> class we just created:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">train_ds</span> <span class="o">=</span> <span class="n">LoadDataset</span><span class="p">(</span><span class="n">train_df</span><span class="p">)</span>
+<span class="n">test_ds</span> <span class="o">=</span> <span class="n">LoadDataset</span><span class="p">(</span><span class="n">test_df</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="training-the-model">
+<h2>Training the model<a class="headerlink" href="#training-the-model" title="Permalink to this headline">¶</a></h2>
+<p>Finally, it’s time to load in our model and start the training.</p>
+<p>In the previous chapters, we did tasks like named entity recognition and summarization, where we used different classes like <code class="docutils literal notranslate"><span class="pre">AutoModelForTokenClassification</span></code> and <code class="docutils literal notranslate"><span class="pre">AutoModelForSeq2SeqLM</span></code> respectively to load in our pretrained model. For this task also, we have a special class called <code class="docutils literal notranslate"><span class="pre">VisionEncoderDecoderModel</span></code>(you can read more about it <a class="reference external" href="https://huggingface.co/docs/transformers/main/en/model_doc/vision-encoder-decoder#transformers.VisionEncoderDecoderModel">here</a>) where we can pass the name of the vision model and the language model we need for the encoder and the decoder respectively.</p>
+<p>Loading our encoder-decoder model for this task is simple as this:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">transformers</span> <span class="kn">import</span> <span class="n">VisionEncoderDecoderModel</span>
+
+<span class="n">model</span> <span class="o">=</span> <span class="n">VisionEncoderDecoderModel</span><span class="o">.</span><span class="n">from_encoder_decoder_pretrained</span><span class="p">(</span>
+    <span class="n">encoder_checkpoint</span><span class="p">,</span> 
+    <span class="n">decoder_checkpoint</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>If you don’t set a value for <code class="docutils literal notranslate"><span class="pre">decoder_start_token_id</span></code> and <code class="docutils literal notranslate"><span class="pre">pad_token_id</span></code> in the model config, you will get a similar error like this:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="o">/</span><span class="n">opt</span><span class="o">/</span><span class="n">conda</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="mf">.7</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">transformers</span><span class="o">/</span><span class="n">models</span><span class="o">/</span><span class="n">vision_encoder_decoder</span><span class="o">/</span><span class="n">modeling_vision_encoder_decoder</span><span class="o">.</span><span class="n">py</span> <span class="ow">in</span> <span class="n">shift_tokens_right</span><span class="p">(</span><span class="n">input_ids</span><span class="p">,</span> <span class="n">pad_token_id</span><span class="p">,</span> <span class="n">decoder_start_token_id</span><span class="p">)</span>
+     <span class="mi">40</span>     <span class="n">shifted_input_ids</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">:]</span> <span class="o">=</span> <span class="n">input_ids</span><span class="p">[:,</span> <span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span>
+     <span class="mi">41</span>     <span class="k">if</span> <span class="n">decoder_start_token_id</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+<span class="o">---&gt;</span> <span class="mi">42</span>         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Make sure to set the decoder_start_token_id attribute of the model&#39;s configuration.&quot;</span><span class="p">)</span>
+     <span class="mi">43</span>     <span class="n">shifted_input_ids</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">decoder_start_token_id</span>
+     <span class="mi">44</span> 
+
+<span class="ne">ValueError</span><span class="p">:</span> <span class="n">Make</span> <span class="n">sure</span> <span class="n">to</span> <span class="nb">set</span> <span class="n">the</span> <span class="n">decoder_start_token_id</span> <span class="n">attribute</span> <span class="n">of</span> <span class="n">the</span> <span class="n">model</span><span class="s1">&#39;s configuration.</span>
+</pre></div>
+</div>
+<p>So, before proceeding any further, let’s set those values:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">decoder_start_token_id</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="o">.</span><span class="n">bos_token_id</span>
+<span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">pad_token_id</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="o">.</span><span class="n">pad_token_id</span>
+</pre></div>
+</div>
+<p>Inorder to get good and meaningful captions from the model, we should use beam search instead of greedy search while generating the caption. For that, we just have to set a value greater than 1 for <code class="docutils literal notranslate"><span class="pre">num_beams</span></code> in model config:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># set number of beams for beam search to 4</span>
+<span class="n">num_beams</span> <span class="o">=</span> <span class="mi">4</span>
+<span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">num_beams</span> <span class="o">=</span> <span class="n">num_beams</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If you are not familiar with greedy search and beam search, you could use these resources to learn more:</p>
+<ol class="simple">
+<li><p><a class="reference external" href="https://machinelearningmastery.com/beam-search-decoder-natural-language-processing/">Implementing beam search and greedy search</a></p></li>
+<li><p><a class="reference external" href="https://towardsdatascience.com/an-intuitive-explanation-of-beam-search-9b1d744e7a0f">Intuitive explanation of beam search</a></p></li>
+<li><p><a class="reference external" href="https://towardsdatascience.com/foundations-of-nlp-explained-visually-beam-search-how-it-works-1586b9849a24">Working of beam search</a></p></li>
+</ol>
+<p>In short, our model will give more meaningful captions while using beam search than greedy search. Also, increasing the number of beams for beam search will increase the time taken to generate the captions during inference.</p>
+</div>
+<p>And, now it’s time to train the model. We will use the <code class="docutils literal notranslate"><span class="pre">Seq2SeqTrainer</span></code> from transformers library for this. Before that we need to pass some arguments to control the training of our model, we will do that first:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">transformers</span> <span class="kn">import</span> <span class="n">Seq2SeqTrainingArguments</span>
+
+<span class="c1"># batch size</span>
+<span class="n">bs</span> <span class="o">=</span> <span class="mi">8</span>
+
+<span class="n">training_args</span> <span class="o">=</span> <span class="n">Seq2SeqTrainingArguments</span><span class="p">(</span>
+    <span class="n">output_dir</span><span class="o">=</span><span class="s2">&quot;image-caption-generator&quot;</span><span class="p">,</span> <span class="c1"># name of the directory to store training outputs</span>
+    <span class="n">evaluation_strategy</span><span class="o">=</span><span class="s2">&quot;epoch&quot;</span><span class="p">,</span>          <span class="c1"># evaluate after each epoch</span>
+    <span class="n">per_device_train_batch_size</span><span class="o">=</span><span class="n">bs</span><span class="p">,</span>       <span class="c1"># batch size during training</span>
+    <span class="n">per_device_eval_batch_size</span><span class="o">=</span><span class="n">bs</span><span class="p">,</span>        <span class="c1"># batch size during evaluation</span>
+    <span class="n">learning_rate</span><span class="o">=</span><span class="mf">5e-5</span><span class="p">,</span>
+    <span class="n">weight_decay</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span>                    <span class="c1"># weight decay parameter for AdamW optimizer</span>
+    <span class="n">num_train_epochs</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>                   <span class="c1"># number of epochs to train</span>
+    <span class="n">save_strategy</span><span class="o">=</span><span class="s1">&#39;epoch&#39;</span><span class="p">,</span>                <span class="c1"># save checkpoints after each epoch</span>
+    <span class="n">report_to</span><span class="o">=</span><span class="s1">&#39;none&#39;</span><span class="p">,</span>                     <span class="c1"># prevent reporting to wandb, mlflow...</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>Now let’s create the trainer and start the training:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">transformers</span> <span class="kn">import</span> <span class="n">Seq2SeqTrainer</span><span class="p">,</span> <span class="n">default_data_collator</span>
+
+<span class="n">trainer</span> <span class="o">=</span> <span class="n">Seq2SeqTrainer</span><span class="p">(</span>
+    <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
+    <span class="n">tokenizer</span><span class="o">=</span><span class="n">feature_extractor</span><span class="p">,</span>
+    <span class="n">data_collator</span><span class="o">=</span><span class="n">default_data_collator</span><span class="p">,</span>
+    <span class="n">train_dataset</span><span class="o">=</span><span class="n">train_ds</span><span class="p">,</span>
+    <span class="n">eval_dataset</span><span class="o">=</span><span class="n">test_ds</span><span class="p">,</span>
+    <span class="n">args</span><span class="o">=</span><span class="n">training_args</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">trainer</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+<section id="testing-the-model">
+<h2>Testing the model<a class="headerlink" href="#testing-the-model" title="Permalink to this headline">¶</a></h2>
+<p>Now let’s see how good is the captions generated by our model. For the time being, we will use some images from the test set we created earlier:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">inputs</span> <span class="o">=</span> <span class="n">test_ds</span><span class="p">[</span><span class="mi">65</span><span class="p">][</span><span class="s1">&#39;pixel_values&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>Since the <code class="docutils literal notranslate"><span class="pre">feature_extractor</span></code> is already applied to images in the test set, we don’t need to apply it again. We can directly feed the image pixels to our model:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
+
+<span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+<span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+    <span class="c1"># uncomment the below line if feature extractor is not applied to the image already</span>
+    <span class="c1"># inputs = feature_extractor(images=inputs, return_tensors=&#39;pt&#39;).pixel_values</span>
+
+    <span class="c1"># generate caption for the image</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span>
+        <span class="n">inputs</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s1">&#39;cuda&#39;</span><span class="p">),</span> <span class="c1"># move inputs to GPU</span>
+        <span class="n">num_beams</span><span class="o">=</span><span class="n">num_beams</span><span class="p">,</span> 
+        <span class="p">)</span>
+
+<span class="c1"># convert token ids to string format</span>
+<span class="n">decoded_out</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="n">out</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">skip_special_tokens</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">decoded_out</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Here is the image we used and the generated caption:</p>
+<img alt="image_captioning" class="bg-primary mb-1 align-center" src="_images/image_caption_output.png" />
+<p>Wohoo!! All these efforst paid off, the model is generating meaningful captions 🎉.</p>
+</section>
+</section>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            kernelName: "python3",
+            path: "./."
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+              </div>
+              
+        
+            <!-- Previous / next buttons -->
+<div class='prev-next-area'> 
+    <a class='left-prev' id="prev-link" href="causal_language_modeling.html" title="previous page">
+        <i class="fas fa-angle-left"></i>
+        <div class="prev-next-info">
+            <p class="prev-next-subtitle">previous</p>
+            <p class="prev-next-title">Causal language modeling</p>
+        </div>
+    </a>
+    <a class='right-next' id="next-link" href="image_classification.html" title="next page">
+    <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Image classification</p>
+    </div>
+    <i class="fas fa-angle-right"></i>
+    </a>
+</div>
+        
+        </div>
+    </div>
+    <footer class="footer">
+    <div class="container">
+      <p>
+        
+          By Bipin Krishnan P<br/>
+        
+            &copy; Copyright 2021.<br/>
+      </p>
+    </div>
+  </footer>
+</main>
+
+
+      </div>
+    </div>
+  
+  <script src="_static/js/index.be7d3bbb2ef33a8344ce.js"></script>
+
+  </body>
+</html>

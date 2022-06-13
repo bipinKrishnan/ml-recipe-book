@@ -1,0 +1,815 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Image classification</title>
+    
+  <link href="_static/css/theme.css" rel="stylesheet">
+  <link href="_static/css/index.ff1ffe594081f20da1ef19478df9384b.css" rel="stylesheet">
+
+    
+  <link rel="stylesheet"
+    href="_static/vendor/fontawesome/5.13.0/css/all.min.css">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+
+    
+      
+
+    
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-book-theme.css?digest=c3fdc42140077d1ad13ad2f1588a4309" />
+    <link rel="stylesheet" type="text/css" href="_static/togglebutton.css" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="_static/mystnb.css" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-thebe.css" />
+    <link rel="stylesheet" type="text/css" href="_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" />
+    <link rel="stylesheet" type="text/css" href="_static/panels-variables.06eb56fa6e07937060861dad626602ad.css" />
+    
+  <link rel="preload" as="script" href="_static/js/index.be7d3bbb2ef33a8344ce.js">
+
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/togglebutton.js"></script>
+    <script src="_static/clipboard.min.js"></script>
+    <script src="_static/copybutton.js"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
+    <script src="_static/sphinx-book-theme.12a9622fbb08dcb3a2a40b2c02b83a57.js"></script>
+    <script async="async" src="https://unpkg.com/thebe@0.5.1/lib/index.js"></script>
+    <script>
+        const thebe_selector = ".thebe"
+        const thebe_selector_input = "pre"
+        const thebe_selector_output = ".output"
+    </script>
+    <script async="async" src="_static/sphinx-thebe.js"></script>
+    <link rel="canonical" href="https://github.com/image_classification.html" />
+    <link rel="author" title="About these documents" href="about.html" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Image segmentation" href="image_segmentation.html" />
+    <link rel="prev" title="Image captioning" href="image_captioning.html" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="docsearch:language" content="None">
+    
+
+    <!-- Google Analytics -->
+    
+  </head>
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="80">
+    
+    <div class="container-fluid" id="banner"></div>
+
+    
+
+    <div class="container-xl">
+      <div class="row">
+          
+<div class="col-12 col-md-3 bd-sidebar site-navigation show" id="site-navigation">
+    
+        <div class="navbar-brand-box">
+    <a class="navbar-brand text-wrap" href="index.html">
+      
+        <!-- `logo` is deprecated in Sphinx 4.0, so remove this when we stop supporting 3 -->
+        
+      
+      
+      <img src="_static/logo.png" class="logo" alt="logo">
+      
+      
+    </a>
+</div><form class="bd-search d-flex align-items-center" action="search.html" method="get">
+  <i class="icon fas fa-search"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search this book..." aria-label="Search this book..." autocomplete="off" >
+</form><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item active">
+        <ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="about.html">
+   About this book
+  </a>
+ </li>
+</ul>
+<p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
+  Natural language processing
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="named_entity_recognition.html">
+   Named entity recognition
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="masked_language_modeling.html">
+   Masked language modelling
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="translation.html">
+   Machine translation
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="summarization.html">
+   Summarization
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="causal_language_modeling.html">
+   Causal language modeling
+  </a>
+ </li>
+</ul>
+<p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
+  Image &amp; Text
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="image_captioning.html">
+   Image captioning
+  </a>
+ </li>
+</ul>
+<p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
+  Computer vision
+ </span>
+</p>
+<ul class="current nav bd-sidenav">
+ <li class="toctree-l1 current active">
+  <a class="current reference internal" href="#">
+   Image classification
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="image_segmentation.html">
+   Image segmentation
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="object_detection.html">
+   Object detection
+  </a>
+ </li>
+</ul>
+
+    </div>
+</nav> <!-- To handle the deprecated key -->
+
+<div class="navbar_extra_footer">
+  Powered by <a href="https://jupyterbook.org">Jupyter Book</a>
+</div>
+
+</div>
+
+
+          
+
+
+          
+<main class="col py-md-3 pl-md-4 bd-content overflow-auto" role="main">
+    
+    <div class="topbar container-xl fixed-top">
+    <div class="topbar-contents row">
+        <div class="col-12 col-md-3 bd-topbar-whitespace site-navigation show"></div>
+        <div class="col pl-md-4 topbar-main">
+            
+            <button id="navbar-toggler" class="navbar-toggler ml-0" type="button" data-toggle="collapse"
+                data-toggle="tooltip" data-placement="bottom" data-target=".site-navigation" aria-controls="navbar-menu"
+                aria-expanded="true" aria-label="Toggle navigation" aria-controls="site-navigation"
+                title="Toggle navigation" data-toggle="tooltip" data-placement="left">
+                <i class="fas fa-bars"></i>
+                <i class="fas fa-arrow-left"></i>
+                <i class="fas fa-arrow-up"></i>
+            </button>
+            
+            
+<div class="dropdown-buttons-trigger">
+    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn" aria-label="Download this page"><i
+            class="fas fa-download"></i></button>
+
+    <div class="dropdown-buttons">
+        <!-- ipynb file if we had a myst markdown file -->
+        
+        <!-- Download raw file -->
+        <a class="dropdown-buttons" href="_sources/image_classification.md"><button type="button"
+                class="btn btn-secondary topbarbtn" title="Download source file" data-toggle="tooltip"
+                data-placement="left">.md</button></a>
+        <!-- Download PDF via print -->
+        <button type="button" id="download-print" class="btn btn-secondary topbarbtn" title="Print to PDF"
+            onClick="window.print()" data-toggle="tooltip" data-placement="left">.pdf</button>
+    </div>
+</div>
+
+            <!-- Source interaction buttons -->
+
+<div class="dropdown-buttons-trigger">
+    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn"
+        aria-label="Connect with source repository"><i class="fab fa-github"></i></button>
+    <div class="dropdown-buttons sourcebuttons">
+        <a class="repository-button"
+            href="https://github.com/bipinkrishnan/ml-powered-apps"><button type="button" class="btn btn-secondary topbarbtn"
+                data-toggle="tooltip" data-placement="left" title="Source repository"><i
+                    class="fab fa-github"></i>repository</button></a>
+        
+        
+    </div>
+</div>
+
+            <!-- Full screen (wrap in <a> to have style consistency -->
+
+<a class="full-screen-button"><button type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip"
+        data-placement="bottom" onclick="toggleFullScreen()" aria-label="Fullscreen mode"
+        title="Fullscreen mode"><i
+            class="fas fa-expand"></i></button></a>
+
+            <!-- Launch buttons -->
+
+        </div>
+
+        <!-- Table of contents -->
+        <div class="d-none d-md-block col-md-2 bd-toc show">
+            
+            <div class="tocsection onthispage pt-5 pb-3">
+                <i class="fas fa-list"></i> Contents
+            </div>
+            <nav id="bd-toc-nav" aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#introduction">
+   Introduction
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#dataset">
+   Dataset
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#preparing-the-data">
+     Preparing the data
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#training-the-model">
+   Training the model
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#building-the-model-class">
+     Building the model class
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#creating-the-trainer">
+     Creating the trainer
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#testing-the-model">
+   Testing the model
+  </a>
+ </li>
+</ul>
+
+            </nav>
+        </div>
+    </div>
+</div>
+    <div id="main-content" class="row">
+        <div class="col-12 col-md-9 pl-md-3 pr-md-0">
+        
+              <div>
+                
+  <section class="tex2jax_ignore mathjax_ignore" id="image-classification">
+<h1>Image classification<a class="headerlink" href="#image-classification" title="Permalink to this headline">¶</a></h1>
+<section id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<p>With this chapter, we will start our journey into the world of computer vision. Apart from the task of image classification, this chapter will also give you a head start to a bunch of other libraries and tools that are commonly used by the machine learning community.</p>
+<p>By the way, if you are not familiar with image classification, it’s as simple as shown in the below image:</p>
+<img alt="image_classification" class="bg-primary mb-1 align-center" src="_images/img_clf_task.png" />
+<p>As shown above, the model has to classify the image into the correct class/category that it belongs to.</p>
+</section>
+<section id="dataset">
+<h2>Dataset<a class="headerlink" href="#dataset" title="Permalink to this headline">¶</a></h2>
+<p>The dataset we will be using for this task can be found <a class="reference external" href="https://www.kaggle.com/datasets/lasaljaywardena/animal-images-dataset">here</a>. The dataset contain pictures of animals belonging to the following classes:</p>
+<ol class="simple">
+<li><p>Bird</p></li>
+<li><p>Dog</p></li>
+<li><p>Rabbit</p></li>
+<li><p>Fish</p></li>
+<li><p>Cat</p></li>
+<li><p>Guinea pig / mouse</p></li>
+<li><p>Other</p></li>
+</ol>
+<p>Of the above categories, we will drop images belonging to ‘Guinea pig / mouse’ and ‘Other’ from the dataset and use the rest of the categories.</p>
+<p>The dataset contains a folder called ‘animal_images’ and a csv file called ‘animal_data_img.csv’.</p>
+<p>The folder ‘animal_images’ contains all the animal pictures whereas the labels of each image is present in ‘animal_data_img.csv’ file.</p>
+<p>Here is a sample of ‘animal_data_img.csv’ file:</p>
+<img alt="image_clf" class="bg-primary mb-1 align-center" src="_images/img_clf_data.png" />
+<p>The ‘Animal_Type’ column will be our labels and ‘Image_File’ column contains the path to the image file.</p>
+<section id="preparing-the-data">
+<h3>Preparing the data<a class="headerlink" href="#preparing-the-data" title="Permalink to this headline">¶</a></h3>
+<p>Now let’s load in our csv file and write a dataset loading class using pytorch.</p>
+<p>The below code will load our csv with the required columns:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+
+<span class="n">csv_path</span> <span class="o">=</span> <span class="s2">&quot;../input/animal-images-dataset/animal_data_img.csv&quot;</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span>
+    <span class="n">csv_path</span><span class="p">,</span>
+    <span class="n">usecols</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Animal_Type&#39;</span><span class="p">,</span> <span class="s1">&#39;Image_File&#39;</span><span class="p">]</span>
+    <span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">head</span><span class="p">())</span>
+</pre></div>
+</div>
+<p>Output:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>  <span class="n">Animal_Type</span>                                         <span class="n">Image_File</span>
+<span class="mi">0</span>        <span class="n">Bird</span>  <span class="n">animal_images</span><span class="o">/</span><span class="mi">1633802583762</span><span class="n">_Indian</span> <span class="n">Ringneck</span> <span class="n">fo</span><span class="o">...</span>
+<span class="mi">1</span>         <span class="n">Dog</span>  <span class="n">animal_images</span><span class="o">/</span><span class="mi">1633802583996</span><span class="n">_Rottweiler</span> <span class="n">Puppy</span> <span class="n">f</span><span class="o">...</span>
+<span class="mi">2</span>      <span class="n">Rabbit</span>    <span class="n">animal_images</span><span class="o">/</span><span class="mi">1633802584211</span><span class="n">_Rabbit</span> <span class="k">for</span> <span class="n">sale</span><span class="o">.</span><span class="n">jpg</span>
+<span class="mi">3</span>        <span class="n">Bird</span>  <span class="n">animal_images</span><span class="o">/</span><span class="mi">1633802584412</span><span class="n">_Cokatail</span> <span class="n">bird</span> <span class="k">for</span> <span class="o">...</span>
+<span class="mi">4</span>        <span class="n">Bird</span>  <span class="n">animal_images</span><span class="o">/</span><span class="mi">1633802584634</span><span class="n">_Apple</span> <span class="n">Konda</span> <span class="n">Pigeon</span><span class="o">...</span>
+</pre></div>
+</div>
+<p>The value inside ‘Animal_Type’ is in string format, we need to convert them to integers. But before doing that, let’s drop images with ‘Guinea pig / mouse’ and ‘Other’ labels:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># exclude all rows containing &#39;Guinea pig / mouse&#39; and &#39;Other&#39; as labels</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;Animal_Type not in [&#39;Guinea pig / mouse&#39;, &#39;Other&#39;]&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Now let’s convert the labels from string to integer format:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">label_string</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;Animal_Type&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span>
+<span class="n">label_int</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">label_string</span><span class="p">))</span>
+
+<span class="c1"># create a dictionary with string to int label mapping</span>
+<span class="n">label_mapping</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">label_string</span><span class="p">,</span> <span class="n">label_int</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">label_mapping</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Output:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s1">&#39;Bird&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;Dog&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;Rabbit&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;Fish&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s1">&#39;Cat&#39;</span><span class="p">:</span> <span class="mi">4</span><span class="p">}</span>
+</pre></div>
+</div>
+<p>Let’s apply this mapping to ‘Animal_Type’ column:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;labels&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;Animal_Type&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">label_mapping</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>We will now write a simple dataset loading class with pytorch. The class will take in the dataframe we just created and extract the image paths and labels.</p>
+<p>These are the steps we will follow while loading our images and its labels:</p>
+<ul class="simple">
+<li><p>Get the path to the image and its label.</p></li>
+</ul>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+
+<span class="n">root_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;../input/animal-images-dataset/animal_images&quot;</span><span class="p">)</span>
+
+<span class="n">sample_img_path</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;Image_File&#39;</span><span class="p">]</span>
+<span class="n">sample_label</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;labels&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>Load the image using python’s ‘PIL’ library.</p></li>
+</ul>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span>
+
+<span class="n">sample_img</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">root_dir</span><span class="o">/</span><span class="n">sample_img_path</span><span class="p">)</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>Now we will randomly crop the image and resize it and finally convert it to a pytorch tensor.</p></li>
+</ul>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torchvision.transforms</span> <span class="kn">import</span> <span class="n">transforms</span>
+
+<span class="n">transforms</span> <span class="o">=</span> <span class="n">transforms</span><span class="o">.</span><span class="n">Compose</span><span class="p">([</span>
+            <span class="n">transforms</span><span class="o">.</span><span class="n">RandomResizedCrop</span><span class="p">((</span><span class="mi">100</span><span class="p">,</span> <span class="mi">100</span><span class="p">)),</span>
+            <span class="n">transforms</span><span class="o">.</span><span class="n">ToTensor</span><span class="p">(),</span>
+        <span class="p">])</span>
+<span class="n">sample_img</span> <span class="o">=</span> <span class="n">transforms</span><span class="p">(</span><span class="n">sample_img</span><span class="p">)</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>Finally we will convert the label to a pytorch tensor.</p></li>
+</ul>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
+
+<span class="n">sample_label</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">sample_label</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">long</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>And that’s it, we will wrap all of the above stuff into our dataset loading class:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="kn">import</span> <span class="n">Dataset</span>
+<span class="kn">from</span> <span class="nn">torchvision.transforms</span> <span class="kn">import</span> <span class="n">transforms</span>
+
+<span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+
+<span class="k">class</span> <span class="nc">LoadDataset</span><span class="p">(</span><span class="n">Dataset</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">root_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;../input/animal-images-dataset/animal_images&quot;</span><span class="p">)</span>
+
+        <span class="c1"># all the image paths are stores here</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">images</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;Image_File&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+        <span class="c1"># all the labels are stored here</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">labels</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;labels&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+        
+        <span class="c1"># these augmentations are applied to each image</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">transforms</span> <span class="o">=</span> <span class="n">transforms</span><span class="o">.</span><span class="n">Compose</span><span class="p">([</span>
+            <span class="n">transforms</span><span class="o">.</span><span class="n">RandomResizedCrop</span><span class="p">((</span><span class="mi">100</span><span class="p">,</span> <span class="mi">100</span><span class="p">)),</span>
+            <span class="n">transforms</span><span class="o">.</span><span class="n">ToTensor</span><span class="p">(),</span>
+        <span class="p">])</span>
+        
+    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">):</span>
+        <span class="n">img_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">root_dir</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">images</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+
+        <span class="c1"># load the image and apply the augmentations</span>
+        <span class="n">image</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">img_path</span><span class="p">)</span>
+        <span class="n">image</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">transforms</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+
+        <span class="c1"># load the label corresponding to the above image</span>
+        <span class="n">label</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">labels</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">long</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">label</span><span class="p">)</span>
+    
+    <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">images</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Since we have the class to load our images and labels, let’s split our dataframe into train and test sets:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="kn">import</span> <span class="n">train_test_split</span>
+
+<span class="n">train_df</span><span class="p">,</span> <span class="n">test_df</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span>
+    <span class="n">df</span><span class="p">,</span> 
+    <span class="n">test_size</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> 
+    <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> 
+    <span class="n">stratify</span><span class="o">=</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;labels&#39;</span><span class="p">],</span> 
+    <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">,</span>
+    <span class="p">)</span>
+</pre></div>
+</div>
+<p>Now, load in the images and labels of train and test sets:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># training set</span>
+<span class="n">train_ds</span> <span class="o">=</span> <span class="n">LoadDataset</span><span class="p">(</span><span class="n">train_df</span><span class="p">)</span>
+<span class="c1"># test set</span>
+<span class="n">test_ds</span> <span class="o">=</span> <span class="n">LoadDataset</span><span class="p">(</span><span class="n">test_df</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="training-the-model">
+<h2>Training the model<a class="headerlink" href="#training-the-model" title="Permalink to this headline">¶</a></h2>
+<p>We will use <a class="reference external" href="https://pytorchlightning.ai/">pytorch lightning</a> to do the training of our model. Using pytorch lightning is similar to using pytorch, but we will control everything(training, validation, dataloaders etc) from a single place and by doing so we get a lot of extra benefits including:</p>
+<ul class="simple">
+<li><p>a wide range of ready to use callbacks like early stopping.</p></li>
+<li><p>learning rate scheduler</p></li>
+<li><p>automatic batch finder</p></li>
+<li><p>run the code on different devices(like cpu, gpu, tpu etc) with minimal change and so on.</p></li>
+</ul>
+<section id="building-the-model-class">
+<h3>Building the model class<a class="headerlink" href="#building-the-model-class" title="Permalink to this headline">¶</a></h3>
+<p>Let’s see how pytorch lightning organizes our code.</p>
+<p>First of all, we need to use pytorch lightning’s <code class="docutils literal notranslate"><span class="pre">LightningModule</span></code> to build our model class, so let’s import it:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pytorch_lightning</span> <span class="kn">import</span> <span class="n">LightningModule</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>You can install pytorch lightning by running <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">pytorch-lightning</span></code> from the terminal.</p>
+</div>
+<p>We will build an <code class="docutils literal notranslate"><span class="pre">AnimalModel</span></code> model class. This model class will contain the code for training and validation dataloaders, training and validation steps and finally the optimizer. Below is the blueprint of our model class which uses pytorch lightning’s <code class="docutils literal notranslate"><span class="pre">LightningModule</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">AnimalModel</span><span class="p">(</span><span class="n">LightningModule</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="c1"># similar to pytorch forward method</span>
+    
+    <span class="k">def</span> <span class="nf">train_dataloader</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># put the code for training dataloader here</span>
+    
+    <span class="k">def</span> <span class="nf">val_dataloader</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># put the code for validation dataloader here</span>
+
+    <span class="k">def</span> <span class="nf">configure_optimizers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># put the optimizer here</span>
+        
+    <span class="k">def</span> <span class="nf">training_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">batch_idx</span><span class="p">):</span>
+        <span class="c1"># everything done during training the model goes here</span>
+    
+    <span class="k">def</span> <span class="nf">validation_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">batch_idx</span><span class="p">):</span>
+        <span class="c1"># everything done during validation goes here</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">training_step</span></code> and <code class="docutils literal notranslate"><span class="pre">validation_step</span></code> takes in ‘batch’ and ‘batch_idx’ as arguments, this is same as the one shown in pure pytorch below:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># training step</span>
+<span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">epochs</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">batch_idx</span><span class="p">,</span> <span class="n">batch</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">train_dataloader</span><span class="p">):</span>
+        <span class="n">training_step</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">batch_idx</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>So you get the batch itself as argument in <code class="docutils literal notranslate"><span class="pre">training_step</span></code> as well as its index. Similar thing happens for validation also.</p>
+<p>Now let’s fill in each part of our <code class="docutils literal notranslate"><span class="pre">AnimalModel</span></code> one by one. First, let’s create the model (‘resnet34’) that we will be using for this task. We will use the <a class="reference external" href="https://github.com/rwightman/pytorch-image-models/">timm library</a> for creating the model. So, let’s import the library:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">timm</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>You can install timm by running <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">timm</span></code> from your terminal</p>
+</div>
+<p>Now let’s create the model inside <code class="docutils literal notranslate"><span class="pre">__init__</span></code> method of our <code class="docutils literal notranslate"><span class="pre">AnimalModel</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">AnimalModel</span><span class="p">(</span><span class="n">LightningModule</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="c1"># hyper-parameters for training the model</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span> <span class="o">=</span> <span class="mi">64</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">learning_rate</span> <span class="o">=</span> <span class="mf">1e-7</span>
+
+        <span class="c1"># create a pretrained resnet34 by specifying the number of labels to classify</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">timm</span><span class="o">.</span><span class="n">create_model</span><span class="p">(</span>
+            <span class="s2">&quot;resnet34&quot;</span><span class="p">,</span> 
+            <span class="n">pretrained</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> 
+            <span class="n">num_classes</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">labels</span><span class="p">)</span>
+        <span class="p">)</span>
+</pre></div>
+</div>
+<p>The forward method of the model is as simple as passing the inputs to the model and returning the output:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">AnimalModel</span><span class="p">(</span><span class="n">LightningModule</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>We already created our training and evaluation datasets earlier, now let’s wrap it in a pytorch dataloader and return it:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="kn">import</span> <span class="n">DataLoader</span>
+
+<span class="k">class</span> <span class="nc">AnimalModel</span><span class="p">(</span><span class="n">LightningModule</span><span class="p">):</span>
+    <span class="c1"># return training dataloader</span>
+    <span class="k">def</span> <span class="nf">train_dataloader</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">train_ds</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    
+    <span class="c1"># return validation/evaluation dataloader</span>
+    <span class="k">def</span> <span class="nf">val_dataloader</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">test_ds</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Now let’s configure our ‘AdamW’ optimizer:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">AnimalModel</span><span class="p">(</span><span class="n">LightningModule</span><span class="p">):</span>
+    <span class="c1"># return the optimizer</span>
+    <span class="k">def</span> <span class="nf">configure_optimizers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">AdamW</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">learning_rate</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Now it’s time to write the training code. This time, the code for doing common procedures like stepping the optimizer(<code class="docutils literal notranslate"><span class="pre">opt.step()</span></code>), zeroing out the gradients(<code class="docutils literal notranslate"><span class="pre">opt.zero_grad()</span></code>), backprop(<code class="docutils literal notranslate"><span class="pre">loss.backward()</span></code>) etc are taken care by pytorch lightning.</p>
+<p>These are the things done in the training step:</p>
+<ol class="simple">
+<li><p>Get the inputs and labels from ‘batch’.</p></li>
+<li><p>Pass the inputs to the model, get the outputs and calculate the loss.</p></li>
+<li><p>Log the loss(using <code class="docutils literal notranslate"><span class="pre">self.log()</span></code>) and set <code class="docutils literal notranslate"><span class="pre">prog_bar=True</span></code> to show the training loss along with the progress bar.</p></li>
+<li><p>Finally, return the training loss.</p></li>
+</ol>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch.nn.functional</span> <span class="k">as</span> <span class="nn">F</span>
+
+<span class="k">class</span> <span class="nc">AnimalModel</span><span class="p">(</span><span class="n">LightningModule</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">training_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">batch_idx</span><span class="p">):</span>
+        <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">batch</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">loss</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">cross_entropy</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s2">&quot;train_loss&quot;</span><span class="p">,</span> <span class="n">loss</span><span class="p">,</span> <span class="n">prog_bar</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">loss</span>
+</pre></div>
+</div>
+<p>Similarly, we will write the validation step:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">AnimalModel</span><span class="p">(</span><span class="n">LightningModule</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">validation_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">batch_idx</span><span class="p">):</span>
+        <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">batch</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">loss</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">cross_entropy</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s2">&quot;eval_loss&quot;</span><span class="p">,</span> <span class="n">loss</span><span class="p">,</span> <span class="n">prog_bar</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">loss</span>
+</pre></div>
+</div>
+<p>If you wish to have a complete view of our model class, here it is:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">timm</span>
+<span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="kn">import</span> <span class="n">DataLoader</span>
+<span class="kn">import</span> <span class="nn">torch.nn.functional</span> <span class="k">as</span> <span class="nn">F</span>
+
+<span class="k">class</span> <span class="nc">AnimalModel</span><span class="p">(</span><span class="n">LightningModule</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="c1"># hyper-parameters for training the model</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span> <span class="o">=</span> <span class="mi">64</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">learning_rate</span> <span class="o">=</span> <span class="mf">1e-7</span>
+
+        <span class="c1"># create a pretrained resnet34 by specifying the number of labels to classify</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">timm</span><span class="o">.</span><span class="n">create_model</span><span class="p">(</span>
+            <span class="s2">&quot;resnet34&quot;</span><span class="p">,</span> 
+            <span class="n">pretrained</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> 
+            <span class="n">num_classes</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">label_int</span><span class="p">)</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">train_dataloader</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">train_ds</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    
+    <span class="c1"># return validation/evaluation dataloader</span>
+    <span class="k">def</span> <span class="nf">val_dataloader</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">test_ds</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+    <span class="c1"># return the optimizer</span>
+    <span class="k">def</span> <span class="nf">configure_optimizers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">AdamW</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">learning_rate</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">training_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">batch_idx</span><span class="p">):</span>
+        <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">batch</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">loss</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">cross_entropy</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+        
+        <span class="c1"># this is how we log stuff and show it along with the progress bar(prog_bar=True)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s2">&quot;train_loss&quot;</span><span class="p">,</span> <span class="n">loss</span><span class="p">,</span> <span class="n">prog_bar</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">loss</span>
+
+    <span class="k">def</span> <span class="nf">validation_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">batch_idx</span><span class="p">):</span>
+        <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">batch</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">loss</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">cross_entropy</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s2">&quot;eval_loss&quot;</span><span class="p">,</span> <span class="n">loss</span><span class="p">,</span> <span class="n">prog_bar</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">loss</span>
+</pre></div>
+</div>
+</section>
+<section id="creating-the-trainer">
+<h3>Creating the trainer<a class="headerlink" href="#creating-the-trainer" title="Permalink to this headline">¶</a></h3>
+<p>Now it’s time to meet the real hero - The Trainer. Pytorch lightning’s trainer is where all your favourite flags are passed, which includes:</p>
+<ul class="simple">
+<li><p>the learning rate finder</p></li>
+<li><p>over-fitting batches</p></li>
+<li><p>sanity check before running the whole training</p></li>
+<li><p>different types of callbacks</p></li>
+<li><p>logging everything to platforms like wandb, mlflow etc.</p></li>
+</ul>
+<p>You can get the complete capabilties of trainer <a class="reference external" href="https://pytorch-lightning.readthedocs.io/en/stable/common/trainer.html#trainer-flags">here</a>.</p>
+<p>Let’s see how we can use the automatic learning rate finder of the trainer:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pytorch_lightning</span> <span class="kn">import</span> <span class="n">Trainer</span>
+
+<span class="n">trainer</span> <span class="o">=</span> <span class="n">Trainer</span><span class="p">(</span>
+    <span class="n">accelerator</span><span class="o">=</span><span class="s1">&#39;auto&#39;</span><span class="p">,</span> <span class="c1"># automatically detects GPUs or other accelerators</span>
+    <span class="n">auto_lr_find</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>  <span class="c1"># learning rate finder</span>
+    <span class="n">max_epochs</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>      <span class="c1"># number of epochs to train for</span>
+    <span class="n">devices</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>          <span class="c1"># number of devices to use for training(here it is 1 GPU)</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>Now let’s run the learning rate finder:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">AnimalModel</span><span class="p">()</span>
+
+<span class="c1"># pass the model you created</span>
+<span class="n">trainer</span><span class="o">.</span><span class="n">tune</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">.tune()</span></code> method will run the automatic learning rate finder and over write existing learning rate value with what we get from learning rate finder. Thus, you don’t have to manually set it again.</p>
+<p>By default, lightning’s trainer looks for <code class="docutils literal notranslate"><span class="pre">self.learning_rate</span></code> or <code class="docutils literal notranslate"><span class="pre">self.lr</span></code> to store the resulting learning rate. So make sure that you store your learning rate in either of these variables inside your <code class="docutils literal notranslate"><span class="pre">AnimalModel</span></code>.</p>
+<p>Now let’s see how we can use the weights and biases(wandb) callback in pytorch lightning. If you don’t have an account in wandb, you can create it <a class="reference external" href="https://app.wandb.ai/login?signup=true">here</a>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Learn more about weights and biases from <a class="reference external" href="https://wandb.ai/site">here</a>.</p>
+</div>
+<p>For now, we will log our pytorch model, the training loss and validation loss onto wandb. If you want to log some additional stuff, you could use pytorch lightning’s <code class="docutils literal notranslate"><span class="pre">self.log()</span></code>. For example, you could log the learning rate by writing the following code inside <code class="docutils literal notranslate"><span class="pre">training_step</span></code> or <code class="docutils literal notranslate"><span class="pre">validation_step</span></code> of your <code class="docutils literal notranslate"><span class="pre">AnimalModel</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s2">&quot;learning_rate&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">learning_rate</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Now let’s import wand callback and pass it to the trainer. Also pass in a project name and run name to differentiate projects as well as different experiments in the same project:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pytorch_lightning.loggers</span> <span class="kn">import</span> <span class="n">WandbLogger</span>
+
+<span class="c1"># set log_model=True to log the model to wandb after training</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">WandbLogger</span><span class="p">(</span><span class="n">project</span><span class="o">=</span><span class="s1">&#39;lightning-project&#39;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;animal-clf-2&#39;</span><span class="p">,</span> <span class="n">log_model</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="n">trainer</span> <span class="o">=</span> <span class="n">Trainer</span><span class="p">(</span>
+    <span class="n">accelerator</span><span class="o">=</span><span class="s1">&#39;auto&#39;</span><span class="p">,</span> 
+    <span class="n">auto_lr_find</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>  
+    <span class="n">max_epochs</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>      
+    <span class="n">devices</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">logger</span><span class="o">=</span><span class="n">logger</span><span class="p">,</span> <span class="c1"># wandb logger</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>Now let’s find the learning rate and fit/train the model(before running the whole training, pytorch lightning automatically runs a sanity check to see if there are any bugs in our code :)</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">AnimalModel</span><span class="p">()</span>
+<span class="n">trainer</span><span class="o">.</span><span class="n">tune</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+
+<span class="c1"># train the model</span>
+<span class="n">trainer</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Once the training is over, you can head to your <a class="reference external" href="https://wandb.ai/home">wandb dashboard</a> to see the results as well as the saved models. During inference, you can directly fetch your models from wandb and load it as a normal pytorch model. Here are the results logged in wandb from the current experiment:</p>
+<img alt="img_clf" class="bg-primary mb-1 align-center" src="_images/img_clf_wandb.png" />
+</section>
+</section>
+<section id="testing-the-model">
+<h2>Testing the model<a class="headerlink" href="#testing-the-model" title="Permalink to this headline">¶</a></h2>
+<p>Now, let’s see how our model predicts on a sample image from our test set:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+
+<span class="n">sample</span> <span class="o">=</span> <span class="n">test_ds</span><span class="p">[</span><span class="mi">6</span><span class="p">]</span>
+<span class="c1"># model prediction</span>
+<span class="n">pred</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">sample</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+<span class="n">pred</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">pred</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Let’s print the prediction and the image:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">label_mapping</span><span class="p">)</span>
+<span class="c1"># final prediction</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Predicted class: </span><span class="si">{</span><span class="n">pred</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># show image</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">permute</span><span class="p">(</span><span class="n">sample</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">)));</span>
+</pre></div>
+</div>
+<p>Output:</p>
+<img alt="img_clf" class="bg-primary mb-1 align-center" src="_images/img_clf_output.png" />
+<p>Apart from the image classification task, we have learnt a ton of other stuff too - lightning, weights and biases, timm library🏎️</p>
+<p>And that brings to the end of this chapter. We will explore other tasks in computer vision in the coming chapters :)</p>
+</section>
+</section>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            kernelName: "python3",
+            path: "./."
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+              </div>
+              
+        
+            <!-- Previous / next buttons -->
+<div class='prev-next-area'> 
+    <a class='left-prev' id="prev-link" href="image_captioning.html" title="previous page">
+        <i class="fas fa-angle-left"></i>
+        <div class="prev-next-info">
+            <p class="prev-next-subtitle">previous</p>
+            <p class="prev-next-title">Image captioning</p>
+        </div>
+    </a>
+    <a class='right-next' id="next-link" href="image_segmentation.html" title="next page">
+    <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Image segmentation</p>
+    </div>
+    <i class="fas fa-angle-right"></i>
+    </a>
+</div>
+        
+        </div>
+    </div>
+    <footer class="footer">
+    <div class="container">
+      <p>
+        
+          By Bipin Krishnan P<br/>
+        
+            &copy; Copyright 2021.<br/>
+      </p>
+    </div>
+  </footer>
+</main>
+
+
+      </div>
+    </div>
+  
+  <script src="_static/js/index.be7d3bbb2ef33a8344ce.js"></script>
+
+  </body>
+</html>

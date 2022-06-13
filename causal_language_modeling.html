@@ -1,0 +1,523 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Causal language modeling</title>
+    
+  <link href="_static/css/theme.css" rel="stylesheet">
+  <link href="_static/css/index.ff1ffe594081f20da1ef19478df9384b.css" rel="stylesheet">
+
+    
+  <link rel="stylesheet"
+    href="_static/vendor/fontawesome/5.13.0/css/all.min.css">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+
+    
+      
+
+    
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-book-theme.css?digest=c3fdc42140077d1ad13ad2f1588a4309" />
+    <link rel="stylesheet" type="text/css" href="_static/togglebutton.css" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="_static/mystnb.css" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-thebe.css" />
+    <link rel="stylesheet" type="text/css" href="_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" />
+    <link rel="stylesheet" type="text/css" href="_static/panels-variables.06eb56fa6e07937060861dad626602ad.css" />
+    
+  <link rel="preload" as="script" href="_static/js/index.be7d3bbb2ef33a8344ce.js">
+
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/togglebutton.js"></script>
+    <script src="_static/clipboard.min.js"></script>
+    <script src="_static/copybutton.js"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
+    <script src="_static/sphinx-book-theme.12a9622fbb08dcb3a2a40b2c02b83a57.js"></script>
+    <script async="async" src="https://unpkg.com/thebe@0.5.1/lib/index.js"></script>
+    <script>
+        const thebe_selector = ".thebe"
+        const thebe_selector_input = "pre"
+        const thebe_selector_output = ".output"
+    </script>
+    <script async="async" src="_static/sphinx-thebe.js"></script>
+    <link rel="canonical" href="https://github.com/causal_language_modeling.html" />
+    <link rel="author" title="About these documents" href="about.html" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Image captioning" href="image_captioning.html" />
+    <link rel="prev" title="Summarization" href="summarization.html" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="docsearch:language" content="None">
+    
+
+    <!-- Google Analytics -->
+    
+  </head>
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="80">
+    
+    <div class="container-fluid" id="banner"></div>
+
+    
+
+    <div class="container-xl">
+      <div class="row">
+          
+<div class="col-12 col-md-3 bd-sidebar site-navigation show" id="site-navigation">
+    
+        <div class="navbar-brand-box">
+    <a class="navbar-brand text-wrap" href="index.html">
+      
+        <!-- `logo` is deprecated in Sphinx 4.0, so remove this when we stop supporting 3 -->
+        
+      
+      
+      <img src="_static/logo.png" class="logo" alt="logo">
+      
+      
+    </a>
+</div><form class="bd-search d-flex align-items-center" action="search.html" method="get">
+  <i class="icon fas fa-search"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search this book..." aria-label="Search this book..." autocomplete="off" >
+</form><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item active">
+        <ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="about.html">
+   About this book
+  </a>
+ </li>
+</ul>
+<p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
+  Natural language processing
+ </span>
+</p>
+<ul class="current nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="named_entity_recognition.html">
+   Named entity recognition
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="masked_language_modeling.html">
+   Masked language modelling
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="translation.html">
+   Machine translation
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="summarization.html">
+   Summarization
+  </a>
+ </li>
+ <li class="toctree-l1 current active">
+  <a class="current reference internal" href="#">
+   Causal language modeling
+  </a>
+ </li>
+</ul>
+<p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
+  Image &amp; Text
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="image_captioning.html">
+   Image captioning
+  </a>
+ </li>
+</ul>
+<p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
+  Computer vision
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="image_classification.html">
+   Image classification
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="image_segmentation.html">
+   Image segmentation
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="object_detection.html">
+   Object detection
+  </a>
+ </li>
+</ul>
+
+    </div>
+</nav> <!-- To handle the deprecated key -->
+
+<div class="navbar_extra_footer">
+  Powered by <a href="https://jupyterbook.org">Jupyter Book</a>
+</div>
+
+</div>
+
+
+          
+
+
+          
+<main class="col py-md-3 pl-md-4 bd-content overflow-auto" role="main">
+    
+    <div class="topbar container-xl fixed-top">
+    <div class="topbar-contents row">
+        <div class="col-12 col-md-3 bd-topbar-whitespace site-navigation show"></div>
+        <div class="col pl-md-4 topbar-main">
+            
+            <button id="navbar-toggler" class="navbar-toggler ml-0" type="button" data-toggle="collapse"
+                data-toggle="tooltip" data-placement="bottom" data-target=".site-navigation" aria-controls="navbar-menu"
+                aria-expanded="true" aria-label="Toggle navigation" aria-controls="site-navigation"
+                title="Toggle navigation" data-toggle="tooltip" data-placement="left">
+                <i class="fas fa-bars"></i>
+                <i class="fas fa-arrow-left"></i>
+                <i class="fas fa-arrow-up"></i>
+            </button>
+            
+            
+<div class="dropdown-buttons-trigger">
+    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn" aria-label="Download this page"><i
+            class="fas fa-download"></i></button>
+
+    <div class="dropdown-buttons">
+        <!-- ipynb file if we had a myst markdown file -->
+        
+        <!-- Download raw file -->
+        <a class="dropdown-buttons" href="_sources/causal_language_modeling.md"><button type="button"
+                class="btn btn-secondary topbarbtn" title="Download source file" data-toggle="tooltip"
+                data-placement="left">.md</button></a>
+        <!-- Download PDF via print -->
+        <button type="button" id="download-print" class="btn btn-secondary topbarbtn" title="Print to PDF"
+            onClick="window.print()" data-toggle="tooltip" data-placement="left">.pdf</button>
+    </div>
+</div>
+
+            <!-- Source interaction buttons -->
+
+<div class="dropdown-buttons-trigger">
+    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn"
+        aria-label="Connect with source repository"><i class="fab fa-github"></i></button>
+    <div class="dropdown-buttons sourcebuttons">
+        <a class="repository-button"
+            href="https://github.com/bipinkrishnan/ml-powered-apps"><button type="button" class="btn btn-secondary topbarbtn"
+                data-toggle="tooltip" data-placement="left" title="Source repository"><i
+                    class="fab fa-github"></i>repository</button></a>
+        
+        
+    </div>
+</div>
+
+            <!-- Full screen (wrap in <a> to have style consistency -->
+
+<a class="full-screen-button"><button type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip"
+        data-placement="bottom" onclick="toggleFullScreen()" aria-label="Fullscreen mode"
+        title="Fullscreen mode"><i
+            class="fas fa-expand"></i></button></a>
+
+            <!-- Launch buttons -->
+
+        </div>
+
+        <!-- Table of contents -->
+        <div class="d-none d-md-block col-md-2 bd-toc show">
+            
+            <div class="tocsection onthispage pt-5 pb-3">
+                <i class="fas fa-list"></i> Contents
+            </div>
+            <nav id="bd-toc-nav" aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#dataset">
+   Dataset
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#training-the-model">
+   Training the model
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#testing-the-model">
+   Testing the model
+  </a>
+ </li>
+</ul>
+
+            </nav>
+        </div>
+    </div>
+</div>
+    <div id="main-content" class="row">
+        <div class="col-12 col-md-9 pl-md-3 pr-md-0">
+        
+              <div>
+                
+  <section id="causal-language-modeling">
+<h1>Causal language modeling<a class="headerlink" href="#causal-language-modeling" title="Permalink to this headline">¶</a></h1>
+<p>Causal language modeling is nothing but predicting the next token given a sequence of text. Here is an example showing how causal language modeling works:</p>
+<p>If you give an input text like this: <code class="docutils literal notranslate"><span class="pre">'I</span> <span class="pre">am</span> <span class="pre">going'</span></code> and you specify that you want the model to predict the next 2 tokens, the output will be like this - <code class="docutils literal notranslate"><span class="pre">'I</span> <span class="pre">am</span> <span class="pre">going</span> <span class="pre">to</span> <span class="pre">Mumbai'</span></code>.</p>
+<p>You can increase the number of tokens to be predicted as per your needs.</p>
+<p>In this chapter we will not be training a model for completing english sentences, but code. Yes, you read it right, we are going to train a GPT-2 model from scratch for code completion.</p>
+<p>When we give a partial code snippet, our model should autocomplete it.</p>
+<img alt="causal_lm" class="bg-primary mb-1 align-center" src="_images/causal_lm_process.png" />
+<section id="dataset">
+<h2>Dataset<a class="headerlink" href="#dataset" title="Permalink to this headline">¶</a></h2>
+<p>We will be using the stripped down version of the dataset used to train <a class="reference external" href="https://huggingface.co/lvwerra/codeparrot">code parrot model</a>. You can view the dataset by going <a class="reference external" href="https://huggingface.co/datasets/huggingface-course/codeparrot-ds-train">here</a>.</p>
+<p>We will strip down it further becuase all the model training in this book is done using openly available platforms like kaggle and Google colab. If you have more compute, you can definitely go ahead with the complete dataset.</p>
+<p>We will download the dataset and use 0.1% and 0.01% of the whole dataset for training and evaluation respectively.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">datasets</span> <span class="kn">import</span> <span class="n">load_dataset</span>
+
+<span class="n">complete_ds</span> <span class="o">=</span> <span class="n">load_dataset</span><span class="p">(</span><span class="s2">&quot;huggingface-course/codeparrot-ds-train&quot;</span><span class="p">)</span>
+<span class="c1"># further strip down of the dataset</span>
+<span class="n">raw_datasets</span> <span class="o">=</span> <span class="n">complete_ds</span><span class="p">[</span><span class="s1">&#39;train&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">train_test_split</span><span class="p">(</span><span class="n">train_size</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This dataset only contain python code related to machine learning libraries like pandas, scikit-learn, matplotlib and seaborn. Hence, this model will work best for code snippets related to these libraries.</p>
+</div>
+<p>Now let’s load in our tokenizer. We cannot use normal tokenizers that are used for tokenizing natural languages like english because our dataset contain python code. So, we will use a tokenizer that was trained to tokenize python code:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">transformers</span> <span class="kn">import</span> <span class="n">AutoTokenizer</span>
+
+<span class="n">tokenizer</span> <span class="o">=</span> <span class="n">AutoTokenizer</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="s2">&quot;huggingface-course/code-search-net-tokenizer&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>We will write a function to tokenize our dataset. If we truncate our dataset, we will loose a lot of information. Instead, we will combine the rows in our dataset and divide it into chunks of length 128(as we did in the masked language modelling chapter).</p>
+<p>After preprocessing the dataset, each row will have a length of 128.</p>
+<p>Let’s tokenize a single example and see the outputs:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">sample</span> <span class="o">=</span> <span class="n">raw_datasets</span><span class="p">[</span><span class="s1">&#39;train&#39;</span><span class="p">][</span><span class="s1">&#39;content&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+
+<span class="n">tokenizer</span><span class="p">(</span>
+        <span class="n">sample</span><span class="p">,</span> 
+        <span class="n">truncation</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> 
+        <span class="n">max_length</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span>
+        <span class="n">return_overflowing_tokens</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">return_length</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span>
+</pre></div>
+</div>
+<p>Setting <code class="docutils literal notranslate"><span class="pre">return_overflowing_tokens=True</span></code> will split the sample into chunks. And we also return the sequence length for each chunk by setting <code class="docutils literal notranslate"><span class="pre">return_length=True</span></code>. Output of the tokenizer will contain the following things: <code class="docutils literal notranslate"><span class="pre">['input_ids',</span> <span class="pre">'attention_mask',</span> <span class="pre">'length',</span> <span class="pre">'overflow_to_sample_mapping']</span></code></p>
+<p>The <code class="docutils literal notranslate"><span class="pre">'length'</span></code> key contains the length of each chunk and <code class="docutils literal notranslate"><span class="pre">'overflow_to_sample_mapping'</span></code> key contains the sample or row to which the chunk belongs to. For example, if the first row in the dataset is split into 5 chunks of size 128, each chunk will have <code class="docutils literal notranslate"><span class="pre">'overflow_to_sample_mapping'</span></code> equal to 0(index of first row).</p>
+<p>Now let’s write the function to tokenize the whole dataset:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">max_length</span> <span class="o">=</span> <span class="mi">128</span>
+
+<span class="k">def</span> <span class="nf">tokenize</span><span class="p">(</span><span class="n">examples</span><span class="p">):</span>
+    <span class="n">outputs</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="p">(</span>
+        <span class="n">examples</span><span class="p">[</span><span class="s1">&#39;content&#39;</span><span class="p">],</span> 
+        <span class="n">truncation</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> 
+        <span class="n">max_length</span><span class="o">=</span><span class="n">max_length</span><span class="p">,</span>
+        <span class="n">return_overflowing_tokens</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">return_length</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">input_batch</span> <span class="o">=</span> <span class="p">[]</span>
+    
+    <span class="k">for</span> <span class="n">input_ids</span><span class="p">,</span> <span class="n">length</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">outputs</span><span class="p">[</span><span class="s1">&#39;input_ids&#39;</span><span class="p">],</span> <span class="n">outputs</span><span class="p">[</span><span class="s1">&#39;length&#39;</span><span class="p">]):</span>
+        <span class="k">if</span> <span class="n">length</span><span class="o">==</span><span class="n">max_length</span><span class="p">:</span>
+            <span class="n">input_batch</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">input_ids</span><span class="p">)</span>
+            
+    <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;input_ids&quot;</span><span class="p">:</span> <span class="n">input_batch</span><span class="p">}</span>
+</pre></div>
+</div>
+<p>As you can see, we only take chunks whose length is equal to <code class="docutils literal notranslate"><span class="pre">max_length</span></code>, i.e, 128. The rest of the chunks are dropped.</p>
+<p>Another thing is that, we only return the <code class="docutils literal notranslate"><span class="pre">input_ids</span></code>, that is because we will be using a data collator which will automatically create the labels from these <code class="docutils literal notranslate"><span class="pre">input_ids</span></code>.</p>
+<p>Now let’s apply the tokenization function to the whole dataset:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">tokenized_datasets</span> <span class="o">=</span> <span class="n">raw_datasets</span><span class="o">.</span><span class="n">map</span><span class="p">(</span>
+    <span class="n">tokenize</span><span class="p">,</span> 
+    <span class="n">batched</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> 
+    <span class="n">remove_columns</span><span class="o">=</span><span class="n">raw_datasets</span><span class="p">[</span><span class="s1">&#39;train&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">column_names</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="training-the-model">
+<h2>Training the model<a class="headerlink" href="#training-the-model" title="Permalink to this headline">¶</a></h2>
+<p>Now we will load the model and train it. All the previous chapters used a pretrained model which is loaded from a checkpoint, we were just fine-tuning it. But here we will load the GPT-2 model architecture without the pretrained weights, because GPT-2 is pretrained on english language which is very different from the dataset we have.</p>
+<p>First we need to load all the required configurations for GPT-2 model:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">transformers</span> <span class="kn">import</span> <span class="n">AutoConfig</span>
+
+<span class="c1"># load configurations for GPT-2</span>
+<span class="n">config</span> <span class="o">=</span> <span class="n">AutoConfig</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span>
+    <span class="s2">&quot;gpt2&quot;</span><span class="p">,</span> 
+    <span class="n">vocab_size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">tokenizer</span><span class="p">),</span>
+    <span class="n">n_ctx</span><span class="o">=</span><span class="n">max_length</span><span class="p">,</span>
+    <span class="n">bos_token_id</span><span class="o">=</span><span class="n">tokenizer</span><span class="o">.</span><span class="n">bos_token_id</span><span class="p">,</span>
+    <span class="n">eos_token_id</span><span class="o">=</span><span class="n">tokenizer</span><span class="o">.</span><span class="n">eos_token_id</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>All the required values for the configuration are loaded from the pretrained GPT-2’s configuration. We will overwrite some of them according to our usecase. Since we are using a separate tokenizer that tokenizes code, the length of the vocabulary will be different from what GPT-2 was trained on, so we need to overwrite that value with the length of our vocabulary.</p>
+<p>Also, the token id for special tokens(like begining of sequence(bos), end of sequence(eos)) may be different, so we need to overwrite those with what our tokenizer uses. The default context length(<code class="docutils literal notranslate"><span class="pre">n_ctx</span></code>) that GPT-2 model uses is 1024, we have overwritten it to <code class="docutils literal notranslate"><span class="pre">max_length</span></code>, i.e, 128.</p>
+<p>Now we can load the model using the above specified configuraion:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">transformers</span> <span class="kn">import</span> <span class="n">GPT2LMHeadModel</span>
+
+<span class="c1"># load the model from config</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">GPT2LMHeadModel</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>We haven’t set any value for the <code class="docutils literal notranslate"><span class="pre">pad_token</span></code> in our tokenizer(data collator will throw an error otherwise). We will set the <code class="docutils literal notranslate"><span class="pre">eos_token</span></code> as our <code class="docutils literal notranslate"><span class="pre">pad_token</span></code>.</p>
+<p>We will also load the data collator for language modelling,</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">transformers</span> <span class="kn">import</span> <span class="n">DataCollatorForLanguageModeling</span>
+
+<span class="n">tokenizer</span><span class="o">.</span><span class="n">pad_token</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="o">.</span><span class="n">eos_token</span>
+<span class="n">collator</span> <span class="o">=</span> <span class="n">DataCollatorForLanguageModeling</span><span class="p">(</span><span class="n">tokenizer</span><span class="p">,</span> <span class="n">mlm</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The data collator is same as what we used for masked language modeling, just setting <code class="docutils literal notranslate"><span class="pre">mlm=False</span></code> will make the collator ready for causal language modeling.</p>
+<p>Everything is set up, the only part that is remaining is to train the model. We have a change for this chapter, we will be using the <code class="docutils literal notranslate"><span class="pre">Trainer</span></code> from transformers library to do the training for us.</p>
+<p>We need to provide some arguments to the <code class="docutils literal notranslate"><span class="pre">Trainer</span></code> that will control the training of our model.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">transformers</span> <span class="kn">import</span> <span class="n">TrainingArguments</span>
+
+<span class="c1"># training arguments</span>
+<span class="n">args</span> <span class="o">=</span> <span class="n">TrainingArguments</span><span class="p">(</span>
+    <span class="n">output_dir</span><span class="o">=</span><span class="s2">&quot;model_outputs&quot;</span><span class="p">,</span>      <span class="c1"># path to save outputs from training</span>
+    <span class="n">per_device_train_batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span>  <span class="c1"># batch size to use for training</span>
+    <span class="n">per_device_eval_batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span>   <span class="c1"># batch size to use for evaluation</span>
+    <span class="n">evaluation_strategy</span><span class="o">=</span><span class="s2">&quot;epoch&quot;</span><span class="p">,</span>     <span class="c1"># evaluate after each epoch</span>
+    <span class="n">gradient_accumulation_steps</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>   <span class="c1"># accumulate gradients for 8 batches and update the weights</span>
+    <span class="n">num_train_epochs</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>              <span class="c1"># no. of epochs to train for</span>
+    <span class="n">weight_decay</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span>               <span class="c1"># weight decay for AdamW optimizer</span>
+    <span class="n">learning_rate</span><span class="o">=</span><span class="mf">5e-4</span><span class="p">,</span>
+    <span class="n">fp16</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>                       <span class="c1"># mixed precision for faster training</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>Now let’s pass the training arguments, model, tokenizer, data collator, training and evaluation sets to the trainer and start the training.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">transformer</span> <span class="kn">import</span> <span class="n">Trainer</span>
+
+<span class="n">trainer</span> <span class="o">=</span> <span class="n">Trainer</span><span class="p">(</span>
+    <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> 
+    <span class="n">tokenizer</span><span class="o">=</span><span class="n">tokenizer</span><span class="p">,</span> 
+    <span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">,</span> <span class="c1"># training arguments</span>
+    <span class="n">data_collator</span><span class="o">=</span><span class="n">collator</span><span class="p">,</span> 
+    <span class="n">train_dataset</span><span class="o">=</span><span class="n">tokenized_datasets</span><span class="p">[</span><span class="s1">&#39;train&#39;</span><span class="p">],</span>
+    <span class="n">eval_dataset</span><span class="o">=</span><span class="n">tokenized_datasets</span><span class="p">[</span><span class="s1">&#39;test&#39;</span><span class="p">],</span>
+<span class="p">)</span>
+
+<span class="c1"># start training</span>
+<span class="n">trainer</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>I ran the training on kaggle notebooks and it took around 9-10 hours to complete whole training(1 epoch) and evaluation of the model.</p>
+</section>
+<section id="testing-the-model">
+<h2>Testing the model<a class="headerlink" href="#testing-the-model" title="Permalink to this headline">¶</a></h2>
+<p>Now let’s test the model and see if we can get any good results:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># input code</span>
+<span class="n">txt</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2"># import random forest regressor from scikit-learn</span>
+<span class="s2">from sklearn.ensemble import RandomForestRegressor</span>
+
+<span class="s2"># fit random forest model with 300 estimators on X, y:</span>
+<span class="s2">&quot;&quot;&quot;</span>
+
+<span class="c1"># tokenize and move to GPU</span>
+<span class="n">inputs</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="p">(</span><span class="n">txt</span><span class="p">,</span> <span class="n">return_tensors</span><span class="o">=</span><span class="s1">&#39;pt&#39;</span><span class="p">)</span>
+<span class="n">inputs</span> <span class="o">=</span> <span class="n">inputs</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s1">&#39;cuda&#39;</span><span class="p">)</span>
+
+<span class="c1"># generate predictions with maximum length of 130</span>
+<span class="n">out</span> <span class="o">=</span> <span class="n">trainer</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="o">**</span><span class="n">inputs</span><span class="p">,</span> <span class="n">max_length</span><span class="o">=</span><span class="mi">130</span><span class="p">)</span>
+<span class="c1"># decode the predictions</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">tokenizer</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="n">out</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+</pre></div>
+</div>
+<p>Output:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># import random forest regressor from scikit-learn</span>
+<span class="kn">from</span> <span class="nn">sklearn.ensemble</span> <span class="kn">import</span> <span class="n">RandomForestRegressor</span>
+
+<span class="c1"># fit random forest model with 300 estimators on X, y:</span>
+<span class="n">X_train</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">y_test</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">.5</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+<span class="c1"># Fit classifier with all parameters</span>
+<span class="n">classifier</span> <span class="o">=</span> <span class="n">RandomForestRegressor</span><span class="p">(</span><span class="n">n_estimators</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span> <span class="n">max_depth</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">n_estimators</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+<span class="n">classifier</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>There are some mistakes in the output generated by the model, but since we used a small dataset and the model was trained from scratch, this looks decent enough.</p>
+<p>And there you go, you have a machine companion for coding ;)</p>
+</section>
+</section>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            kernelName: "python3",
+            path: "./."
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+              </div>
+              
+        
+            <!-- Previous / next buttons -->
+<div class='prev-next-area'> 
+    <a class='left-prev' id="prev-link" href="summarization.html" title="previous page">
+        <i class="fas fa-angle-left"></i>
+        <div class="prev-next-info">
+            <p class="prev-next-subtitle">previous</p>
+            <p class="prev-next-title">Summarization</p>
+        </div>
+    </a>
+    <a class='right-next' id="next-link" href="image_captioning.html" title="next page">
+    <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Image captioning</p>
+    </div>
+    <i class="fas fa-angle-right"></i>
+    </a>
+</div>
+        
+        </div>
+    </div>
+    <footer class="footer">
+    <div class="container">
+      <p>
+        
+          By Bipin Krishnan P<br/>
+        
+            &copy; Copyright 2021.<br/>
+      </p>
+    </div>
+  </footer>
+</main>
+
+
+      </div>
+    </div>
+  
+  <script src="_static/js/index.be7d3bbb2ef33a8344ce.js"></script>
+
+  </body>
+</html>

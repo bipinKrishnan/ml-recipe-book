@@ -1,0 +1,694 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Masked language modelling</title>
+    
+  <link href="_static/css/theme.css" rel="stylesheet">
+  <link href="_static/css/index.ff1ffe594081f20da1ef19478df9384b.css" rel="stylesheet">
+
+    
+  <link rel="stylesheet"
+    href="_static/vendor/fontawesome/5.13.0/css/all.min.css">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+
+    
+      
+
+    
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-book-theme.css?digest=c3fdc42140077d1ad13ad2f1588a4309" />
+    <link rel="stylesheet" type="text/css" href="_static/togglebutton.css" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="_static/mystnb.css" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-thebe.css" />
+    <link rel="stylesheet" type="text/css" href="_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" />
+    <link rel="stylesheet" type="text/css" href="_static/panels-variables.06eb56fa6e07937060861dad626602ad.css" />
+    
+  <link rel="preload" as="script" href="_static/js/index.be7d3bbb2ef33a8344ce.js">
+
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/togglebutton.js"></script>
+    <script src="_static/clipboard.min.js"></script>
+    <script src="_static/copybutton.js"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
+    <script src="_static/sphinx-book-theme.12a9622fbb08dcb3a2a40b2c02b83a57.js"></script>
+    <script async="async" src="https://unpkg.com/thebe@0.5.1/lib/index.js"></script>
+    <script>
+        const thebe_selector = ".thebe"
+        const thebe_selector_input = "pre"
+        const thebe_selector_output = ".output"
+    </script>
+    <script async="async" src="_static/sphinx-thebe.js"></script>
+    <link rel="canonical" href="https://github.com/masked_language_modeling.html" />
+    <link rel="author" title="About these documents" href="about.html" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Machine translation" href="translation.html" />
+    <link rel="prev" title="Named entity recognition" href="named_entity_recognition.html" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="docsearch:language" content="None">
+    
+
+    <!-- Google Analytics -->
+    
+  </head>
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="80">
+    
+    <div class="container-fluid" id="banner"></div>
+
+    
+
+    <div class="container-xl">
+      <div class="row">
+          
+<div class="col-12 col-md-3 bd-sidebar site-navigation show" id="site-navigation">
+    
+        <div class="navbar-brand-box">
+    <a class="navbar-brand text-wrap" href="index.html">
+      
+        <!-- `logo` is deprecated in Sphinx 4.0, so remove this when we stop supporting 3 -->
+        
+      
+      
+      <img src="_static/logo.png" class="logo" alt="logo">
+      
+      
+    </a>
+</div><form class="bd-search d-flex align-items-center" action="search.html" method="get">
+  <i class="icon fas fa-search"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search this book..." aria-label="Search this book..." autocomplete="off" >
+</form><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item active">
+        <ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="about.html">
+   About this book
+  </a>
+ </li>
+</ul>
+<p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
+  Natural language processing
+ </span>
+</p>
+<ul class="current nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="named_entity_recognition.html">
+   Named entity recognition
+  </a>
+ </li>
+ <li class="toctree-l1 current active">
+  <a class="current reference internal" href="#">
+   Masked language modelling
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="translation.html">
+   Machine translation
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="summarization.html">
+   Summarization
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="causal_language_modeling.html">
+   Causal language modeling
+  </a>
+ </li>
+</ul>
+<p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
+  Image &amp; Text
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="image_captioning.html">
+   Image captioning
+  </a>
+ </li>
+</ul>
+<p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
+  Computer vision
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="image_classification.html">
+   Image classification
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="image_segmentation.html">
+   Image segmentation
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="object_detection.html">
+   Object detection
+  </a>
+ </li>
+</ul>
+
+    </div>
+</nav> <!-- To handle the deprecated key -->
+
+<div class="navbar_extra_footer">
+  Powered by <a href="https://jupyterbook.org">Jupyter Book</a>
+</div>
+
+</div>
+
+
+          
+
+
+          
+<main class="col py-md-3 pl-md-4 bd-content overflow-auto" role="main">
+    
+    <div class="topbar container-xl fixed-top">
+    <div class="topbar-contents row">
+        <div class="col-12 col-md-3 bd-topbar-whitespace site-navigation show"></div>
+        <div class="col pl-md-4 topbar-main">
+            
+            <button id="navbar-toggler" class="navbar-toggler ml-0" type="button" data-toggle="collapse"
+                data-toggle="tooltip" data-placement="bottom" data-target=".site-navigation" aria-controls="navbar-menu"
+                aria-expanded="true" aria-label="Toggle navigation" aria-controls="site-navigation"
+                title="Toggle navigation" data-toggle="tooltip" data-placement="left">
+                <i class="fas fa-bars"></i>
+                <i class="fas fa-arrow-left"></i>
+                <i class="fas fa-arrow-up"></i>
+            </button>
+            
+            
+<div class="dropdown-buttons-trigger">
+    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn" aria-label="Download this page"><i
+            class="fas fa-download"></i></button>
+
+    <div class="dropdown-buttons">
+        <!-- ipynb file if we had a myst markdown file -->
+        
+        <!-- Download raw file -->
+        <a class="dropdown-buttons" href="_sources/masked_language_modeling.md"><button type="button"
+                class="btn btn-secondary topbarbtn" title="Download source file" data-toggle="tooltip"
+                data-placement="left">.md</button></a>
+        <!-- Download PDF via print -->
+        <button type="button" id="download-print" class="btn btn-secondary topbarbtn" title="Print to PDF"
+            onClick="window.print()" data-toggle="tooltip" data-placement="left">.pdf</button>
+    </div>
+</div>
+
+            <!-- Source interaction buttons -->
+
+<div class="dropdown-buttons-trigger">
+    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn"
+        aria-label="Connect with source repository"><i class="fab fa-github"></i></button>
+    <div class="dropdown-buttons sourcebuttons">
+        <a class="repository-button"
+            href="https://github.com/bipinkrishnan/ml-powered-apps"><button type="button" class="btn btn-secondary topbarbtn"
+                data-toggle="tooltip" data-placement="left" title="Source repository"><i
+                    class="fab fa-github"></i>repository</button></a>
+        
+        
+    </div>
+</div>
+
+            <!-- Full screen (wrap in <a> to have style consistency -->
+
+<a class="full-screen-button"><button type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip"
+        data-placement="bottom" onclick="toggleFullScreen()" aria-label="Fullscreen mode"
+        title="Fullscreen mode"><i
+            class="fas fa-expand"></i></button></a>
+
+            <!-- Launch buttons -->
+
+        </div>
+
+        <!-- Table of contents -->
+        <div class="d-none d-md-block col-md-2 bd-toc show">
+            
+            <div class="tocsection onthispage pt-5 pb-3">
+                <i class="fas fa-list"></i> Contents
+            </div>
+            <nav id="bd-toc-nav" aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#what-is-masked-language-modelling">
+   What is masked language modelling?
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#dataset">
+   Dataset
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#downloading-the-dataset">
+     Downloading the dataset
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#preprocessing-the-dataset">
+     Preprocessing the dataset
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#creating-the-dataloaders">
+     Creating the dataloaders
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#training-the-model">
+   Training the model
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#testing-the-final-model">
+   Testing the final model
+  </a>
+ </li>
+</ul>
+
+            </nav>
+        </div>
+    </div>
+</div>
+    <div id="main-content" class="row">
+        <div class="col-12 col-md-9 pl-md-3 pr-md-0">
+        
+              <div>
+                
+  <section id="masked-language-modelling">
+<h1>Masked language modelling<a class="headerlink" href="#masked-language-modelling" title="Permalink to this headline">¶</a></h1>
+<p>Th term masked language modelling(MLM) may feel a bit alien to some of you. No worries, we will definitely dig deeper into it in this chapter.</p>
+<section id="what-is-masked-language-modelling">
+<h2>What is masked language modelling?<a class="headerlink" href="#what-is-masked-language-modelling" title="Permalink to this headline">¶</a></h2>
+<p>As humans we adapt to a field like medicine by going through an extensive 5 year MBBS course and then we apply our skills, similarly we make our transformer model knowledgeable in a specific domain like medicine by pretraining it using <strong>Masked Langauage Modelling(MLM)</strong>, so that our model will perform better, say for example, on a classification task related to medical domain.</p>
+<p>As you have an understanding of why masked language modelling is used, I will show you how it’s done.</p>
+<p>This is how the final inference will look like:</p>
+<img alt="Maked language modelling" class="bg-primary mb-1 align-center" src="_images/mlm_inference.png" />
+<p>We input a sentence with some words replaced/masked with a special token <code class="docutils literal notranslate"><span class="pre">[MASK]</span></code>. The job of the model is to predict the correct word to fill in place of <code class="docutils literal notranslate"><span class="pre">[MASK]</span></code>. In the above figure the model predicts ‘happiness’ as the word to be filled in place of <code class="docutils literal notranslate"><span class="pre">[MASK]</span></code>, which converts the input sentence from <code class="docutils literal notranslate"><span class="pre">'The</span> <span class="pre">goal</span> <span class="pre">of</span> <span class="pre">life</span> <span class="pre">is</span> <span class="pre">[MASK].'</span></code> to <code class="docutils literal notranslate"><span class="pre">'The</span> <span class="pre">goal</span> <span class="pre">of</span> <span class="pre">life</span> <span class="pre">is</span> <span class="pre">happiness.'</span></code>.</p>
+<p>The training data will have randomly masked sentences as inputs to the model and the complete sentence(without any masks) as the label(as shown below):</p>
+<p>Input: <code class="docutils literal notranslate"><span class="pre">'The</span> <span class="pre">full</span> <span class="pre">cost</span> <span class="pre">of</span> <span class="pre">damage</span> <span class="pre">in</span> <span class="pre">[MASK]</span> <span class="pre">Stewart,</span> <span class="pre">one</span> <span class="pre">of</span> <span class="pre">the</span> <span class="pre">areas</span> <span class="pre">[MASK]</span> <span class="pre">affected,</span> <span class="pre">is</span> <span class="pre">still</span> <span class="pre">being</span> <span class="pre">[MASK].'</span></code></p>
+<p>Label: <code class="docutils literal notranslate"><span class="pre">'The</span> <span class="pre">full</span> <span class="pre">cost</span> <span class="pre">of</span> <span class="pre">damage</span> <span class="pre">in</span> <span class="pre">Newton</span> <span class="pre">Stewart,</span> <span class="pre">one</span> <span class="pre">of</span> <span class="pre">the</span> <span class="pre">areas</span> <span class="pre">worst</span> <span class="pre">affected,</span> <span class="pre">is</span> <span class="pre">still</span> <span class="pre">being</span> <span class="pre">assessed.'</span></code></p>
+<p>The model will have to predict the correct words corresponding to the masks. In this way the model will learn about relationship between different words in a sentence. The task is some what similar to ‘fill in the blanks’ type questions that you might have encountered in your high school.</p>
+<p>Now let’s prepare the dataset that we will be using for this task.</p>
+</section>
+<section id="dataset">
+<h2>Dataset<a class="headerlink" href="#dataset" title="Permalink to this headline">¶</a></h2>
+<p>The dataset that we will be using is the <a class="reference external" href="https://huggingface.co/datasets/xsum">extreme summarization dataset</a> which is a collection of news articles and their corresponding summaries. We will drop the ‘summary’ feature and use only the new articles.</p>
+<p>Now let’s look into the structure of our dataset.</p>
+<section id="downloading-the-dataset">
+<h3>Downloading the dataset<a class="headerlink" href="#downloading-the-dataset" title="Permalink to this headline">¶</a></h3>
+<p>We will dounload the dataset from huggingface using their ‘datasets’ library.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">datasets</span> <span class="kn">import</span> <span class="n">load_dataset</span>
+
+<span class="c1"># xsum -&gt; eXtreme SUMmarization</span>
+<span class="n">raw_datasets</span> <span class="o">=</span> <span class="n">load_dataset</span><span class="p">(</span><span class="s1">&#39;xsum&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">raw_datasets</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Output:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">DatasetDict</span><span class="p">({</span>
+    <span class="n">train</span><span class="p">:</span> <span class="n">Dataset</span><span class="p">({</span>
+        <span class="n">features</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;document&#39;</span><span class="p">,</span> <span class="s1">&#39;summary&#39;</span><span class="p">,</span> <span class="s1">&#39;id&#39;</span><span class="p">],</span>
+        <span class="n">num_rows</span><span class="p">:</span> <span class="mi">204045</span>
+    <span class="p">})</span>
+    <span class="n">validation</span><span class="p">:</span> <span class="n">Dataset</span><span class="p">({</span>
+        <span class="n">features</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;document&#39;</span><span class="p">,</span> <span class="s1">&#39;summary&#39;</span><span class="p">,</span> <span class="s1">&#39;id&#39;</span><span class="p">],</span>
+        <span class="n">num_rows</span><span class="p">:</span> <span class="mi">11332</span>
+    <span class="p">})</span>
+    <span class="n">test</span><span class="p">:</span> <span class="n">Dataset</span><span class="p">({</span>
+        <span class="n">features</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;document&#39;</span><span class="p">,</span> <span class="s1">&#39;summary&#39;</span><span class="p">,</span> <span class="s1">&#39;id&#39;</span><span class="p">],</span>
+        <span class="n">num_rows</span><span class="p">:</span> <span class="mi">11334</span>
+    <span class="p">})</span>
+<span class="p">})</span>
+</pre></div>
+</div>
+<p>As you can see from the above figure, we’ve a train, validation and test set. Of which, the training set is a huge one. So, for the sake of simplicity and for faster training, we will take a subset of the ‘train’ set.</p>
+<p>We will take 10,000 rows from the ‘train’ set for training and 2000(20% of the training size) rows for testing:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">train_size</span> <span class="o">=</span> <span class="mi">10000</span>
+<span class="n">test_size</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mf">0.2</span><span class="o">*</span><span class="n">train_size</span><span class="p">)</span>
+<span class="n">seed</span> <span class="o">=</span> <span class="mi">42</span>
+
+<span class="c1"># 10,000 rows for training and 2000 rows for testing</span>
+<span class="n">downsampled_datasets</span> <span class="o">=</span> <span class="n">raw_datasets</span><span class="p">[</span><span class="s1">&#39;train&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">train_test_split</span><span class="p">(</span>
+    <span class="n">train_size</span><span class="o">=</span><span class="n">train_size</span><span class="p">,</span>
+    <span class="n">test_size</span><span class="o">=</span><span class="n">test_size</span><span class="p">,</span>
+    <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">downsampled_datasets</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Output:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">DatasetDict</span><span class="p">({</span>
+    <span class="n">train</span><span class="p">:</span> <span class="n">Dataset</span><span class="p">({</span>
+        <span class="n">features</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;document&#39;</span><span class="p">,</span> <span class="s1">&#39;summary&#39;</span><span class="p">,</span> <span class="s1">&#39;id&#39;</span><span class="p">],</span>
+        <span class="n">num_rows</span><span class="p">:</span> <span class="mi">10000</span>
+    <span class="p">})</span>
+    <span class="n">test</span><span class="p">:</span> <span class="n">Dataset</span><span class="p">({</span>
+        <span class="n">features</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;document&#39;</span><span class="p">,</span> <span class="s1">&#39;summary&#39;</span><span class="p">,</span> <span class="s1">&#39;id&#39;</span><span class="p">],</span>
+        <span class="n">num_rows</span><span class="p">:</span> <span class="mi">2000</span>
+    <span class="p">})</span>
+<span class="p">})</span>
+</pre></div>
+</div>
+</section>
+<section id="preprocessing-the-dataset">
+<h3>Preprocessing the dataset<a class="headerlink" href="#preprocessing-the-dataset" title="Permalink to this headline">¶</a></h3>
+<p>Now let’s prepare our dataset in a way that is needed for our model. Since our task is masked language modelling which is done to give domain knowledge to our model, we cannot afford to lose much information from our input sentences due to truncation.</p>
+<p>The maximum length(of input sentence) of our model is 512, all the inputs that are longer than this will be truncated, but we don’t want this to happen.</p>
+<p>So, we will concatenate all the input sentences and divide them into smaller chunks, and then each chunk will be the inputs to the model as shown in the figure below:</p>
+<img alt="_images/mlm_preprocess.png" class="align-center" src="_images/mlm_preprocess.png" />
+<p>The only difference is that, instead of words it will be tokens. So we will write a function to tokenize the input sentences and then do the above mentioned steps on the tokenized outputs.</p>
+<p>Let’s load the tokenizer for our model:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">transformers</span> <span class="kn">import</span> <span class="n">AutoTokenizer</span>
+
+<span class="c1"># model name</span>
+<span class="n">checkpoint</span> <span class="o">=</span> <span class="s1">&#39;distilbert-base-uncased&#39;</span>
+<span class="n">tokenizer</span> <span class="o">=</span> <span class="n">AutoTokenizer</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="n">checkpoint</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>We will be splitting our inputs into chunks of size 128. When splitting the inputs, the last chunk will be smaller than 128, so we will drop that for now.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">chunk_size</span> <span class="o">=</span> <span class="mi">128</span>
+
+<span class="k">def</span> <span class="nf">create_chunks</span><span class="p">(</span><span class="n">examples</span><span class="p">):</span>
+    <span class="c1"># tokenize the inputs</span>
+    <span class="n">inputs</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="p">(</span><span class="n">examples</span><span class="p">[</span><span class="s1">&#39;document&#39;</span><span class="p">])</span>
+    <span class="c1"># cocatenate the inputs</span>
+    <span class="n">concatenated_examples</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="nb">sum</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="p">[])</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">inputs</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+    <span class="n">total_len</span> <span class="o">=</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">concatenated_examples</span><span class="p">[</span><span class="s1">&#39;input_ids&#39;</span><span class="p">])</span><span class="o">//</span><span class="n">chunk_size</span><span class="p">)</span><span class="o">*</span><span class="n">chunk_size</span>
+    
+    <span class="c1"># create chunks of size 128</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">k</span><span class="p">:</span> <span class="p">[</span><span class="n">v</span><span class="p">[</span><span class="n">i</span><span class="p">:</span> <span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="n">chunk_size</span><span class="p">)]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">total_len</span><span class="p">,</span> <span class="n">chunk_size</span><span class="p">)]</span> 
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">concatenated_examples</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+        <span class="p">}</span>
+    
+    <span class="n">results</span><span class="p">[</span><span class="s1">&#39;labels&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">results</span><span class="p">[</span><span class="s1">&#39;input_ids&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">results</span>
+</pre></div>
+</div>
+<p>Let’s try out the function on our dataset:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">preprocessed_datasets</span> <span class="o">=</span> <span class="n">downsampled_datasets</span><span class="o">.</span><span class="n">map</span><span class="p">(</span>
+    <span class="n">create_chunks</span><span class="p">,</span> 
+    <span class="n">batched</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> 
+    <span class="n">remove_columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;document&#39;</span><span class="p">,</span> <span class="s1">&#39;summary&#39;</span><span class="p">,</span> <span class="s1">&#39;id&#39;</span><span class="p">]</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>Let’s check the size of our inputs now:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">sample</span> <span class="o">=</span> <span class="n">preprocessed_datasets</span><span class="p">[</span><span class="s1">&#39;train&#39;</span><span class="p">][:</span><span class="mi">5</span><span class="p">]</span>
+
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">sample</span><span class="p">[</span><span class="s1">&#39;input_ids&#39;</span><span class="p">]:</span>
+    <span class="n">input_length</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">input_length</span><span class="p">)</span> 
+</pre></div>
+</div>
+<p>Output:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="mi">128</span>
+<span class="mi">128</span>
+<span class="mi">128</span>
+<span class="mi">128</span>
+<span class="mi">128</span>
+</pre></div>
+</div>
+<p>As you can see, the size of every input is now 128.</p>
+<p>Now let’s see how our inputs and labels look like,</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">sample_inputs</span> <span class="o">=</span> <span class="n">sample</span><span class="p">[</span><span class="s1">&#39;input_ids&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">sample_labels</span> <span class="o">=</span> <span class="n">sample</span><span class="p">[</span><span class="s1">&#39;labels&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+
+<span class="c1"># decode the tokens</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;INPUTS:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">tokenizer</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="n">sample_inputs</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">LABELS:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">tokenizer</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="n">sample_labels</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>Output:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">INPUTS</span><span class="p">:</span>
+ <span class="p">[</span><span class="n">CLS</span><span class="p">]</span> <span class="n">media</span> <span class="n">playback</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">supported</span> <span class="n">on</span> <span class="n">this</span> <span class="n">device</span> <span class="n">varnish</span> <span class="ow">and</span> <span class="n">james</span> <span class="n">were</span> <span class="n">third</span> <span class="ow">in</span> <span class="n">the</span> <span class="n">women</span><span class="s1">&#39;s team sprint but the two men&#39;</span><span class="n">s</span> <span class="n">squads</span> <span class="n">failed</span> <span class="n">to</span> <span class="n">reach</span> <span class="n">their</span> <span class="n">respective</span> <span class="n">medal</span> <span class="n">ride</span> <span class="o">-</span> <span class="n">offs</span><span class="o">.</span> <span class="n">the</span> <span class="n">sprint</span> <span class="n">team</span> <span class="n">were</span> <span class="n">fifth</span><span class="p">,</span> <span class="k">while</span> <span class="n">the</span> <span class="n">pursuit</span> <span class="n">quartet</span> <span class="n">finished</span> <span class="n">eighth</span><span class="o">.</span> <span class="s2">&quot; we&#39;ve had some problems, &quot;</span> <span class="n">said</span> <span class="n">pursuit</span> <span class="n">rider</span> <span class="n">ed</span> <span class="n">clancy</span><span class="o">.</span> <span class="n">britain</span> <span class="n">won</span> <span class="n">the</span> <span class="n">four</span> <span class="o">-</span> <span class="n">man</span> <span class="n">pursuit</span> <span class="n">event</span> <span class="ow">in</span> <span class="mi">2012</span> <span class="ow">and</span> <span class="n">took</span> <span class="n">silver</span> <span class="ow">in</span> <span class="mf">2013.</span> <span class="n">they</span> <span class="n">also</span> <span class="n">won</span> <span class="n">gold</span> <span class="n">at</span> <span class="n">the</span> <span class="mi">2008</span> <span class="ow">and</span> <span class="mi">2012</span> <span class="n">olympic</span> <span class="n">games</span><span class="o">.</span> <span class="n">but</span> <span class="n">two</span> <span class="o">-</span> <span class="n">time</span> <span class="n">olympic</span> <span class="n">gold</span> <span class="n">medallist</span> <span class="n">clancy</span><span class="p">,</span> <span class="n">sam</span> <span class="n">harrison</span><span class="p">,</span> <span class="n">owain</span> <span class="n">doull</span> <span class="ow">and</span> <span class="n">jon</span> <span class="n">dibben</span> <span class="n">finished</span> <span class="n">eighth</span> <span class="n">this</span> <span class="n">time</span> <span class="ow">in</span> <span class="n">four</span> <span class="n">minutes</span> <span class="mf">4.</span> <span class="mi">419</span> <span class="n">seconds</span>
+
+<span class="n">LABELS</span><span class="p">:</span>
+ <span class="p">[</span><span class="n">CLS</span><span class="p">]</span> <span class="n">media</span> <span class="n">playback</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">supported</span> <span class="n">on</span> <span class="n">this</span> <span class="n">device</span> <span class="n">varnish</span> <span class="ow">and</span> <span class="n">james</span> <span class="n">were</span> <span class="n">third</span> <span class="ow">in</span> <span class="n">the</span> <span class="n">women</span><span class="s1">&#39;s team sprint but the two men&#39;</span><span class="n">s</span> <span class="n">squads</span> <span class="n">failed</span> <span class="n">to</span> <span class="n">reach</span> <span class="n">their</span> <span class="n">respective</span> <span class="n">medal</span> <span class="n">ride</span> <span class="o">-</span> <span class="n">offs</span><span class="o">.</span> <span class="n">the</span> <span class="n">sprint</span> <span class="n">team</span> <span class="n">were</span> <span class="n">fifth</span><span class="p">,</span> <span class="k">while</span> <span class="n">the</span> <span class="n">pursuit</span> <span class="n">quartet</span> <span class="n">finished</span> <span class="n">eighth</span><span class="o">.</span> <span class="s2">&quot; we&#39;ve had some problems, &quot;</span> <span class="n">said</span> <span class="n">pursuit</span> <span class="n">rider</span> <span class="n">ed</span> <span class="n">clancy</span><span class="o">.</span> <span class="n">britain</span> <span class="n">won</span> <span class="n">the</span> <span class="n">four</span> <span class="o">-</span> <span class="n">man</span> <span class="n">pursuit</span> <span class="n">event</span> <span class="ow">in</span> <span class="mi">2012</span> <span class="ow">and</span> <span class="n">took</span> <span class="n">silver</span> <span class="ow">in</span> <span class="mf">2013.</span> <span class="n">they</span> <span class="n">also</span> <span class="n">won</span> <span class="n">gold</span> <span class="n">at</span> <span class="n">the</span> <span class="mi">2008</span> <span class="ow">and</span> <span class="mi">2012</span> <span class="n">olympic</span> <span class="n">games</span><span class="o">.</span> <span class="n">but</span> <span class="n">two</span> <span class="o">-</span> <span class="n">time</span> <span class="n">olympic</span> <span class="n">gold</span> <span class="n">medallist</span> <span class="n">clancy</span><span class="p">,</span> <span class="n">sam</span> <span class="n">harrison</span><span class="p">,</span> <span class="n">owain</span> <span class="n">doull</span> <span class="ow">and</span> <span class="n">jon</span> <span class="n">dibben</span> <span class="n">finished</span> <span class="n">eighth</span> <span class="n">this</span> <span class="n">time</span> <span class="ow">in</span> <span class="n">four</span> <span class="n">minutes</span> <span class="mf">4.</span> <span class="mi">419</span> <span class="n">seconds</span>
+</pre></div>
+</div>
+<p>Both of them looks the same, there are no masked words at all. But what we require is inputs with randomly masked words like this:</p>
+<p><code class="docutils literal notranslate"><span class="pre">This</span> <span class="pre">[MASK]</span> <span class="pre">is</span> <span class="pre">going</span> <span class="pre">to</span> <span class="pre">the</span> <span class="pre">park</span> <span class="pre">[MASK].</span></code></p>
+<p>and the corresponding labels with no masked words like below:</p>
+<p><code class="docutils literal notranslate"><span class="pre">This</span> <span class="pre">man</span> <span class="pre">is</span> <span class="pre">going</span> <span class="pre">to</span> <span class="pre">the</span> <span class="pre">park</span> <span class="pre">tomorrow.</span></code></p>
+<p>So, the only part that’s remaining is randomly masking the inputs which can be done with <code class="docutils literal notranslate"><span class="pre">DataCollatorForLanguageModeling</span></code> from transformers library just like below:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">transformers</span> <span class="kn">import</span> <span class="n">DataCollatorForLanguageModeling</span>
+
+<span class="n">collate_fn</span> <span class="o">=</span> <span class="n">DataCollatorForLanguageModeling</span><span class="p">(</span>
+    <span class="n">tokenizer</span><span class="p">,</span> 
+    <span class="n">mlm_probability</span><span class="o">=</span><span class="mf">0.15</span>
+    <span class="p">)</span>
+</pre></div>
+</div>
+<p>We have set an additional parameter <code class="docutils literal notranslate"><span class="pre">mlm_probability=0.15</span></code> which means that each token has a 15% chance to be masked. We cannot pass all the inpputs directly to this <code class="docutils literal notranslate"><span class="pre">collate_fn</span></code>, instead we need to put each example(containing <code class="docutils literal notranslate"><span class="pre">input_ids</span></code>, <code class="docutils literal notranslate"><span class="pre">attention_mask</span></code> and <code class="docutils literal notranslate"><span class="pre">labels</span></code>) into a list as shown below:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># first 5 examples from train set</span>
+<span class="n">first_5_rows</span> <span class="o">=</span> <span class="n">preprocessed_datasets</span><span class="p">[</span><span class="s1">&#39;train&#39;</span><span class="p">][:</span><span class="mi">5</span><span class="p">]</span>
+<span class="n">input_list</span> <span class="o">=</span> <span class="p">[</span><span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">first_5_rows</span><span class="p">,</span> <span class="n">v</span><span class="p">))</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="n">first_5_rows</span><span class="o">.</span><span class="n">values</span><span class="p">())]</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">input_list</span></code> is a list containing examples and will have a format like below:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="p">[</span>
+    <span class="p">{</span><span class="s1">&#39;input_ids&#39;</span><span class="p">:</span> <span class="p">[</span><span class="o">...</span><span class="p">],</span> <span class="s1">&#39;attention_mask&#39;</span><span class="p">:</span> <span class="p">[</span><span class="o">...</span><span class="p">],</span> <span class="s1">&#39;labels&#39;</span><span class="p">:</span> <span class="p">[</span><span class="o">...</span><span class="p">]},</span>
+    <span class="p">{</span><span class="s1">&#39;input_ids&#39;</span><span class="p">:</span> <span class="p">[</span><span class="o">...</span><span class="p">],</span> <span class="s1">&#39;attention_mask&#39;</span><span class="p">:</span> <span class="p">[</span><span class="o">...</span><span class="p">],</span> <span class="s1">&#39;labels&#39;</span><span class="p">:</span> <span class="p">[</span><span class="o">...</span><span class="p">]},</span>
+    <span class="p">{</span><span class="s1">&#39;input_ids&#39;</span><span class="p">:</span> <span class="p">[</span><span class="o">...</span><span class="p">],</span> <span class="s1">&#39;attention_mask&#39;</span><span class="p">:</span> <span class="p">[</span><span class="o">...</span><span class="p">],</span> <span class="s1">&#39;labels&#39;</span><span class="p">:</span> <span class="p">[</span><span class="o">...</span><span class="p">]},</span>
+    <span class="p">{</span><span class="s1">&#39;input_ids&#39;</span><span class="p">:</span> <span class="p">[</span><span class="o">...</span><span class="p">],</span> <span class="s1">&#39;attention_mask&#39;</span><span class="p">:</span> <span class="p">[</span><span class="o">...</span><span class="p">],</span> <span class="s1">&#39;labels&#39;</span><span class="p">:</span> <span class="p">[</span><span class="o">...</span><span class="p">]},</span>
+    <span class="p">{</span><span class="s1">&#39;input_ids&#39;</span><span class="p">:</span> <span class="p">[</span><span class="o">...</span><span class="p">],</span> <span class="s1">&#39;attention_mask&#39;</span><span class="p">:</span> <span class="p">[</span><span class="o">...</span><span class="p">],</span> <span class="s1">&#39;labels&#39;</span><span class="p">:</span> <span class="p">[</span><span class="o">...</span><span class="p">]},</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+<p>Now we can apply our collator on this list:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">collate_fn</span><span class="p">(</span><span class="n">input_list</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>While applying the above function we will get a new set of masked <code class="docutils literal notranslate"><span class="pre">input_ids</span></code> and a new set of <code class="docutils literal notranslate"><span class="pre">labels</span></code>. All the tokens in the labels except for the tokens corresponding to the mask will have a value of -100, which is a special number because it is ignored by our loss function :) So while calculating the loss, we will only consider the losses corresponding to the masked words and ignore others.</p>
+<p>Here is an example to illustrate the same:</p>
+<p>Suppose we have a set of tokens(converted to integers) like this: <code class="docutils literal notranslate"><span class="pre">[23,</span> <span class="pre">25,</span> <span class="pre">100,</span> <span class="pre">134,</span> <span class="pre">78,</span> <span class="pre">56]</span></code></p>
+<p>Once we pass the above inputs to our collator, we will get a randomly masked output(where 103 is the id corresponding to the mask): <code class="docutils literal notranslate"><span class="pre">[23,</span> <span class="pre">103,</span> <span class="pre">100,</span> <span class="pre">134,</span> <span class="pre">103,</span> <span class="pre">56]</span></code> and the labels corresponding to the new inputs will be these: <code class="docutils literal notranslate"><span class="pre">[-100,</span> <span class="pre">25,</span> <span class="pre">-100,</span> <span class="pre">-100,</span> <span class="pre">78,</span> <span class="pre">-100]</span></code> where the real token ids are shown only for the masked tokens, for others it’s replaced with -100.</p>
+</section>
+<section id="creating-the-dataloaders">
+<h3>Creating the dataloaders<a class="headerlink" href="#creating-the-dataloaders" title="Permalink to this headline">¶</a></h3>
+<p>As we have our training dataset processed and our collator in place, we can create our training dataloader:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="kn">import</span> <span class="n">DataLoader</span>
+
+<span class="n">batch_size</span> <span class="o">=</span> <span class="mi">64</span>
+
+<span class="n">train_dl</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span>
+    <span class="n">preprocessed_datasets</span><span class="p">[</span><span class="s1">&#39;train&#39;</span><span class="p">],</span> 
+    <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span> 
+    <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">collate_fn</span><span class="o">=</span><span class="n">collate_fn</span>
+    <span class="p">)</span>
+</pre></div>
+</div>
+<p>Our collator applies random masking each time we call it. But we need a fixed set with no variability during evaluation so that we have a fair comparison after each epoch.</p>
+<p>So, instead of using <code class="docutils literal notranslate"><span class="pre">DataCollatorForLanguageModeling</span></code> directly in our test dataloader, we will wrap it in a function and apply to the test set before creating the dataloader:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">apply_random_mask</span><span class="p">(</span><span class="n">examples</span><span class="p">):</span>
+    <span class="n">example_list</span> <span class="o">=</span> <span class="p">[</span><span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">examples</span><span class="p">,</span> <span class="n">v</span><span class="p">))</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="n">examples</span><span class="o">.</span><span class="n">values</span><span class="p">())]</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">collate_fn</span><span class="p">(</span><span class="n">example_list</span><span class="p">)</span>
+    <span class="c1"># convert the values to numpy arrays</span>
+    <span class="k">return</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">output</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+
+<span class="n">test_dataset</span> <span class="o">=</span> <span class="n">preprocessed_datasets</span><span class="p">[</span><span class="s1">&#39;test&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span>
+    <span class="n">apply_random_mask</span><span class="p">,</span> 
+    <span class="n">batched</span><span class="o">=</span><span class="kc">True</span>
+    <span class="p">)</span>
+</pre></div>
+</div>
+<p>and then use the <code class="docutils literal notranslate"><span class="pre">default_data_collator</span></code> from transformers library to collate our data for the test dataloader.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">transformers</span> <span class="kn">import</span> <span class="n">default_data_collator</span>
+
+<span class="n">test_dl</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span>
+    <span class="n">test_dataset</span><span class="p">,</span> 
+    <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span> 
+    <span class="n">shuffle</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> 
+    <span class="n">collate_fn</span><span class="o">=</span><span class="n">default_data_collator</span>
+    <span class="p">)</span>
+</pre></div>
+</div>
+<p>We’ve our training and testing dataloader in place, now it’s time to train the model.</p>
+</section>
+</section>
+<section id="training-the-model">
+<h2>Training the model<a class="headerlink" href="#training-the-model" title="Permalink to this headline">¶</a></h2>
+<p>First we will create the model, optimizer and move everything to GPU using accelerate,</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">transformers</span> <span class="kn">import</span> <span class="n">AutoModelForMaskedLM</span>
+<span class="kn">from</span> <span class="nn">accelerate</span> <span class="kn">import</span> <span class="n">Accelerator</span>
+
+<span class="n">model</span> <span class="o">=</span> <span class="n">AutoModelForMaskedLM</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="n">checkpoint</span><span class="p">)</span>
+<span class="n">opt</span> <span class="o">=</span> <span class="n">optim</span><span class="o">.</span><span class="n">AdamW</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="mf">1.23e-5</span><span class="p">)</span>
+
+<span class="n">accelerator</span> <span class="o">=</span> <span class="n">Accelerator</span><span class="p">()</span>
+<span class="c1"># move everything to GPU</span>
+<span class="n">train_dl</span><span class="p">,</span> <span class="n">test_dl</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">opt</span> <span class="o">=</span> <span class="n">accelerator</span><span class="o">.</span><span class="n">prepare</span><span class="p">(</span><span class="n">train_dl</span><span class="p">,</span> <span class="n">test_dl</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">opt</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Now let’s define two functions, one for the training loop and the other for the evaluation loop, just like we did in the last chapter. One thing to note is that the metric that we will be using to evaluate our model performance is called <strong>perplexity</strong>, which here is the exponential of cross entropy loss.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+
+<span class="k">def</span> <span class="nf">run_training_loop</span><span class="p">(</span><span class="n">train_dl</span><span class="p">):</span>
+    <span class="n">losses</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">batch</span> <span class="ow">in</span> <span class="n">train_dl</span><span class="p">:</span>
+        <span class="n">opt</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="o">**</span><span class="n">batch</span><span class="p">)</span>
+        <span class="n">accelerator</span><span class="o">.</span><span class="n">backward</span><span class="p">(</span><span class="n">out</span><span class="o">.</span><span class="n">loss</span><span class="p">)</span>
+        <span class="n">opt</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+        
+        <span class="c1"># aggregate the losses over each batch</span>
+        <span class="n">losses</span> <span class="o">+=</span> <span class="n">out</span><span class="o">.</span><span class="n">loss</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+    <span class="n">losses</span> <span class="o">/=</span> <span class="nb">len</span><span class="p">(</span><span class="n">train_dl</span><span class="p">)</span>
+    <span class="c1"># exponential of cross entropy</span>
+    <span class="n">perplexity</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">losses</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">perplexity</span>
+</pre></div>
+</div>
+<p>Similarly, we will write our evaluation loop:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">run_evaluation_loop</span><span class="p">(</span><span class="n">test_dl</span><span class="p">):</span>
+    <span class="n">losses</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+    
+    <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+        <span class="k">for</span> <span class="n">batch</span> <span class="ow">in</span> <span class="n">test_dl</span><span class="p">:</span>
+            <span class="n">out</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="o">**</span><span class="n">batch</span><span class="p">)</span>
+            <span class="c1"># aggregate the losses over each batch</span>
+            <span class="n">losses</span> <span class="o">+=</span> <span class="n">out</span><span class="o">.</span><span class="n">loss</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+            
+    <span class="n">losses</span> <span class="o">/=</span> <span class="nb">len</span><span class="p">(</span><span class="n">test_dl</span><span class="p">)</span>
+    <span class="c1"># exponential of cross entropy</span>
+    <span class="n">perplexity</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">losses</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">perplexity</span>
+</pre></div>
+</div>
+<p>Now we will train the model for 3 pochs and save after each epoch:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">epochs</span> <span class="o">=</span> <span class="mi">3</span>
+
+<span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">epochs</span><span class="p">):</span>
+    <span class="n">train_perplexity</span> <span class="o">=</span> <span class="n">run_training_loop</span><span class="p">(</span><span class="n">train_dl</span><span class="p">)</span>
+    <span class="n">test_perplexity</span> <span class="o">=</span> <span class="n">run_evaluation_loop</span><span class="p">(</span><span class="n">test_dl</span><span class="p">)</span>
+    
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;epoch: </span><span class="si">{</span><span class="n">epoch</span><span class="si">}</span><span class="s2"> train_acc: </span><span class="si">{</span><span class="n">train_perplexity</span><span class="si">}</span><span class="s2"> val_acc: </span><span class="si">{</span><span class="n">test_perplexity</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    
+    <span class="c1"># save the model at the end of epoch</span>
+    <span class="n">torch</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">state_dict</span><span class="p">(),</span> <span class="sa">f</span><span class="s2">&quot;model-v</span><span class="si">{</span><span class="n">epoch</span><span class="si">}</span><span class="s2">.pt&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="testing-the-final-model">
+<h2>Testing the final model<a class="headerlink" href="#testing-the-final-model" title="Permalink to this headline">¶</a></h2>
+<p>Now let’s test the model with an example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">text</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">Rajesh Shah, one of the shop&#39;s co-owners, told the [MASK]</span>
+<span class="s2">there would be a new name.</span>
+<span class="s2">&quot;&quot;&quot;</span>
+
+<span class="c1"># tokenize the inputs and pass to model</span>
+<span class="n">inputs</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">return_tensors</span><span class="o">=</span><span class="s1">&#39;pt&#39;</span><span class="p">)</span>
+<span class="n">out</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="o">**</span><span class="n">inputs</span><span class="p">)</span>
+
+<span class="c1"># get the token id of [MASK]</span>
+<span class="n">mask_token_id</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="o">.</span><span class="n">mask_token_id</span>
+<span class="c1"># find the position of [MASK] in the input</span>
+<span class="n">mask_idx</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">inputs</span><span class="p">[</span><span class="s1">&#39;input_ids&#39;</span><span class="p">]</span><span class="o">==</span><span class="n">mask_token_id</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+
+<span class="c1"># decode the model prediction corresponding to [MASK]</span>
+<span class="n">preds</span> <span class="o">=</span> <span class="n">out</span><span class="o">.</span><span class="n">logits</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">mask_pred</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="n">preds</span><span class="p">[</span><span class="n">mask_idx</span><span class="p">])</span>
+
+<span class="c1"># replace [MASK] with predicted word</span>
+<span class="n">final_text</span> <span class="o">=</span> <span class="n">text</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;[MASK]&#39;</span><span class="p">,</span> <span class="n">mask_pred</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">final_text</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Output:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Rajesh</span> <span class="n">Shah</span><span class="p">,</span> <span class="n">one</span> <span class="n">of</span> <span class="n">the</span> <span class="n">shop</span><span class="s1">&#39;s co-owners, told the bbc there would be a new name.</span>
+</pre></div>
+</div>
+<p>Aaaand, we have a model that can do fill in the blanks for you ;)</p>
+</section>
+</section>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            kernelName: "python3",
+            path: "./."
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+              </div>
+              
+        
+            <!-- Previous / next buttons -->
+<div class='prev-next-area'> 
+    <a class='left-prev' id="prev-link" href="named_entity_recognition.html" title="previous page">
+        <i class="fas fa-angle-left"></i>
+        <div class="prev-next-info">
+            <p class="prev-next-subtitle">previous</p>
+            <p class="prev-next-title">Named entity recognition</p>
+        </div>
+    </a>
+    <a class='right-next' id="next-link" href="translation.html" title="next page">
+    <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Machine translation</p>
+    </div>
+    <i class="fas fa-angle-right"></i>
+    </a>
+</div>
+        
+        </div>
+    </div>
+    <footer class="footer">
+    <div class="container">
+      <p>
+        
+          By Bipin Krishnan P<br/>
+        
+            &copy; Copyright 2021.<br/>
+      </p>
+    </div>
+  </footer>
+</main>
+
+
+      </div>
+    </div>
+  
+  <script src="_static/js/index.be7d3bbb2ef33a8344ce.js"></script>
+
+  </body>
+</html>
