@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>Masked language modelling</title>
+    <title>Masked language modeling</title>
     
   <link href="_static/css/theme.css" rel="stylesheet">
   <link href="_static/css/index.ff1ffe594081f20da1ef19478df9384b.css" rel="stylesheet">
@@ -110,7 +110,7 @@
  </li>
  <li class="toctree-l1 current active">
   <a class="current reference internal" href="#">
-   Masked language modelling
+   Masked language modeling
   </a>
  </li>
  <li class="toctree-l1">
@@ -247,8 +247,8 @@
             <nav id="bd-toc-nav" aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#what-is-masked-language-modelling">
-   What is masked language modelling?
+  <a class="reference internal nav-link" href="#what-is-masked-language-modeling">
+   What is masked language modeling?
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
@@ -294,15 +294,15 @@
         
               <div>
                 
-  <section id="masked-language-modelling">
-<h1>Masked language modelling<a class="headerlink" href="#masked-language-modelling" title="Permalink to this headline">¶</a></h1>
-<p>Th term masked language modelling(MLM) may feel a bit alien to some of you. No worries, we will definitely dig deeper into it in this chapter.</p>
-<section id="what-is-masked-language-modelling">
-<h2>What is masked language modelling?<a class="headerlink" href="#what-is-masked-language-modelling" title="Permalink to this headline">¶</a></h2>
-<p>As humans we adapt to a field like medicine by going through an extensive 5 year MBBS course and then we apply our skills, similarly we make our transformer model knowledgeable in a specific domain like medicine by pretraining it using <strong>Masked Langauage Modelling(MLM)</strong>, so that our model will perform better, say for example, on a classification task related to medical domain.</p>
-<p>As you have an understanding of why masked language modelling is used, I will show you how it’s done.</p>
+  <section id="masked-language-modeling">
+<h1>Masked language modeling<a class="headerlink" href="#masked-language-modeling" title="Permalink to this headline">¶</a></h1>
+<p>Th term masked language modeling(MLM) may feel a bit alien to some of you. No worries, we will definitely dig deeper into it in this chapter.</p>
+<section id="what-is-masked-language-modeling">
+<h2>What is masked language modeling?<a class="headerlink" href="#what-is-masked-language-modeling" title="Permalink to this headline">¶</a></h2>
+<p>As humans we adapt to a field like medicine by going through an extensive 5 year MBBS course and then we apply our skills, similarly we make our transformer model knowledgeable in a specific domain like medicine by pretraining it using <strong>Masked Langauage Modeling(MLM)</strong>, so that our model will perform better, say for example, on a classification task related to medical domain.</p>
+<p>As you have an understanding of why masked language modeling is used, I will show you how it’s done.</p>
 <p>This is how the final inference will look like:</p>
-<img alt="Maked language modelling" class="bg-primary mb-1 align-center" src="_images/mlm_inference.png" />
+<img alt="Maked language modeling" class="bg-primary mb-1 align-center" src="_images/mlm_inference.png" />
 <p>We input a sentence with some words replaced/masked with a special token <code class="docutils literal notranslate"><span class="pre">[MASK]</span></code>. The job of the model is to predict the correct word to fill in place of <code class="docutils literal notranslate"><span class="pre">[MASK]</span></code>. In the above figure the model predicts ‘happiness’ as the word to be filled in place of <code class="docutils literal notranslate"><span class="pre">[MASK]</span></code>, which converts the input sentence from <code class="docutils literal notranslate"><span class="pre">'The</span> <span class="pre">goal</span> <span class="pre">of</span> <span class="pre">life</span> <span class="pre">is</span> <span class="pre">[MASK].'</span></code> to <code class="docutils literal notranslate"><span class="pre">'The</span> <span class="pre">goal</span> <span class="pre">of</span> <span class="pre">life</span> <span class="pre">is</span> <span class="pre">happiness.'</span></code>.</p>
 <p>The training data will have randomly masked sentences as inputs to the model and the complete sentence(without any masks) as the label(as shown below):</p>
 <p>Input: <code class="docutils literal notranslate"><span class="pre">'The</span> <span class="pre">full</span> <span class="pre">cost</span> <span class="pre">of</span> <span class="pre">damage</span> <span class="pre">in</span> <span class="pre">[MASK]</span> <span class="pre">Stewart,</span> <span class="pre">one</span> <span class="pre">of</span> <span class="pre">the</span> <span class="pre">areas</span> <span class="pre">[MASK]</span> <span class="pre">affected,</span> <span class="pre">is</span> <span class="pre">still</span> <span class="pre">being</span> <span class="pre">[MASK].'</span></code></p>
@@ -373,7 +373,7 @@
 </section>
 <section id="preprocessing-the-dataset">
 <h3>Preprocessing the dataset<a class="headerlink" href="#preprocessing-the-dataset" title="Permalink to this headline">¶</a></h3>
-<p>Now let’s prepare our dataset in a way that is needed for our model. Since our task is masked language modelling which is done to give domain knowledge to our model, we cannot afford to lose much information from our input sentences due to truncation.</p>
+<p>Now let’s prepare our dataset in a way that is needed for our model. Since our task is masked language modeling which is done to give domain knowledge to our model, we cannot afford to lose much information from our input sentences due to truncation.</p>
 <p>The maximum length(of input sentence) of our model is 512, all the inputs that are longer than this will be truncated, but we don’t want this to happen.</p>
 <p>So, we will concatenate all the input sentences and divide them into smaller chunks, and then each chunk will be the inputs to the model as shown in the figure below:</p>
 <img alt="_images/mlm_preprocess.png" class="align-center" src="_images/mlm_preprocess.png" />

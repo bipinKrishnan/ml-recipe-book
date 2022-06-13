@@ -1,17 +1,17 @@
-## Masked language modelling
+## Masked language modeling
 
-Th term masked language modelling(MLM) may feel a bit alien to some of you. No worries, we will definitely dig deeper into it in this chapter.
+Th term masked language modeling(MLM) may feel a bit alien to some of you. No worries, we will definitely dig deeper into it in this chapter.
 
-### What is masked language modelling?
+### What is masked language modeling?
 
-As humans we adapt to a field like medicine by going through an extensive 5 year MBBS course and then we apply our skills, similarly we make our transformer model knowledgeable in a specific domain like medicine by pretraining it using **Masked Langauage Modelling(MLM)**, so that our model will perform better, say for example, on a classification task related to medical domain.
+As humans we adapt to a field like medicine by going through an extensive 5 year MBBS course and then we apply our skills, similarly we make our transformer model knowledgeable in a specific domain like medicine by pretraining it using **Masked Langauage Modeling(MLM)**, so that our model will perform better, say for example, on a classification task related to medical domain.
 
-As you have an understanding of why masked language modelling is used, I will show you how it's done.
+As you have an understanding of why masked language modeling is used, I will show you how it's done.
 
 This is how the final inference will look like:
 
 ```{image} ./assets/mlm_inference.png
-:alt: Maked language modelling
+:alt: Maked language modeling
 :class: bg-primary mb-1
 :align: center
 ```
@@ -97,7 +97,7 @@ DatasetDict({
 
 #### Preprocessing the dataset
 
-Now let's prepare our dataset in a way that is needed for our model. Since our task is masked language modelling which is done to give domain knowledge to our model, we cannot afford to lose much information from our input sentences due to truncation.
+Now let's prepare our dataset in a way that is needed for our model. Since our task is masked language modeling which is done to give domain knowledge to our model, we cannot afford to lose much information from our input sentences due to truncation.
 
 The maximum length(of input sentence) of our model is 512, all the inputs that are longer than this will be truncated, but we don't want this to happen.
 

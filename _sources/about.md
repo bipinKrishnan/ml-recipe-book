@@ -18,7 +18,7 @@ Most of the chapters in NLP section was written when I was going through the [hu
 
 4. **Summarization** - In this chapter, a multi-lingual model is trained to summarize english and spanish sentences. The model used is a multi-lingual version of T5 transformer model and the dataset used is [amazon reviews dataset](https://huggingface.co/datasets/amazon_reviews_multi).
 
-5. **Causal language modelling** - This chapter focuses on training a model to autocomplete python code. For this, we will use the data used to train [code parrot model](https://huggingface.co/lvwerra/codeparrot).
+5. **Causal language modeling** - This chapter focuses on training a model to autocomplete python code. For this, we will use the data used to train [code parrot model](https://huggingface.co/lvwerra/codeparrot).
 
 The computer vision section covers the most common tasks under this domain. The chapters in this section makes use of [pytorch lightning](https://github.com/PyTorchLightning/pytorch-lightning), [pytorch image models(timm)](https://github.com/rwightman/pytorch-image-models), [albumentations library](https://albumentations.ai/) and [weights and biases platform](https://wandb.ai/). Here is a brief overview of each chapter in this section:
 
