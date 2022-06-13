@@ -12,7 +12,7 @@ Most of the chapters in NLP section was written when I was going through the [hu
 
 1. **Named entity recognition** - Discusses about training transformer model for recognizing named entities using [conllpp dataset](https://huggingface.co/datasets/conllpp). The specific model we will use is called [bert-base-cased](https://huggingface.co/bert-base-cased). The model is a smaller version of original BERT and is case sensitive, which means, it treats upper-cased and lower-cased letters as different.
 
-2. **Masked language modelling** - Similar to fill in the blanks question, we train a model to predict the masked word in a sentence using [xsum dataset](https://huggingface.co/datasets/xsum). The specific model we will use is called [distilbert-base-uncased](https://huggingface.co/distilbert-base-uncased). This is a distilled version of the bert base uncased model which treats upper-cased and lower-cased letters in the same manner.
+2. **Masked language modeling** - Similar to fill in the blanks question, we train a model to predict the masked word in a sentence using [xsum dataset](https://huggingface.co/datasets/xsum). The specific model we will use is called [distilbert-base-uncased](https://huggingface.co/distilbert-base-uncased). This is a distilled version of the bert base uncased model which treats upper-cased and lower-cased letters in the same manner.
 
 3. **Machine translation** - In this chapter, a model is trained to translate text from english to spanish. We will train a transformer model from Helsinki NLP group on the [news commentary dataset](https://huggingface.co/datasets/news_commentary). 
 
