@@ -14,7 +14,7 @@
 </div>
 
 ## Read the book
-You can read the book right from your browser by going [here](#contents).
+You can read the book right from your browser by going [here](https://bipinkrishnan.github.io/ml-recipe-book). If you find this book useful, consider starring🌟 the repo.
 
 ## Contents
 
