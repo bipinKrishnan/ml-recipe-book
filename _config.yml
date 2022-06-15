@@ -1,6 +1,7 @@
 title: ""
 author: Bipin Krishnan P
 logo: logo.png
+copyright: "2022"
 
 exclude_patterns: ["_build, **.ipynb_checkpoints", "README.md"]
 only_build_toc_files: false
