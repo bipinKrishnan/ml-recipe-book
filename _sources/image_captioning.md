@@ -359,6 +359,6 @@ Here is the image we used and the generated caption:
 :align: center
 ```
 
-Wohoo!! All these efforst paid off, the model is generating meaningful captions 🎉.
+Wohoo!! All these efforts paid off, the model is generating meaningful captions 🎉.
 
 
